@@ -19,8 +19,6 @@
     <modules>
         <module>common-library</module>
         <module>attendance-service</module>
-        <module>common-library</module>
-        <module>attendance-service</module>
     </modules>
 
     <properties>
