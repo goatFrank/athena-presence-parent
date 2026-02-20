@@ -5,7 +5,6 @@ target/
 *.war
 *.ear
 *.log
-.mvn/wrapper/maven-wrapper.jar
 
 === Ignora i file di log di Spring Boot ===
 /logs
