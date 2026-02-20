@@ -1,0 +1,56 @@
+=== JAVA / MAVEN ===
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/wrapper/maven-wrapper.jar
+
+=== Ignora i file di log di Spring Boot ===
+/logs
+/help.md
+
+=== NODE / REACT (Frontend) ===
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+
+.vite/
+
+=== RUST / TAURI (Desktop App) ===
+La cartella target di Rust può diventare pesantissima (GB)
+src-tauri/target/
+src-tauri/binaries/
+
+=== CONFIGURAZIONI E SEGRETI (Critico!) ===
+Non caricare mai i tuoi segreti Supabase o password DB
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+=== Ignora file di configurazione con password reali ===
+application-dev.yml
+application-dev.properties
+
+=== IDE / SISTEMA ===
+IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+=== VS Code ===
+.vscode/
+.history/
+*.code-workspace
+
+=== Sistema ===
+.DS_Store
+Thumbs.db
+desktop.ini
