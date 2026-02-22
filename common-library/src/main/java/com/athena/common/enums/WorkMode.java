@@ -1,4 +1,4 @@
-package com.athena.common;
+package com.athena.common.enums;
 
     /**
      * Rappresenta gli stati di presenza.

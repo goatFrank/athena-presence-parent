@@ -1,6 +1,6 @@
-package com.athena.dto;
+package com.athena.common.dto;
 
-import com.athena.common.WorkMode;
+import com.athena.common.enums.WorkMode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
