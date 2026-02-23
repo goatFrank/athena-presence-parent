@@ -2,6 +2,7 @@ package com.athena.auth.service.impl;
 
 import com.athena.auth.service.AuthService;
 import com.athena.common.dto.LoginRequest;
+import com.athena.common.dto.SignupRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -31,6 +32,24 @@ public class AuthServiceImpl implements AuthService {
 
         return restClient.post()
                 .uri(supabaseUrl + "/auth/v1/token?grant_type=password")
+                .header("apikey", anonKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .toEntity(Object.class)
+                .getBody();
+    }
+
+    @Override
+    public Object register(SignupRequest signupRequest) {
+        Map<String, Object> body = Map.of(
+                "email", signupRequest.getEmail(),
+                "password", signupRequest.getPassword(),
+                "data", Map.of("full_name", signupRequest.getFullName())
+        );
+
+        return restClient.post()
+                .uri(supabaseUrl + "/auth/v1/signup")
                 .header("apikey", anonKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
