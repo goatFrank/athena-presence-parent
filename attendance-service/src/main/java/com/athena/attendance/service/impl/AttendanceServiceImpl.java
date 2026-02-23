@@ -5,7 +5,9 @@ import com.athena.attendance.repository.AttendanceRepository;
 import com.athena.attendance.service.AttendanceService;
 import com.athena.common.dto.AttendanceDTO;
 import com.athena.common.dto.ResponseDTO;
+import com.athena.common.enums.ResponseStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository repository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     @Transactional
@@ -37,8 +40,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Attendance saved = repository.save(attendance);
         return ResponseDTO.<Attendance>builder()
-                .response("Attendance saved successfully")
-                .responseObj(saved)
+                .message("Attendance saved successfully")
+                .payload(saved)
+                .status(ResponseStatus.SUCCESS)
                 .build();
     }
 
@@ -46,8 +50,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     public ResponseDTO<List<Attendance>> getTeamPresence(Long tenantId, Long departmentId, LocalDate date) {
         List<Attendance> list = repository.findByTenantIdAndDepartmentIdAndWorkDate(tenantId, departmentId, date);
         return ResponseDTO.<List<Attendance>>builder()
-                .response("Team presence retrieved successfully")
-                .responseObj(list)
+                .message("Team presence retrieved successfully")
+                .payload(list)
+                .status(ResponseStatus.SUCCESS)
                 .build();
     }
 
@@ -55,8 +60,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     public ResponseDTO<List<Attendance>> getTenantPresence(Long tenantId, LocalDate date) {
         List<Attendance> list = repository.findByTenantIdAndWorkDate(tenantId, date);
         return ResponseDTO.<List<Attendance>>builder()
-                .response("Tenant presence retrieved successfully")
-                .responseObj(list)
+                .message("Tenant presence retrieved successfully")
+                .payload(list)
+                .status(ResponseStatus.SUCCESS)
                 .build();
     }
 
@@ -64,8 +70,38 @@ public class AttendanceServiceImpl implements AttendanceService {
     public ResponseDTO<List<Attendance>> getUserHistory(UUID userId) {
         List<Attendance> list = repository.findByUserIdOrderByWorkDateDesc(userId);
         return ResponseDTO.<List<Attendance>>builder()
-                .response("User history retrieved successfully")
-                .responseObj(list)
+                .message("User history retrieved successfully")
+                .payload(list)
+                .status(ResponseStatus.SUCCESS)
                 .build();
     }
+
+    @Override
+    @Transactional
+    public ResponseDTO<Attendance> updateAttendance(Long id, AttendanceDTO dto) {
+        Attendance attendance = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Attendance record not found with id: " + id));
+
+        // Update
+        attendance.setUserId(dto.getUserId());
+        attendance.setTenantId(dto.getTenantId());
+        attendance.setDepartmentId(dto.getDepartmentId());
+        attendance.setWorkDate(dto.getWorkDate());
+        attendance.setStatus(dto.getStatus());
+        attendance.setNote(dto.getNote());
+
+        Attendance updated = repository.save(attendance);
+
+        // Invio dell'aggiornamento in tempo reale via WebSocket
+        // Il team iscritto al canale /topic/team/{tenantId}/{deptId} riceverà il nuovo stato
+        String destination = String.format("/topic/team/%d/%d", updated.getTenantId(), updated.getDepartmentId());
+        messagingTemplate.convertAndSend(destination, updated);
+
+        return ResponseDTO.<Attendance>builder()
+                .message("Attendance updated successfully")
+                .payload(updated)
+                .status(ResponseStatus.SUCCESS)
+                .build();
+    }
+
 }

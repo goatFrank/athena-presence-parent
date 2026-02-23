@@ -27,7 +27,8 @@ public class AttendanceController {
     @PostMapping
     @Operation(summary = "Registra o aggiorna la presenza giornaliera")
     public ResponseEntity<ResponseDTO<Attendance>> save(@Valid @RequestBody AttendanceDTO dto) {
-        return ResponseEntity.ok(attendanceService.saveAttendance(dto));
+        ResponseDTO<Attendance> response = attendanceService.saveAttendance(dto);
+        return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
     @GetMapping("/tenant/{tenantId}")
@@ -35,7 +36,8 @@ public class AttendanceController {
     public ResponseEntity<ResponseDTO<List<Attendance>>> getTenantPresence(
             @PathVariable Long tenantId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(attendanceService.getTenantPresence(tenantId, date));
+        ResponseDTO<List<Attendance>> response = attendanceService.getTenantPresence(tenantId, date);
+        return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
     @GetMapping("/team/{tenantId}/{departmentId}")
@@ -44,12 +46,14 @@ public class AttendanceController {
             @PathVariable Long tenantId,
             @PathVariable Long departmentId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(attendanceService.getTeamPresence(tenantId, departmentId, date));
+        ResponseDTO<List<Attendance>> response = attendanceService.getTeamPresence(tenantId, departmentId, date);
+        return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "Recupera lo storico delle presenze di un singolo utente")
     public ResponseEntity<ResponseDTO<List<Attendance>>> getUserHistory(@PathVariable UUID userId) {
-        return ResponseEntity.ok(attendanceService.getUserHistory(userId));
+        ResponseDTO<List<Attendance>> response = attendanceService.getUserHistory(userId);
+        return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 }
