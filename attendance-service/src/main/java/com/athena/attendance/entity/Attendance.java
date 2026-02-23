@@ -25,6 +25,9 @@ public class Attendance {
     @Column(name = "tenant_id", nullable = false)
     private Long tenantId;
 
+    @Column(name = "department_id", nullable = false)
+    private Long departmentId;
+
     @Column(name = "work_date", nullable = false)
     private LocalDate workDate;
 

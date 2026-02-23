@@ -24,6 +24,9 @@ public class AttendanceDTO {
     private Long tenantId;      // ID dell'azienda/tenant
 
     @NotNull
+    private Long departmentId;  // ID del dipartimento
+
+    @NotNull
     private LocalDate workDate; // Data della presenza
 
     @NotNull

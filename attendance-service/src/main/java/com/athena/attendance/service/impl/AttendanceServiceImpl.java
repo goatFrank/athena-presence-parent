@@ -4,6 +4,7 @@ import com.athena.attendance.entity.Attendance;
 import com.athena.attendance.repository.AttendanceRepository;
 import com.athena.attendance.service.AttendanceService;
 import com.athena.common.dto.AttendanceDTO;
+import com.athena.common.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional
-    public Attendance saveAttendance(AttendanceDTO dto) {
+    public ResponseDTO<Attendance> saveAttendance(AttendanceDTO dto) {
 
         // Cerchiamo se esiste già un record per l'utente in quel giorno (Update)
         // altrimenti ne istanziamo uno nuovo (Create)
@@ -29,20 +30,42 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendance.setUserId(dto.getUserId());
         attendance.setTenantId(dto.getTenantId());
+        attendance.setDepartmentId(dto.getDepartmentId());
         attendance.setWorkDate(dto.getWorkDate());
         attendance.setStatus(dto.getStatus());
         attendance.setNote(dto.getNote());
 
-        return repository.save(attendance);
+        Attendance saved = repository.save(attendance);
+        return ResponseDTO.<Attendance>builder()
+                .response("Attendance saved successfully")
+                .responseObj(saved)
+                .build();
     }
 
     @Override
-    public List<Attendance> getTeamPresence(Long tenantId, LocalDate date) {
-        return repository.findByTenantIdAndWorkDate(tenantId, date);
+    public ResponseDTO<List<Attendance>> getTeamPresence(Long tenantId, Long departmentId, LocalDate date) {
+        List<Attendance> list = repository.findByTenantIdAndDepartmentIdAndWorkDate(tenantId, departmentId, date);
+        return ResponseDTO.<List<Attendance>>builder()
+                .response("Team presence retrieved successfully")
+                .responseObj(list)
+                .build();
     }
 
     @Override
-    public List<Attendance> getUserHistory(UUID userId) {
-        return repository.findByUserIdOrderByWorkDateDesc(userId);
+    public ResponseDTO<List<Attendance>> getTenantPresence(Long tenantId, LocalDate date) {
+        List<Attendance> list = repository.findByTenantIdAndWorkDate(tenantId, date);
+        return ResponseDTO.<List<Attendance>>builder()
+                .response("Tenant presence retrieved successfully")
+                .responseObj(list)
+                .build();
+    }
+
+    @Override
+    public ResponseDTO<List<Attendance>> getUserHistory(UUID userId) {
+        List<Attendance> list = repository.findByUserIdOrderByWorkDateDesc(userId);
+        return ResponseDTO.<List<Attendance>>builder()
+                .response("User history retrieved successfully")
+                .responseObj(list)
+                .build();
     }
 }
