@@ -16,14 +16,14 @@ import java.util.UUID;
 public class Attendance {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
     @Column(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private Long tenantId;
 
     @Column(name = "work_date", nullable = false)
     private LocalDate workDate;

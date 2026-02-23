@@ -14,8 +14,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AttendanceDTO {
+    private Long id;
     private UUID userId;        // ID dell'utente (da Supabase Auth)
-    private UUID tenantId;      // ID dell'azienda/tenant
+    private Long tenantId;      // ID dell'azienda/tenant
     private LocalDate workDate; // Data della presenza
     private WorkMode status;    // OFFICE, REMOTE, etc.
     private String note;        // Note opzionali (es. "Al mattino fuori sede")

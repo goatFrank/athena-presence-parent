@@ -17,7 +17,7 @@ public interface AttendanceService {
     /**
      * Recupera lo stato di presenza di tutto il team (tenant) per una data.
      */
-    List<Attendance> getTeamPresence(UUID tenantId, LocalDate date);
+    List<Attendance> getTeamPresence(Long tenantId, LocalDate date); // tenantId è Long
 
 
     /**

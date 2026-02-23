@@ -37,7 +37,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public List<Attendance> getTeamPresence(UUID tenantId, LocalDate date) {
+    public List<Attendance> getTeamPresence(Long tenantId, LocalDate date) {
         return repository.findByTenantIdAndWorkDate(tenantId, date);
     }
 

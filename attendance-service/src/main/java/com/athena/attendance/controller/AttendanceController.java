@@ -29,10 +29,9 @@ public class AttendanceController {
     }
 
     @GetMapping("/team/{tenantId}")
-    @Operation(summary = "Recupera lo stato di tutto il team per una data specifica")
     public ResponseEntity<List<Attendance>> getTeamPresence(
-            @PathVariable UUID tenantId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @PathVariable Long tenantId,
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(attendanceService.getTeamPresence(tenantId, date));
     }
 }

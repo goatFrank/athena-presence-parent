@@ -10,16 +10,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface AttendanceRepository extends JpaRepository<Attendance, UUID> {
+public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
+
+    // Trova se esiste un record per quel giorno e utente specifico
+    // (usato per decidere se fare insert o update)
+    Optional<Attendance> findByUserIdAndWorkDate(UUID userId, LocalDate workDate);
 
     // Trova tutte le presenze di un'azienda per una data specifica
-    List<Attendance> findByTenantIdAndWorkDate(UUID tenantId, LocalDate workDate);
+    List<Attendance> findByTenantIdAndWorkDate(Long tenantId, LocalDate workDate);
 
     // Trova la cronologia di un singolo utente
     List<Attendance> findByUserIdOrderByWorkDateDesc(UUID userId);
-
-    // Verifica se esiste già una registrazione per l'utente in quel giorno
-    boolean existsByUserIdAndWorkDate(UUID userId, LocalDate workDate);
-
-    Optional<Attendance> findByUserIdAndWorkDate(UUID userId, LocalDate workDate);
 }
