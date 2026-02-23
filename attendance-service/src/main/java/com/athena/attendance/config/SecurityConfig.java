@@ -1,5 +1,6 @@
 package com.athena.attendance.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -17,8 +18,14 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final String issuerUri;
+
+    public SecurityConfig(@Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String issuerUri) {
+        this.issuerUri = issuerUri;
+    }
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
@@ -32,8 +39,6 @@ public class SecurityConfig {
     }
     @Bean
     public JwtDecoder jwtDecoder() {
-
-        String issuerUri = "https://wrmtllklfwohgbvkigio.supabase.co/auth/v1";
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation(issuerUri);
 
         OAuth2TokenValidator<Jwt> audienceValidator = new JwtClaimValidator<Object>(JwtClaimNames.AUD, aud -> {

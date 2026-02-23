@@ -3,7 +3,6 @@ package com.athena.auth.service.impl;
 import com.athena.auth.service.AuthService;
 import com.athena.common.dto.LoginRequest;
 import com.athena.common.dto.SignupRequest;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -12,16 +11,19 @@ import org.springframework.web.client.RestClient;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    @Value("${supabase.url}")
-    private String supabaseUrl;
+    private final String supabaseUrl;
+    private final String anonKey;
+    private final RestClient restClient;
 
-    @Value("${supabase.anon-key}")
-    private String anonKey;
-
-    private final RestClient restClient = RestClient.create();
+    public AuthServiceImpl(
+            @Value("${supabase.url}") String supabaseUrl,
+            @Value("${supabase.anon-key}") String anonKey) {
+        this.supabaseUrl = supabaseUrl;
+        this.anonKey = anonKey;
+        this.restClient = RestClient.create();
+    }
 
     @Override
     public Object authenticate(LoginRequest loginRequest) {
