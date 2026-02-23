@@ -20,7 +20,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${JWT_ISSUER:https://wrmtllklfwohgbvkigio.supabase.co/auth/v1}
+          issuer-uri: ${JWT_ISSUER}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
 
 server:
   port: ${SERVER_PORT:8081}

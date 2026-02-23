@@ -6,7 +6,12 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -25,4 +30,27 @@ public class SecurityConfig {
 
         return http.build();
     }
+    @Bean
+    public JwtDecoder jwtDecoder() {
+
+        String issuerUri = "https://wrmtllklfwohgbvkigio.supabase.co/auth/v1";
+        NimbusJwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation(issuerUri);
+
+        OAuth2TokenValidator<Jwt> audienceValidator = new JwtClaimValidator<Object>(JwtClaimNames.AUD, aud -> {
+            if (aud instanceof String) {
+                return "authenticated".equals(aud);
+            } else if (aud instanceof List) {
+                return ((List<?>) aud).contains("authenticated");
+            }
+            return false;
+        });
+
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+
+        jwtDecoder.setJwtValidator(withAudience);
+        return jwtDecoder;
+    }
+
+
 }
