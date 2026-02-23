@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -19,4 +20,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, UUID> {
 
     // Verifica se esiste già una registrazione per l'utente in quel giorno
     boolean existsByUserIdAndWorkDate(UUID userId, LocalDate workDate);
+
+    Optional<Attendance> findByUserIdAndWorkDate(UUID userId, LocalDate workDate);
 }
