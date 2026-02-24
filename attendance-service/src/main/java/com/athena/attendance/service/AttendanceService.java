@@ -33,4 +33,11 @@ public interface AttendanceService {
      * Recupera lo storico delle presenze di un singolo utente.
      */
     ResponseDTO<List<Attendance>> getUserHistory(UUID userId);
+
+    /**
+     * Cancella una prenotazione specifica.
+     * @param id L'ID della presenza da cancellare.
+     * @param userId L'ID dell'utente che richiede la cancellazione (per verifica ownership).
+     */
+    void deleteAttendance(Long id, UUID userId);
 }

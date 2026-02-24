@@ -104,4 +104,18 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    public void deleteAttendance(Long id, UUID userId) {
+        Attendance attendance = repository.findById(id)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Attendance not found with id: " + id));
+
+        if (!attendance.getUserId().equals(userId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Unauthorized: You can only delete your own attendance records.");
+        }
+
+        repository.delete(attendance);
+    }
 }

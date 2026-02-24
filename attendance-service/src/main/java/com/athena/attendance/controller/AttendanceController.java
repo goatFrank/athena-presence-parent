@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -50,10 +52,21 @@ public class AttendanceController {
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
-    @GetMapping("/user/{userId}")
-    @Operation(summary = "Recupera lo storico delle presenze di un singolo utente")
-    public ResponseEntity<ResponseDTO<List<Attendance>>> getUserHistory(@PathVariable UUID userId) {
-        ResponseDTO<List<Attendance>> response = attendanceService.getUserHistory(userId);
+    @GetMapping("/me")
+    @Operation(summary = "Recupera lo storico delle presenze dell'utente loggato")
+    public ResponseEntity<ResponseDTO<List<Attendance>>> getMyHistory(@AuthenticationPrincipal Jwt jwt) {
+
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+
+        ResponseDTO<List<Attendance>> response = attendanceService.getUserHistory(authenticatedUserId);
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Annulla una prenotazione")
+    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        attendanceService.deleteAttendance(id, authenticatedUserId);
+        return ResponseEntity.noContent().build();
     }
 }

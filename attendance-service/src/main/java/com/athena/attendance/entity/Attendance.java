@@ -3,6 +3,7 @@ package com.athena.attendance.entity;
 import com.athena.common.enums.WorkMode;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
