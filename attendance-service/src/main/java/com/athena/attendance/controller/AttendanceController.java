@@ -62,6 +62,30 @@ public class AttendanceController {
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
+    @GetMapping("/me/range")
+    @Operation(summary = "Recupera le presenze dell'utente loggato in un range di date")
+    public ResponseEntity<ResponseDTO<List<Attendance>>> getMyHistoryRange(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+
+        ResponseDTO<List<Attendance>> response = attendanceService.getAttendanceForDateRange(authenticatedUserId,
+                startDate, endDate);
+        return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
+    }
+
+    @GetMapping("/stats/dashboard")
+    @Operation(summary = "Recupera le statistiche per la dashboard (giorni ufficio, remoto, presenza team)")
+    public ResponseEntity<ResponseDTO<com.athena.common.dto.DashboardStatsDTO>> getDashboardStats(
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        ResponseDTO<com.athena.common.dto.DashboardStatsDTO> response = attendanceService
+                .getDashboardStats(authenticatedUserId);
+        return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
+    }
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Annulla una prenotazione")
     public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {

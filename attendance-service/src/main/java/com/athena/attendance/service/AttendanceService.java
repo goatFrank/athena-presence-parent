@@ -15,7 +15,8 @@ public interface AttendanceService {
     ResponseDTO<Attendance> saveAttendance(AttendanceDTO dto);
 
     /**
-     * Aggiorna la presenza esistente di un utente per una specifica data. Se il record non esiste, restituisce un errore.
+     * Aggiorna la presenza esistente di un utente per una specifica data. Se il
+     * record non esiste, restituisce un errore.
      */
     ResponseDTO<Attendance> updateAttendance(Long id, AttendanceDTO dto);
 
@@ -35,9 +36,21 @@ public interface AttendanceService {
     ResponseDTO<List<Attendance>> getUserHistory(UUID userId);
 
     /**
+     * Recupera le presenze di un singolo utente in un intervallo di date.
+     */
+    ResponseDTO<List<Attendance>> getAttendanceForDateRange(UUID userId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Calcola le statistiche per la dashboard (giorni ufficio, remoto, % team).
+     */
+    ResponseDTO<com.athena.common.dto.DashboardStatsDTO> getDashboardStats(UUID userId);
+
+    /**
      * Cancella una prenotazione specifica.
-     * @param id L'ID della presenza da cancellare.
-     * @param userId L'ID dell'utente che richiede la cancellazione (per verifica ownership).
+     * 
+     * @param id     L'ID della presenza da cancellare.
+     * @param userId L'ID dell'utente che richiede la cancellazione (per verifica
+     *               ownership).
      */
     void deleteAttendance(Long id, UUID userId);
 }

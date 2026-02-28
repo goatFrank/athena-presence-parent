@@ -10,5 +10,6 @@ import java.util.UUID;
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, UUID> {
     Optional<Profile> findById(UUID id);
-}
 
+    int countByTenantIdAndDepartmentId(Long tenantId, Long departmentId);
+}

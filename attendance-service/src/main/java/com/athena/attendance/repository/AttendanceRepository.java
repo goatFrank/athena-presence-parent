@@ -22,6 +22,17 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     // Trova la cronologia di un singolo utente
     List<Attendance> findByUserIdOrderByWorkDateDesc(UUID userId);
 
+    // Trova le presenze di un singolo utente in un intervallo di date
+    List<Attendance> findByUserIdAndWorkDateBetweenOrderByWorkDateAsc(UUID userId, LocalDate startDate,
+            LocalDate endDate);
+
     // Trova tutte le presenze di un dipartimento per una data specifica
     List<Attendance> findByTenantIdAndDepartmentIdAndWorkDate(Long tenantId, Long departmentId, LocalDate workDate);
+
+    // Conta le presenze di un utente per uno status e in un intervallo di date
+    int countByUserIdAndStatusAndWorkDateBetween(UUID userId, String status, LocalDate startDate, LocalDate endDate);
+
+    // Conta i membri di un dipartimento presenti in ufficio oggi
+    int countByTenantIdAndDepartmentIdAndStatusAndWorkDate(Long tenantId, Long departmentId, String status,
+            LocalDate workDate);
 }
