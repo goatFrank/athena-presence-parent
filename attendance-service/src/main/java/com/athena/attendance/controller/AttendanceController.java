@@ -86,6 +86,14 @@ public class AttendanceController {
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
+    @GetMapping("/me/today")
+    @Operation(summary = "Recupera lo stato di presenza dell'utente loggato per oggi")
+    public ResponseEntity<ResponseDTO<Attendance>> getMyTodayStatus(@AuthenticationPrincipal Jwt jwt) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        ResponseDTO<Attendance> response = attendanceService.getMyTodayStatus(authenticatedUserId);
+        return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
+    }
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Annulla una prenotazione")
     public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {

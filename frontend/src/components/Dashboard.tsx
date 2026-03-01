@@ -12,6 +12,7 @@ const Dashboard: React.FC = () => {
 
     const [weeklyDates, setWeeklyDates] = useState<{ date: Date, dateIso: string, isToday: boolean, isPast: boolean, status: string, name: string }[]>([]);
     const [dashboardStats, setDashboardStats] = useState<{ officeDays: number, remoteDays: number, totalWorkingDays: number, teamPresencePercentage: number } | null>(null);
+    const [todayStatus, setTodayStatus] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUserAndColleagues = async () => {
@@ -85,6 +86,23 @@ const Dashboard: React.FC = () => {
                     }
                 } catch (err) {
                     console.error("Error fetching weekly attendance:", err);
+                }
+
+                // Fetch today's planned status
+                try {
+                    const todayRes = await fetch('http://localhost:8081/api/v1/attendance/me/today', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (todayRes.ok) {
+                        const todayData = await todayRes.json();
+                        if (todayData.payload && todayData.payload.status) {
+                            setTodayStatus(todayData.payload.status);
+                        } else {
+                            setTodayStatus(null);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error fetching today status:', err);
                 }
 
                 try {
@@ -288,40 +306,50 @@ const Dashboard: React.FC = () => {
                         <span className="w-2 h-6 bg-blue-500 rounded-full block"></span>
                         {t('where_are_you')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                        <label className="relative cursor-pointer group/card w-full">
-                            <input defaultChecked className="peer sr-only" name="status" type="radio" />
-                            <div className="flex flex-col items-center justify-center p-8 rounded-[2rem] border-4 border-transparent bg-white dark:bg-slate-800 shadow-sm transition-all duration-300 peer-checked:border-transparent peer-checked:ring-4 peer-checked:ring-blue-400/30 relative overflow-hidden h-full">
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 peer-checked:opacity-100 transition-opacity duration-300"></div>
-                                <div className="relative z-10 flex flex-col items-center text-center">
-                                    <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 peer-checked:bg-white/20 peer-checked:text-white flex items-center justify-center mb-4 transition-colors text-3xl shadow-inner">
-                                        <span className="material-icons">business</span>
+                    {todayStatus ? (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+                            {[
+                                { key: 'OFFICE', icon: 'business', label: i18n.language === 'it' ? 'In Ufficio' : 'At the Office', gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-400/30', iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+                                { key: 'REMOTE', icon: 'home', label: i18n.language === 'it' ? 'Da Remoto' : 'Remote', gradient: 'from-cyan-400 to-blue-400', ring: 'ring-cyan-400/30', iconBg: 'bg-cyan-50', iconColor: 'text-cyan-600' },
+                                { key: 'SICK', icon: 'sick', label: i18n.language === 'it' ? 'Malattia' : 'Sick', gradient: 'from-red-400 to-red-500', ring: 'ring-red-400/30', iconBg: 'bg-red-50', iconColor: 'text-red-500' },
+                                { key: 'HOLIDAY', icon: 'beach_access', label: i18n.language === 'it' ? 'Ferie' : 'Holiday', gradient: 'from-amber-400 to-orange-400', ring: 'ring-amber-400/30', iconBg: 'bg-amber-50', iconColor: 'text-amber-500' },
+                            ].map((s) => {
+                                const isActive = todayStatus === s.key;
+                                return (
+                                    <div key={s.key} className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden ${isActive
+                                        ? `border-transparent ring-4 ${s.ring} shadow-lg scale-105`
+                                        : 'border-slate-100 dark:border-slate-700 opacity-50'
+                                        }`}>
+                                        {isActive && <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-100`}></div>}
+                                        <div className="relative z-10 flex flex-col items-center text-center">
+                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 text-2xl shadow-inner ${isActive ? 'bg-white/20 text-white' : `${s.iconBg} ${s.iconColor}`}`}>
+                                                <span className="material-icons">{s.icon}</span>
+                                            </div>
+                                            <span className={`block text-sm font-bold mb-0.5 ${isActive ? 'text-white' : 'text-slate-600 dark:text-white'}`}>{s.label}</span>
+                                        </div>
+                                        {isActive && (
+                                            <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white text-green-500 flex items-center justify-center shadow-md z-10">
+                                                <span className="material-icons text-sm font-bold">check</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <span className="block text-xl font-bold text-slate-700 dark:text-white peer-checked:text-white mb-1">At the Office</span>
-                                    <span className="text-sm font-medium text-slate-400 dark:text-slate-400 peer-checked:text-blue-100">Collaborating in person</span>
-                                </div>
-                                <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white text-blue-600 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100 flex items-center justify-center shadow-md">
-                                    <span className="material-icons text-sm font-bold">check</span>
-                                </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="relative z-10 text-center py-8">
+                            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 flex items-center justify-center mx-auto mb-4 text-3xl">
+                                <span className="material-icons">event_busy</span>
                             </div>
-                        </label>
-                        <label className="relative cursor-pointer group/card w-full">
-                            <input className="peer sr-only" name="status" type="radio" />
-                            <div className="flex flex-col items-center justify-center p-8 rounded-[2rem] border-4 border-transparent bg-white dark:bg-slate-800 shadow-sm transition-all duration-300 peer-checked:border-transparent peer-checked:ring-4 peer-checked:ring-cyan-400/30 relative overflow-hidden h-full">
-                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 to-blue-400 opacity-0 peer-checked:opacity-100 transition-opacity duration-300"></div>
-                                <div className="relative z-10 flex flex-col items-center text-center">
-                                    <div className="w-16 h-16 rounded-full bg-slate-50 text-slate-500 peer-checked:bg-white/20 peer-checked:text-white flex items-center justify-center mb-4 transition-colors text-3xl shadow-inner">
-                                        <span className="material-icons">home</span>
-                                    </div>
-                                    <span className="block text-xl font-bold text-slate-700 dark:text-white peer-checked:text-white mb-1">Working Remotely</span>
-                                    <span className="text-sm font-medium text-slate-400 dark:text-slate-400 peer-checked:text-blue-50">Focus time from home</span>
-                                </div>
-                                <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white text-cyan-600 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100 flex items-center justify-center shadow-md">
-                                    <span className="material-icons text-sm font-bold">check</span>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
+                            <p className="text-slate-500 dark:text-slate-400 font-medium mb-4">
+                                {i18n.language === 'it' ? 'Nessun piano per oggi. Vai al Planning per impostare il tuo stato!' : 'No plan for today. Go to Planning to set your status!'}
+                            </p>
+                            <Link to="/planning" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
+                                <span className="material-icons text-sm">calendar_month</span>
+                                {i18n.language === 'it' ? 'Vai al Planning' : 'Go to Planning'}
+                            </Link>
+                        </div>
+                    )}
                 </section>
 
                 <div className="grid grid-cols-3 gap-6 mb-10">

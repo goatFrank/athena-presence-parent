@@ -46,6 +46,11 @@ public interface AttendanceService {
     ResponseDTO<com.athena.common.dto.DashboardStatsDTO> getDashboardStats(UUID userId);
 
     /**
+     * Recupera lo stato di presenza dell'utente per oggi.
+     */
+    ResponseDTO<Attendance> getMyTodayStatus(UUID userId);
+
+    /**
      * Cancella una prenotazione specifica.
      * 
      * @param id     L'ID della presenza da cancellare.

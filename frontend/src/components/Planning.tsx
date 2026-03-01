@@ -92,6 +92,8 @@ const Planning: React.FC = () => {
     const isIt = i18n.language === 'it';
 
     const [userName, setUserName] = useState('');
+    const [userTenantId, setUserTenantId] = useState<number | null>(null);
+    const [userDeptId, setUserDeptId] = useState<number | null>(null);
     const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
     const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); // 0-indexed
     const [days, setDays] = useState<DayInfo[]>([]);
@@ -107,14 +109,16 @@ const Planning: React.FC = () => {
     const monthNames = isIt ? MONTH_NAMES_IT : MONTH_NAMES_EN;
     const dayHeaders = isIt ? DAY_HEADERS_IT : DAY_HEADERS_EN;
 
-    // ── Fetch user name ──
+    // ── Fetch user profile (name, tenantId, departmentId) ──
     useEffect(() => {
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id);
-                if (data && data[0]?.full_name) {
-                    setUserName(data[0].full_name);
+                const { data } = await supabase.from('profiles').select('full_name, tenant_id, department_id').eq('id', user.id);
+                if (data && data[0]) {
+                    setUserName(data[0].full_name || user.email?.split('@')[0] || 'User');
+                    setUserTenantId(data[0].tenant_id);
+                    setUserDeptId(data[0].department_id);
                 } else {
                     setUserName(user.email?.split('@')[0] || 'User');
                 }
@@ -258,6 +262,9 @@ const Planning: React.FC = () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            // Map frontend status to backend WorkMode enum
+            const backendStatus = status === 'IN_OFFICE' ? 'OFFICE' : status;
+
             await fetch('http://localhost:8081/api/v1/attendance', {
                 method: 'POST',
                 headers: {
@@ -267,7 +274,9 @@ const Planning: React.FC = () => {
                 body: JSON.stringify({
                     userId: user.id,
                     workDate: dateIso,
-                    status: status
+                    status: backendStatus,
+                    tenantId: userTenantId,
+                    departmentId: userDeptId
                 })
             });
 
@@ -329,10 +338,7 @@ const Planning: React.FC = () => {
                     <span className="text-indigo-600 font-extrabold text-base drop-shadow-sm">{d.day}</span>
                     <div className="absolute inset-0 bg-indigo-600/5 pointer-events-none rounded-2xl"></div>
                     {cfg && (
-                        <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 flex items-center gap-1 shadow-sm ${cfg.pillClass}`}>
-                            <span className="material-icons text-[12px]">{cfg.icon}</span>
-                            {getStatusLabel(d.status!)}
-                        </div>
+                        <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${cfg.dotColor}`}></div>
                     )}
                     {isSelected && renderPopup(d)}
                 </div>
@@ -346,10 +352,7 @@ const Planning: React.FC = () => {
             >
                 <span className={`text-slate-600 text-sm font-bold ${cfg ? cfg.textHover : 'group-hover:text-indigo-600'}`}>{d.day}</span>
                 {cfg && (
-                    <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 flex items-center gap-1 shadow-sm backdrop-blur-sm bg-white/60 ${cfg.pillClass}`}>
-                        <span className="material-icons text-[12px]">{cfg.icon}</span>
-                        {getStatusLabel(d.status!)}
-                    </div>
+                    <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${cfg.dotColor}`}></div>
                 )}
                 {isSelected && renderPopup(d)}
             </div>
@@ -437,13 +440,13 @@ const Planning: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex items-center bg-white rounded-2xl p-1.5 shadow-sm border border-indigo-50">
-                            <button onClick={goToPrevMonth} className="w-10 h-10 flex items-center justify-center hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all">
+                            <button onClick={goToPrevMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
                                 <span className="material-icons">chevron_left</span>
                             </button>
-                            <button onClick={goToToday} className="px-6 font-bold text-slate-600 select-none hover:text-indigo-600 transition-colors">
+                            <button onClick={goToToday} className="px-6 font-bold text-slate-600 select-none bg-transparent hover:text-indigo-600 transition-colors border-0">
                                 {isIt ? 'Oggi' : 'Today'}
                             </button>
-                            <button onClick={goToNextMonth} className="w-10 h-10 flex items-center justify-center hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all">
+                            <button onClick={goToNextMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
                                 <span className="material-icons">chevron_right</span>
                             </button>
                         </div>
@@ -520,7 +523,7 @@ const Planning: React.FC = () => {
 
                             {/* Remote */}
                             <div className="bg-sky-50/50 rounded-2xl p-4 border border-sky-100 transition-transform hover:scale-[1.02]">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-sky-500">
                                             <span className="material-icons text-xl">home</span>
@@ -530,6 +533,10 @@ const Planning: React.FC = () => {
                                         </div>
                                     </div>
                                     <span className="text-2xl font-black text-sky-500">{remoteCount}</span>
+                                </div>
+                                <div className="w-full bg-white rounded-full h-3 p-0.5 shadow-inner">
+                                    <div className="bg-gradient-to-r from-sky-500 to-sky-300 h-2 rounded-full shadow-sm transition-all duration-500"
+                                        style={{ width: `${Math.min((remoteCount / 20) * 100, 100)}%` }}></div>
                                 </div>
                             </div>
 
@@ -562,9 +569,9 @@ const Planning: React.FC = () => {
                     </div>
 
                     {/* Back to Dashboard */}
-                    <div className="bg-slate-800 text-white rounded-3xl shadow-xl p-6 relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-indigo-50 to-white rounded-3xl shadow-soft-glow border border-indigo-100 p-6 relative overflow-hidden">
                         <div className="relative z-10 text-center">
-                            <p className="text-indigo-200 text-sm mb-4 font-medium">
+                            <p className="text-slate-500 text-sm mb-4 font-medium">
                                 {isIt ? 'Torna alla panoramica' : 'Back to overview'}
                             </p>
                             <Link to="/dashboard"

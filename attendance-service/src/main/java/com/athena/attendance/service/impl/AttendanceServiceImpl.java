@@ -163,6 +163,26 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         @Override
+        public ResponseDTO<Attendance> getMyTodayStatus(UUID userId) {
+                LocalDate today = LocalDate.now();
+                java.util.Optional<Attendance> attendance = repository.findByUserIdAndWorkDate(userId, today);
+
+                if (attendance.isPresent()) {
+                        return ResponseDTO.<Attendance>builder()
+                                        .message("Today's attendance retrieved successfully")
+                                        .payload(attendance.get())
+                                        .status(ResponseStatus.SUCCESS)
+                                        .build();
+                } else {
+                        return ResponseDTO.<Attendance>builder()
+                                        .message("No attendance planned for today")
+                                        .payload(null)
+                                        .status(ResponseStatus.SUCCESS)
+                                        .build();
+                }
+        }
+
+        @Override
         @Transactional
         public ResponseDTO<Attendance> updateAttendance(Long id, AttendanceDTO dto) {
                 Attendance attendance = repository.findById(id)

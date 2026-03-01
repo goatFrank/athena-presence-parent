@@ -3,6 +3,8 @@ package com.athena.attendance.entity;
 import com.athena.common.enums.WorkMode;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -33,7 +35,8 @@ public class Attendance {
     private LocalDate workDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", nullable = false, columnDefinition = "work_mode")
     private WorkMode status;
 
     @Column(name = "note")
