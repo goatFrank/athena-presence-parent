@@ -5,6 +5,7 @@ target/
 *.war
 *.ear
 *.log
+*.env
 
 === Ignora i file di log di Spring Boot ===
 /logs
