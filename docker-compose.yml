@@ -35,6 +35,26 @@ services:
     networks:
       - athena-network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Useful for live-reloading inside Docker
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    volumes:
+      - ./frontend:/app # Sync code for hot reload
+      - /app/node_modules # Keep node_modules anonymous so host's doesn't override it
+    depends_on:
+      - attendance-service
+      - auth-service
+    restart: unless-stopped
+    networks:
+      - athena-network
+
 networks:
   athena-network:
     driver: bridge

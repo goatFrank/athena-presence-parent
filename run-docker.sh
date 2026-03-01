@@ -22,6 +22,7 @@ export SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-}"
 docker-compose up --build -d
 
 echo "Services are starting in the background!"
+echo " - Frontend (React):   http://localhost:5173"
 echo " - Attendance Service: http://localhost:8081"
 echo " - Auth Service:       http://localhost:8082"
 echo "To view logs, run: docker-compose logs -f"
