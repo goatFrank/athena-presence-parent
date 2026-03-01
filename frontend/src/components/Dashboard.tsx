@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
 
 const Dashboard: React.FC = () => {
@@ -213,10 +214,10 @@ const Dashboard: React.FC = () => {
                         <span className="material-icons text-[22px]">dashboard</span>
                         {t('dashboard_title')}
                     </a>
-                    <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#">
+                    <Link to="/planning" className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft">
                         <span className="material-icons text-[22px] group-hover:text-blue-500 transition-colors">calendar_month</span>
                         {t('my_schedule')}
-                    </a>
+                    </Link>
                     <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#">
                         <span className="material-icons text-[22px] group-hover:text-blue-500 transition-colors">groups</span>
                         {t('team')}
@@ -234,7 +235,7 @@ const Dashboard: React.FC = () => {
                 <div className="p-6">
                     <div className="bg-blue-50/50 dark:bg-slate-800/50 rounded-2xl p-4 border border-blue-100 dark:border-slate-700">
                         <a className="flex items-center gap-3 hover:opacity-80 transition-opacity" href="#">
-                            <img alt="User Profile" className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-2 ring-white dark:ring-slate-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1QBV7WZmz7TjVNshUYoQahDC_RdV-tUXrC2wyLqz-7Or5OBMk8T2J0NVFnFBkhABNaG0tRxaCeOwfEsWU2WF9CUrTP37ojylozW7VJjialXSqyAaREAiNp7NB5dk4kfo80qPyhstlMqMAMtXIVNlAwUgjWWj-Rq1ttRhRUrcoWbsCOURDnyqfDHnQ7kV9ZOSywfhC9GbK7gewj6RiRw0fRLv7pA4FtE_RWndNmQjtS6SBgPfZCd9hd3hDH9f8APAp6uiiG02nQko" />
+                            <img alt="User Profile" className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-2 ring-white dark:ring-slate-700" src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=3B82F6&color=fff&rounded=true&bold=true&size=128`} />
                             <div className="flex flex-col min-w-0">
                                 <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{userName}</span>
                                 <span className="text-xs text-slate-500 dark:text-slate-400 truncate">Product Designer</span>
