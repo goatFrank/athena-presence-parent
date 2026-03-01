@@ -17,6 +17,7 @@ interface DayInfo {
     dateIso: string;
     isCurrentMonth: boolean;
     isToday: boolean;
+    isPast: boolean;
     isWeekend: boolean;
     status: StatusType | null;
     attendanceId?: number;
@@ -150,11 +151,13 @@ const Planning: React.FC = () => {
             const d = prevMonthLast.getDate() - i;
             const pm = currentMonth === 0 ? 11 : currentMonth - 1;
             const py = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const iso = toIso(py, pm, d);
             grid.push({
                 day: d,
-                dateIso: toIso(py, pm, d),
+                dateIso: iso,
                 isCurrentMonth: false,
                 isToday: false,
+                isPast: iso < todayIso,
                 isWeekend: false,
                 status: null
             });
@@ -163,11 +166,13 @@ const Planning: React.FC = () => {
         // Current month days
         for (let d = 1; d <= daysInMonth; d++) {
             const dow = new Date(currentYear, currentMonth, d).getDay();
+            const iso = toIso(currentYear, currentMonth, d);
             grid.push({
                 day: d,
-                dateIso: toIso(currentYear, currentMonth, d),
+                dateIso: iso,
                 isCurrentMonth: true,
-                isToday: toIso(currentYear, currentMonth, d) === todayIso,
+                isToday: iso === todayIso,
+                isPast: iso < todayIso,
                 isWeekend: dow === 0 || dow === 6,
                 status: null
             });
@@ -178,11 +183,13 @@ const Planning: React.FC = () => {
         for (let d = 1; d <= remaining; d++) {
             const nm = currentMonth === 11 ? 0 : currentMonth + 1;
             const ny = currentMonth === 11 ? currentYear + 1 : currentYear;
+            const iso = toIso(ny, nm, d);
             grid.push({
                 day: d,
-                dateIso: toIso(ny, nm, d),
+                dateIso: iso,
                 isCurrentMonth: false,
                 isToday: false,
+                isPast: iso < todayIso,
                 isWeekend: false,
                 status: null
             });
@@ -327,6 +334,21 @@ const Planning: React.FC = () => {
 
         const cfg = d.status ? statusConfig[d.status] : null;
         const isSelected = selectedDay === d.dateIso;
+
+        // Past days: show status dot but NOT clickable
+        if (d.isPast) {
+            return (
+                <div key={idx}
+                    className="aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-hidden opacity-50 cursor-not-allowed bg-slate-50/30"
+                    title={isIt ? 'Non puoi modificare i giorni passati' : 'Cannot edit past days'}
+                >
+                    <span className="text-slate-400 text-sm font-bold">{d.day}</span>
+                    {cfg && (
+                        <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${cfg.dotColor}`}></div>
+                    )}
+                </div>
+            );
+        }
 
         // Today gets a special ring
         if (d.isToday) {

@@ -31,6 +31,15 @@ public class AttendanceServiceImpl implements AttendanceService {
         @Transactional
         public ResponseDTO<Attendance> saveAttendance(AttendanceDTO dto) {
 
+                // Cannot modify past days
+                if (dto.getWorkDate().isBefore(LocalDate.now())) {
+                        return ResponseDTO.<Attendance>builder()
+                                        .message("Cannot modify attendance for past dates")
+                                        .payload(null)
+                                        .status(ResponseStatus.ERROR)
+                                        .build();
+                }
+
                 // Cerchiamo se esiste già un record per l'utente in quel giorno (Update)
                 // altrimenti ne istanziamo uno nuovo (Create)
                 Attendance attendance = repository.findByUserIdAndWorkDate(dto.getUserId(), dto.getWorkDate())
