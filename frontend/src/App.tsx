@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import Planning from './components/Planning';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -11,6 +12,11 @@ function App() {
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/planning" element={
+          <ProtectedRoute>
+            <Planning />
           </ProtectedRoute>
         } />
         {/* Default redirect to login */}
