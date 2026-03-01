@@ -81,8 +81,8 @@ const Login: React.FC = () => {
                         <div className="mb-10 flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white flex-shrink-0">
                                 <div className="relative w-6 h-6">
-                                    <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-[20px]">shield</span>
-                                    <span className="material-symbols-outlined absolute -top-1 left-0 w-full flex justify-center text-[12px]">visibility</span>
+                                    <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-[20px] text-white">shield</span>
+                                    <span className="material-symbols-outlined absolute -top-1 left-0 w-full flex justify-center text-[12px] text-white">visibility</span>
                                 </div>
                             </div>
                             <span className="text-2xl font-brand font-bold text-slate-800 tracking-tight">Athena</span>
