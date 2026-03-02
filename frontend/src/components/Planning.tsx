@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
+import Sidebar from './Sidebar';
 
 // ── Types ──────────────────────────────────────────────────────────
 interface AttendanceRecord {
@@ -354,7 +355,7 @@ const Planning: React.FC = () => {
         if (d.isToday) {
             return (
                 <div key={idx}
-                    className="aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer bg-gradient-to-b from-white to-indigo-50 ring-4 ring-indigo-200 shadow-lg shadow-indigo-300/40 z-20 scale-105 transition-all duration-300"
+                    className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer bg-gradient-to-b from-white to-indigo-50 ring-4 ring-indigo-200 shadow-lg shadow-indigo-300/40 transition-all duration-300 ${isSelected ? 'z-50 scale-105' : 'z-20 scale-105 hover:z-30'}`}
                     onClick={() => setSelectedDay(isSelected ? null : d.dateIso)}
                 >
                     <span className="text-indigo-600 font-extrabold text-base drop-shadow-sm">{d.day}</span>
@@ -369,7 +370,7 @@ const Planning: React.FC = () => {
 
         return (
             <div key={idx}
-                className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer group border-2 border-transparent transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:z-10 ${cfg ? cfg.cellBg : 'bg-white'} ${cfg ? cfg.hoverBorder : 'hover:border-indigo-100'} hover:bg-white`}
+                className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer group border-2 border-transparent transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isSelected ? 'z-50 shadow-xl border-indigo-200' : `hover:z-30 ${cfg ? cfg.cellBg : 'bg-white'}`} ${cfg ? cfg.hoverBorder : 'hover:border-indigo-100'}`}
                 onClick={() => setSelectedDay(isSelected ? null : d.dateIso)}
             >
                 <span className={`text-slate-600 text-sm font-bold ${cfg ? cfg.textHover : 'group-hover:text-indigo-600'}`}>{d.day}</span>
@@ -382,12 +383,12 @@ const Planning: React.FC = () => {
     };
 
     const renderPopup = (d: DayInfo) => (
-        <div className="absolute left-1/2 -translate-x-1/2 top-[105%] w-44 bg-white/90 backdrop-blur-xl shadow-xl rounded-2xl border border-white/50 z-50 overflow-hidden p-2"
+        <div className="absolute left-1/2 -translate-x-1/2 top-[105%] w-44 bg-white/95 backdrop-blur-xl shadow-2xl rounded-2xl border border-indigo-100/50 z-50 overflow-hidden p-2"
             onClick={(e) => e.stopPropagation()}>
             <div className="space-y-1">
                 {(Object.keys(statusConfig) as StatusType[]).map((s) => (
                     <button key={s}
-                        className={`w-full text-left px-3 py-2 text-xs font-bold rounded-xl flex items-center gap-2 transition-colors ${d.status === s ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`}
+                        className={`w-full text-left px-3 py-2 text-xs font-bold rounded-xl flex items-center gap-2 transition-colors ${d.status === s ? 'bg-indigo-50 text-indigo-600' : 'bg-transparent text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`}
                         onClick={() => handleSelectStatus(d.dateIso, s)}
                     >
                         <span className={`w-2 h-2 rounded-full ${statusConfig[s].dotColor}`}></span>
@@ -396,10 +397,10 @@ const Planning: React.FC = () => {
                 ))}
                 {d.status && (
                     <button
-                        className="w-full text-left px-3 py-2 text-xs font-bold text-red-400 hover:bg-red-50 rounded-xl flex items-center gap-2 transition-colors border-t border-slate-100 mt-1 pt-2"
+                        className="w-full text-left px-3 py-2 text-xs font-bold text-red-500 bg-transparent hover:bg-red-50 rounded-xl flex items-center gap-2 transition-colors border-t border-slate-100 mt-1 pt-2"
                         onClick={() => handleDeleteAttendance(d.dateIso)}
                     >
-                        <span className="material-icons text-[12px]">delete</span>
+                        <span className="material-icons text-[14px]">delete</span>
                         {isIt ? 'Rimuovi' : 'Remove'}
                     </button>
                 )}
@@ -408,210 +409,186 @@ const Planning: React.FC = () => {
     );
 
     return (
-        <div className="bg-athena-soft text-slate-700 font-calendar antialiased min-h-screen flex flex-col"
+        <div className="bg-athena-soft text-slate-700 font-calendar antialiased min-h-screen flex w-full overflow-hidden"
             style={{ backgroundImage: 'radial-gradient(#E0E7FF 1px, transparent 1px)', backgroundSize: '24px 24px' }}
             onClick={() => setSelectedDay(null)}
         >
-            {/* ── Header ── */}
-            <header className="bg-white/80 backdrop-blur-md border-b border-indigo-50 sticky top-0 z-30 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link to="/dashboard" className="bg-gradient-to-tr from-indigo-600 to-indigo-400 p-3 rounded-2xl shadow-lg shadow-indigo-200 rotate-3 transform hover:rotate-0 transition-transform duration-300">
-                            <span className="material-icons text-white">auto_awesome</span>
-                        </Link>
-                        <div>
-                            <h1 className="text-2xl font-extrabold tracking-tight text-slate-800">Athena<span className="text-indigo-600">.cal</span></h1>
-                            <p className="text-xs text-slate-400 font-semibold -mt-1">{isIt ? 'Il Mio Planning' : 'My Schedule'}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                        <div className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-500 bg-white px-4 py-2 rounded-full shadow-sm border border-indigo-50">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>System Online</span>
-                        </div>
-                        <Link to="/dashboard" className="flex items-center gap-3 hover:bg-white pl-2 pr-4 py-1.5 rounded-full transition-all hover:shadow-md group border border-transparent hover:border-indigo-50">
-                            <img alt="Profile" className="h-10 w-10 rounded-full object-cover shadow-md ring-4 ring-white" src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=4F46E5&color=fff&rounded=true&bold=true&size=128`} />
-                            <div className="text-left hidden sm:block">
-                                <span className="block text-sm font-bold text-slate-700 group-hover:text-indigo-600">{userName || 'User'}</span>
-                                <span className="block text-xs text-slate-400">Product Designer</span>
-                            </div>
-                        </Link>
-                    </div>
-                </div>
-            </header>
+            <Sidebar />
 
-            {/* ── Main Content ── */}
-            <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10"
-                onClick={(e) => e.stopPropagation()}>
+            <div className="flex-1 ml-80 overflow-y-auto h-screen scroll-smooth">
+                {/* ── Main Content ── */}
+                <main className="max-w-7xl mx-auto w-full px-8 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10"
+                    onClick={(e) => e.stopPropagation()}>
 
-                {/* ── Calendar Area (8 cols) ── */}
-                <div className="lg:col-span-8 space-y-8">
-                    {/* Month Header */}
-                    <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-soft-glow border border-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600">
-                                <span className="material-icons text-3xl">calendar_month</span>
+                    {/* ── Calendar Area (8 cols) ── */}
+                    <div className="lg:col-span-8 space-y-8">
+                        {/* Month Header */}
+                        <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-soft-glow border border-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600">
+                                    <span className="material-icons text-3xl">calendar_month</span>
+                                </div>
+                                <div>
+                                    <h2 className="text-3xl font-extrabold text-slate-800">
+                                        {monthNames[currentMonth]} <span className="text-indigo-400">{currentYear}</span>
+                                    </h2>
+                                    <p className="text-slate-500 font-medium">
+                                        {isIt ? 'Dove creerai la magia questo mese?' : 'Where will you create magic this month?'}
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-3xl font-extrabold text-slate-800">
-                                    {monthNames[currentMonth]} <span className="text-indigo-400">{currentYear}</span>
-                                </h2>
-                                <p className="text-slate-500 font-medium">
-                                    {isIt ? 'Dove creerai la magia questo mese?' : 'Where will you create magic this month?'}
-                                </p>
+                            <div className="flex items-center bg-white rounded-2xl p-1.5 shadow-sm border border-indigo-50">
+                                <button onClick={goToPrevMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
+                                    <span className="material-icons">chevron_left</span>
+                                </button>
+                                <button onClick={goToToday} className="px-6 font-bold text-slate-600 select-none bg-transparent hover:text-indigo-600 transition-colors border-0">
+                                    {isIt ? 'Oggi' : 'Today'}
+                                </button>
+                                <button onClick={goToNextMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
+                                    <span className="material-icons">chevron_right</span>
+                                </button>
                             </div>
                         </div>
-                        <div className="flex items-center bg-white rounded-2xl p-1.5 shadow-sm border border-indigo-50">
-                            <button onClick={goToPrevMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
-                                <span className="material-icons">chevron_left</span>
-                            </button>
-                            <button onClick={goToToday} className="px-6 font-bold text-slate-600 select-none bg-transparent hover:text-indigo-600 transition-colors border-0">
-                                {isIt ? 'Oggi' : 'Today'}
-                            </button>
-                            <button onClick={goToNextMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
-                                <span className="material-icons">chevron_right</span>
-                            </button>
-                        </div>
-                    </div>
 
-                    {/* Calendar Grid */}
-                    <div className="bg-white rounded-3xl shadow-float border border-indigo-50/50 p-6 relative overflow-visible">
-                        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
+                        {/* Calendar Grid */}
+                        <div className="bg-white rounded-3xl shadow-float border border-indigo-50/50 p-6 relative overflow-visible">
+                            <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
 
-                        {/* Day headers */}
-                        <div className="grid grid-cols-7 mb-4">
-                            {dayHeaders.map((dh) => (
-                                <div key={dh} className="text-center text-xs font-bold uppercase tracking-wider text-indigo-300">{dh}</div>
-                            ))}
-                        </div>
+                            {/* Day headers */}
+                            <div className="grid grid-cols-7 mb-4">
+                                {dayHeaders.map((dh) => (
+                                    <div key={dh} className="text-center text-xs font-bold uppercase tracking-wider text-indigo-300">{dh}</div>
+                                ))}
+                            </div>
 
-                        {/* Day cells */}
-                        {loading ? (
-                            <div className="flex items-center justify-center py-20">
-                                <span className="material-icons animate-spin text-indigo-300 text-4xl">autorenew</span>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-7 gap-3">
-                                {days.map((d, idx) => renderDayCell(d, idx))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* ── Sidebar (4 cols) ── */}
-                <div className="lg:col-span-4 space-y-6">
-                    {/* Greeting Card */}
-                    <div className="bg-indigo-600 rounded-3xl shadow-xl overflow-hidden relative min-h-[220px] flex items-center justify-center text-center p-6 text-white">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 to-indigo-500 opacity-90"></div>
-                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
-                        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 ring-4 ring-white/30">
-                                <span className="material-icons text-5xl text-indigo-500">face_5</span>
-                            </div>
-                            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                                <p className="font-bold text-lg">{isIt ? 'Ciao' : 'Hello'}, {userName || 'User'}!</p>
-                                <p className="text-indigo-100 text-sm">
-                                    {isIt ? 'Pianifica il tuo mese qui sotto.' : 'Plan your month below.'}
-                                </p>
-                            </div>
+                            {/* Day cells */}
+                            {loading ? (
+                                <div className="flex items-center justify-center py-20">
+                                    <span className="material-icons animate-spin text-indigo-300 text-4xl">autorenew</span>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-7 gap-3">
+                                    {days.map((d, idx) => renderDayCell(d, idx))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Monthly Pulse */}
-                    <div className="bg-white rounded-3xl shadow-soft-glow border border-indigo-50 p-6 relative overflow-hidden">
-                        <h3 className="text-lg font-extrabold text-slate-800 mb-6 flex items-center gap-2">
-                            {isIt ? 'Riepilogo Mensile' : 'Monthly Pulse'}
-                        </h3>
-                        <div className="space-y-6 relative z-10">
-                            {/* Office */}
-                            <div className="bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100 transition-transform hover:scale-[1.02]">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600">
-                                            <span className="material-icons text-xl">business</span>
+                    {/* ── Sidebar (4 cols) ── */}
+                    <div className="lg:col-span-4 space-y-6">
+                        {/* Greeting Card */}
+                        <div className="bg-indigo-600 rounded-3xl shadow-xl overflow-hidden relative min-h-[220px] flex items-center justify-center text-center p-6 text-white">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 to-indigo-500 opacity-90"></div>
+                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
+                            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 ring-4 ring-white/30">
+                                    <span className="material-icons text-5xl text-indigo-500">face_5</span>
+                                </div>
+                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                                    <p className="font-bold text-lg">{isIt ? 'Ciao' : 'Hello'}, {userName || 'User'}!</p>
+                                    <p className="text-indigo-100 text-sm">
+                                        {isIt ? 'Pianifica il tuo mese qui sotto.' : 'Plan your month below.'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Monthly Pulse */}
+                        <div className="bg-white rounded-3xl shadow-soft-glow border border-indigo-50 p-6 relative overflow-hidden">
+                            <h3 className="text-lg font-extrabold text-slate-800 mb-6 flex items-center gap-2">
+                                {isIt ? 'Riepilogo Mensile' : 'Monthly Pulse'}
+                            </h3>
+                            <div className="space-y-6 relative z-10">
+                                {/* Office */}
+                                <div className="bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100 transition-transform hover:scale-[1.02]">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600">
+                                                <span className="material-icons text-xl">business</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">{isIt ? 'In Ufficio' : 'In Office'}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-800">{isIt ? 'In Ufficio' : 'In Office'}</p>
-                                        </div>
+                                        <span className="text-2xl font-black text-indigo-600">{officeCount}</span>
                                     </div>
-                                    <span className="text-2xl font-black text-indigo-600">{officeCount}</span>
-                                </div>
-                                <div className="w-full bg-white rounded-full h-3 p-0.5 shadow-inner">
-                                    <div className="bg-gradient-to-r from-indigo-600 to-indigo-400 h-2 rounded-full shadow-sm transition-all duration-500"
-                                        style={{ width: `${Math.min((officeCount / 20) * 100, 100)}%` }}></div>
-                                </div>
-                            </div>
-
-                            {/* Remote */}
-                            <div className="bg-sky-50/50 rounded-2xl p-4 border border-sky-100 transition-transform hover:scale-[1.02]">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-sky-500">
-                                            <span className="material-icons text-xl">home</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-800">{isIt ? 'Remoto' : 'Remote'}</p>
-                                        </div>
+                                    <div className="w-full bg-white rounded-full h-3 p-0.5 shadow-inner">
+                                        <div className="bg-gradient-to-r from-indigo-600 to-indigo-400 h-2 rounded-full shadow-sm transition-all duration-500"
+                                            style={{ width: `${Math.min((officeCount / 20) * 100, 100)}%` }}></div>
                                     </div>
-                                    <span className="text-2xl font-black text-sky-500">{remoteCount}</span>
                                 </div>
-                                <div className="w-full bg-white rounded-full h-3 p-0.5 shadow-inner">
-                                    <div className="bg-gradient-to-r from-sky-500 to-sky-300 h-2 rounded-full shadow-sm transition-all duration-500"
-                                        style={{ width: `${Math.min((remoteCount / 20) * 100, 100)}%` }}></div>
+
+                                {/* Remote */}
+                                <div className="bg-sky-50/50 rounded-2xl p-4 border border-sky-100 transition-transform hover:scale-[1.02]">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-sky-500">
+                                                <span className="material-icons text-xl">home</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">{isIt ? 'Remoto' : 'Remote'}</p>
+                                            </div>
+                                        </div>
+                                        <span className="text-2xl font-black text-sky-500">{remoteCount}</span>
+                                    </div>
+                                    <div className="w-full bg-white rounded-full h-3 p-0.5 shadow-inner">
+                                        <div className="bg-gradient-to-r from-sky-500 to-sky-300 h-2 rounded-full shadow-sm transition-all duration-500"
+                                            style={{ width: `${Math.min((remoteCount / 20) * 100, 100)}%` }}></div>
+                                    </div>
+                                </div>
+
+                                {/* Sick + Holiday */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-red-50/50 rounded-2xl p-4 border border-red-100 text-center hover:bg-red-50 transition-colors">
+                                        <span className="material-icons text-red-400 mb-1">sick</span>
+                                        <p className="text-xs font-bold text-red-400 uppercase">{isIt ? 'Malattia' : 'Sick'}</p>
+                                        <span className="text-xl font-black text-slate-800">{sickCount}</span>
+                                    </div>
+                                    <div className="bg-amber-50/50 rounded-2xl p-4 border border-amber-100 text-center hover:bg-amber-50 transition-colors">
+                                        <span className="material-icons text-amber-400 mb-1">beach_access</span>
+                                        <p className="text-xs font-bold text-amber-400 uppercase">{isIt ? 'Ferie' : 'Holiday'}</p>
+                                        <span className="text-xl font-black text-slate-800">{holidayCount}</span>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Sick + Holiday */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-red-50/50 rounded-2xl p-4 border border-red-100 text-center hover:bg-red-50 transition-colors">
-                                    <span className="material-icons text-red-400 mb-1">sick</span>
-                                    <p className="text-xs font-bold text-red-400 uppercase">{isIt ? 'Malattia' : 'Sick'}</p>
-                                    <span className="text-xl font-black text-slate-800">{sickCount}</span>
-                                </div>
-                                <div className="bg-amber-50/50 rounded-2xl p-4 border border-amber-100 text-center hover:bg-amber-50 transition-colors">
-                                    <span className="material-icons text-amber-400 mb-1">beach_access</span>
-                                    <p className="text-xs font-bold text-amber-400 uppercase">{isIt ? 'Ferie' : 'Holiday'}</p>
-                                    <span className="text-xl font-black text-slate-800">{holidayCount}</span>
-                                </div>
+                        {/* Legend */}
+                        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-5 border border-white">
+                            <div className="flex flex-wrap gap-3 justify-center">
+                                {(Object.keys(statusConfig) as StatusType[]).map((s) => (
+                                    <div key={s} className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+                                        <span className={`w-2.5 h-2.5 rounded-full ${statusConfig[s].dotColor}`}></span>
+                                        <span className="text-xs font-bold text-slate-600">{getStatusLabel(s)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Back to Dashboard */}
+                        <div className="bg-gradient-to-br from-indigo-50 to-white rounded-3xl shadow-soft-glow border border-indigo-100 p-6 relative overflow-hidden">
+                            <div className="relative z-10 text-center">
+                                <p className="text-slate-500 text-sm mb-4 font-medium">
+                                    {isIt ? 'Torna alla panoramica' : 'Back to overview'}
+                                </p>
+                                <Link to="/dashboard"
+                                    className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                    <span className="material-icons text-sm">dashboard</span>
+                                    Dashboard
+                                </Link>
                             </div>
                         </div>
                     </div>
+                </main>
 
-                    {/* Legend */}
-                    <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-5 border border-white">
-                        <div className="flex flex-wrap gap-3 justify-center">
-                            {(Object.keys(statusConfig) as StatusType[]).map((s) => (
-                                <div key={s} className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
-                                    <span className={`w-2.5 h-2.5 rounded-full ${statusConfig[s].dotColor}`}></span>
-                                    <span className="text-xs font-bold text-slate-600">{getStatusLabel(s)}</span>
-                                </div>
-                            ))}
-                        </div>
+                {/* ── Footer ── */}
+                <footer className="mt-10 border-t border-indigo-100 bg-white/50 backdrop-blur-sm py-8">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <p className="text-slate-400 text-sm font-medium">© 2026 Athena Systems. Crafted with 💙 for the team.</p>
                     </div>
-
-                    {/* Back to Dashboard */}
-                    <div className="bg-gradient-to-br from-indigo-50 to-white rounded-3xl shadow-soft-glow border border-indigo-100 p-6 relative overflow-hidden">
-                        <div className="relative z-10 text-center">
-                            <p className="text-slate-500 text-sm mb-4 font-medium">
-                                {isIt ? 'Torna alla panoramica' : 'Back to overview'}
-                            </p>
-                            <Link to="/dashboard"
-                                className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                                <span className="material-icons text-sm">dashboard</span>
-                                Dashboard
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            {/* ── Footer ── */}
-            <footer className="mt-auto border-t border-indigo-100 bg-white/50 backdrop-blur-sm py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <p className="text-slate-400 text-sm font-medium">© 2026 Athena Systems. Crafted with 💙 for the team.</p>
-                </div>
-            </footer>
+                </footer>
+            </div>
         </div>
     );
 };
