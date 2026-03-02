@@ -9,9 +9,12 @@ const Dashboard: React.FC = () => {
     const [colleagues, setColleagues] = useState<any[]>([]);
     const [colleagueFilter, setColleagueFilter] = useState<'all' | 'office' | 'remote'>('all');
     const [debugInfo, setDebugInfo] = useState<string>('');
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [userTenantId, setUserTenantId] = useState<number | null>(null);
+    const [userDeptId, setUserDeptId] = useState<number | null>(null);
 
     const [weeklyDates, setWeeklyDates] = useState<{ date: Date, dateIso: string, isToday: boolean, isPast: boolean, status: string, name: string }[]>([]);
-    const [dashboardStats, setDashboardStats] = useState<{ officeDays: number, remoteDays: number, totalWorkingDays: number, teamPresencePercentage: number } | null>(null);
+    const [dashboardStats, setDashboardStats] = useState<{ officeDays: number, remoteDays: number, sickDays: number, holidayDays: number, totalWorkingDays: number, teamPresencePercentage: number } | null>(null);
     const [todayStatus, setTodayStatus] = useState<string | null>(null);
 
     useEffect(() => {
@@ -40,6 +43,10 @@ const Dashboard: React.FC = () => {
                     myTenantId = myProfile.tenant_id;
                     myDeptId = myProfile.department_id;
 
+                    setCurrentUserId(user.id);
+                    setUserTenantId(myTenantId);
+                    setUserDeptId(myDeptId);
+
                     if (myProfile.full_name) {
                         setUserName(myProfile.full_name);
                     } else {
@@ -49,6 +56,7 @@ const Dashboard: React.FC = () => {
                 } else {
                     const fallbackName = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'User');
                     setUserName(fallbackName);
+                    setCurrentUserId(user.id);
                 }
 
                 // Calculate current week dates (Monday to Friday)
@@ -127,8 +135,7 @@ const Dashboard: React.FC = () => {
                     const todayIso = new Date().toISOString().split('T')[0];
                     const att = myWeeklyAttendances?.find((a: any) => a.workDate === dateIso || a.work_date === dateIso);
 
-                    const rawStatus = (att?.status || 'office').toLowerCase();
-                    const isOffice = rawStatus.includes('office') || rawStatus.includes('sede') || rawStatus === 'in_office';
+                    const rawStatus = att?.status || 'OFFICE';
                     const isPast = dateIso < todayIso;
 
                     const dayNamesMap = ['mon', 'tue', 'wed', 'thu', 'fri'];
@@ -138,7 +145,7 @@ const Dashboard: React.FC = () => {
                         dateIso,
                         isToday: dateIso === todayIso,
                         isPast,
-                        status: isOffice ? 'office' : 'remote',
+                        status: rawStatus,
                         name: dayNamesMap[date.getDay() - 1] || 'mon' // getDay: Mon=1..Fri=5
                     };
                 });
@@ -202,10 +209,60 @@ const Dashboard: React.FC = () => {
         i18n.changeLanguage(newLang);
     };
 
+    const handleUpdateTodayStatus = async (statusKey: string) => {
+        if (!currentUserId) return;
+
+        // Optimistic update
+        setTodayStatus(statusKey);
+
+        // Update weekly representation locally
+        const todayIso = new Date().toISOString().split('T')[0];
+        setWeeklyDates(prevDays =>
+            prevDays.map(d => d.dateIso === todayIso ? { ...d, status: statusKey } : d)
+        );
+
+        try {
+            const token = (await supabase.auth.getSession()).data.session?.access_token;
+
+            await fetch('http://localhost:8081/api/v1/attendance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    userId: currentUserId,
+                    workDate: todayIso,
+                    status: statusKey,
+                    tenantId: userTenantId,
+                    departmentId: userDeptId
+                })
+            });
+            // We could optionally trigger a full refetch of `fetchUserAndColleagues` here 
+            // to update counts, but optimistic UI generally is sufficient.
+        } catch (err) {
+            console.error('Error saving today attendance:', err);
+        }
+    };
+
     const currentDay = new Date();
     const currentDayName = new Intl.DateTimeFormat(i18n.language, { weekday: 'long' }).format(currentDay);
     const isFeminineDay = currentDay.getDay() === 0; // domenica/sunday is feminine in Italian greeting
     const greetingKey = isFeminineDay ? 'beautiful_day_f' : 'beautiful_day_m';
+
+    const getStatusDetails = (status: string) => {
+        const s = status.toUpperCase();
+        if (s.includes('SICK') || s.includes('MALATTIA')) {
+            return { icon: 'sick', label: i18n.language === 'it' ? 'Malattia' : 'Sick', textColor: 'text-red-500', bgColor: 'bg-red-50 dark:bg-red-900/20', gradient: 'from-red-400 to-red-500', groupHoverBg: 'group-hover:bg-red-500', shadowColor: 'shadow-red-200 dark:shadow-red-900/30' };
+        }
+        if (s.includes('HOLIDAY') || s.includes('FERIE')) {
+            return { icon: 'beach_access', label: i18n.language === 'it' ? 'Ferie' : 'Holiday', textColor: 'text-amber-500', bgColor: 'bg-amber-50 dark:bg-amber-900/20', gradient: 'from-amber-400 to-orange-400', groupHoverBg: 'group-hover:bg-amber-500', shadowColor: 'shadow-amber-200 dark:shadow-amber-900/30' };
+        }
+        if (s.includes('REMOTE') || s.includes('SMART')) {
+            return { icon: 'home', label: i18n.language === 'it' ? 'Da Remoto' : 'Remote', textColor: 'text-cyan-600', bgColor: 'bg-cyan-50 dark:bg-slate-700', gradient: 'from-cyan-400 to-blue-400', groupHoverBg: 'group-hover:bg-cyan-500', shadowColor: 'shadow-cyan-200 dark:shadow-cyan-900/30' };
+        }
+        return { icon: 'business', label: i18n.language === 'it' ? 'In Ufficio' : 'At Office', textColor: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-slate-700', gradient: 'from-blue-500 to-blue-600', groupHoverBg: 'group-hover:bg-blue-500', shadowColor: 'shadow-blue-200 dark:shadow-blue-900/30' };
+    };
 
     return (
         <div className="bg-pattern text-slate-800 dark:text-slate-100 font-display min-h-screen flex w-full overflow-hidden">
@@ -306,66 +363,112 @@ const Dashboard: React.FC = () => {
                         <span className="w-2 h-6 bg-blue-500 rounded-full block"></span>
                         {t('where_are_you')}
                     </h2>
-                    {todayStatus ? (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
-                            {[
-                                { key: 'OFFICE', icon: 'business', label: i18n.language === 'it' ? 'In Ufficio' : 'At the Office', gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-400/30', iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
-                                { key: 'REMOTE', icon: 'home', label: i18n.language === 'it' ? 'Da Remoto' : 'Remote', gradient: 'from-cyan-400 to-blue-400', ring: 'ring-cyan-400/30', iconBg: 'bg-cyan-50', iconColor: 'text-cyan-600' },
-                                { key: 'SICK', icon: 'sick', label: i18n.language === 'it' ? 'Malattia' : 'Sick', gradient: 'from-red-400 to-red-500', ring: 'ring-red-400/30', iconBg: 'bg-red-50', iconColor: 'text-red-500' },
-                                { key: 'HOLIDAY', icon: 'beach_access', label: i18n.language === 'it' ? 'Ferie' : 'Holiday', gradient: 'from-amber-400 to-orange-400', ring: 'ring-amber-400/30', iconBg: 'bg-amber-50', iconColor: 'text-amber-500' },
-                            ].map((s) => {
-                                const isActive = todayStatus === s.key;
-                                return (
-                                    <div key={s.key} className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden ${isActive
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+                        {[
+                            { key: 'OFFICE', icon: 'business', label: i18n.language === 'it' ? 'In Ufficio' : 'At the Office', gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-400/30', iconBg: 'bg-blue-50', iconColor: 'text-blue-600', hoverRing: 'hover:ring-blue-400/50' },
+                            { key: 'REMOTE', icon: 'home', label: i18n.language === 'it' ? 'Da Remoto' : 'Remote', gradient: 'from-cyan-400 to-blue-400', ring: 'ring-cyan-400/30', iconBg: 'bg-cyan-50', iconColor: 'text-cyan-600', hoverRing: 'hover:ring-cyan-400/50' },
+                            { key: 'SICK', icon: 'sick', label: i18n.language === 'it' ? 'Malattia' : 'Sick', gradient: 'from-red-400 to-red-500', ring: 'ring-red-400/30', iconBg: 'bg-red-50', iconColor: 'text-red-500', hoverRing: 'hover:ring-red-400/50' },
+                            { key: 'HOLIDAY', icon: 'beach_access', label: i18n.language === 'it' ? 'Ferie' : 'Holiday', gradient: 'from-amber-400 to-orange-400', ring: 'ring-amber-400/30', iconBg: 'bg-amber-50', iconColor: 'text-amber-500', hoverRing: 'hover:ring-amber-400/50' },
+                        ].map((s) => {
+                            const isActive = todayStatus === s.key;
+                            return (
+                                <button
+                                    key={s.key}
+                                    onClick={() => handleUpdateTodayStatus(s.key)}
+                                    className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden cursor-pointer w-full focus:outline-none ${isActive
                                         ? `border-transparent ring-4 ${s.ring} shadow-lg scale-105`
-                                        : 'border-slate-100 dark:border-slate-700 opacity-50'
+                                        : `border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-60 hover:opacity-100 hover:scale-[1.02] hover:shadow-md hover:border-transparent hover:ring-2 ${s.hoverRing}`
                                         }`}>
-                                        {isActive && <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-100`}></div>}
-                                        <div className="relative z-10 flex flex-col items-center text-center">
-                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 text-2xl shadow-inner ${isActive ? 'bg-white/20 text-white' : `${s.iconBg} ${s.iconColor}`}`}>
-                                                <span className="material-icons">{s.icon}</span>
-                                            </div>
-                                            <span className={`block text-sm font-bold mb-0.5 ${isActive ? 'text-white' : 'text-slate-600 dark:text-white'}`}>{s.label}</span>
+                                    {isActive && <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-100`}></div>}
+                                    <div className="relative z-10 flex flex-col items-center text-center">
+                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 text-2xl shadow-inner transition-colors ${isActive ? 'bg-white/20 text-white' : `${s.iconBg} ${s.iconColor}`}`}>
+                                            <span className="material-icons">{s.icon}</span>
                                         </div>
-                                        {isActive && (
-                                            <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white text-green-500 flex items-center justify-center shadow-md z-10">
-                                                <span className="material-icons text-sm font-bold">check</span>
-                                            </div>
-                                        )}
+                                        <span className={`block text-sm font-bold mb-0.5 transition-colors ${isActive ? 'text-white' : 'text-slate-600 dark:text-white'}`}>{s.label}</span>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <div className="relative z-10 text-center py-8">
-                            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 flex items-center justify-center mx-auto mb-4 text-3xl">
-                                <span className="material-icons">event_busy</span>
-                            </div>
-                            <p className="text-slate-500 dark:text-slate-400 font-medium mb-4">
-                                {i18n.language === 'it' ? 'Nessun piano per oggi. Vai al Planning per impostare il tuo stato!' : 'No plan for today. Go to Planning to set your status!'}
-                            </p>
-                            <Link to="/planning" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
-                                <span className="material-icons text-sm">calendar_month</span>
-                                {i18n.language === 'it' ? 'Vai al Planning' : 'Go to Planning'}
-                            </Link>
-                        </div>
-                    )}
+                                    {isActive && (
+                                        <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white text-green-500 flex items-center justify-center shadow-md z-10">
+                                            <span className="material-icons text-sm font-bold">check</span>
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </section>
 
                 <div className="grid grid-cols-3 gap-6 mb-10">
-                    <div className="bg-white dark:bg-surface-dark p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center justify-center hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center mb-3">
-                            <span className="material-icons">calendar_today</span>
+                    <div className="col-span-2 bg-white dark:bg-surface-dark p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow flex flex-col justify-center">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center">
+                                    <span className="material-icons text-xl">calendar_month</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">{t('monthly_plan')}</h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                        {t('planned_days')} <span className="font-bold text-slate-700 dark:text-slate-300">{(dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)}</span> {t('of_working_days', { total: dashboardStats?.totalWorkingDays ?? 20 })}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-2xl font-bold text-slate-800 dark:text-white">
+                                    {Math.round((((dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)) / (dashboardStats?.totalWorkingDays || 20)) * 100)}%
+                                </span>
+                            </div>
                         </div>
-                        <p className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{dashboardStats?.officeDays ?? 0}<span className="text-lg text-slate-400 font-medium">/{dashboardStats?.totalWorkingDays ?? 20}</span></p>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('office_days')}</p>
-                    </div>
-                    <div className="bg-white dark:bg-surface-dark p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center justify-center hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-900/30 text-teal-500 flex items-center justify-center mb-3">
-                            <span className="material-icons">wifi</span>
-                        </div>
-                        <p className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{dashboardStats?.remoteDays ?? 0}<span className="text-lg text-slate-400 font-medium">/{dashboardStats?.totalWorkingDays ?? 20}</span></p>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('remote_days')}</p>
+
+                        {/* Computed Progress Array */}
+                        {(() => {
+                            const totalDays = dashboardStats?.totalWorkingDays || 20;
+                            const plannedStats = [
+                                { id: 'office', count: dashboardStats?.officeDays ?? 0, label: t('office'), color: 'bg-indigo-600' },
+                                { id: 'remote', count: dashboardStats?.remoteDays ?? 0, label: t('remote'), color: 'bg-sky-400' },
+                                { id: 'holiday', count: dashboardStats?.holidayDays ?? 0, label: 'Filtri / Ferie', color: 'bg-amber-400' },
+                                { id: 'sick', count: dashboardStats?.sickDays ?? 0, label: 'Malattia', color: 'bg-red-400' },
+                            ].filter(s => s.count > 0).sort((a, b) => b.count - a.count); // Sort descending
+
+                            const totalPlanned = plannedStats.reduce((sum, s) => sum + s.count, 0);
+                            const unplanned = Math.max(0, totalDays - totalPlanned);
+
+                            let currentLeft = 0;
+
+                            return (
+                                <>
+                                    {/* Progress Bar */}
+                                    <div className="relative w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4 shadow-inner">
+                                        {plannedStats.map(stat => {
+                                            const widthPct = (stat.count / totalDays) * 100;
+                                            const style = { left: `${currentLeft}%`, width: `${widthPct}%` };
+                                            currentLeft += widthPct;
+                                            return (
+                                                <div
+                                                    key={stat.id}
+                                                    className={`absolute top-0 h-full ${stat.color} transition-all duration-1000 ease-out`}
+                                                    style={style}
+                                                ></div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Legend */}
+                                    <div className="flex items-center flex-wrap gap-4 text-xs font-semibold">
+                                        {plannedStats.map(stat => (
+                                            <div key={stat.id} className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-md">
+                                                <span className={`w-2 h-2 rounded-full ${stat.color}`}></span>
+                                                {stat.label}: {stat.count}
+                                            </div>
+                                        ))}
+                                        {unplanned > 0 && (
+                                            <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 ml-auto bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-md">
+                                                <span className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-600"></span>
+                                                Da pianificare: {unplanned}
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </div>
                     <div className="bg-white dark:bg-surface-dark p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center justify-center hover:shadow-md transition-shadow">
                         <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/30 text-rose-500 flex items-center justify-center mb-3">
@@ -382,12 +485,13 @@ const Dashboard: React.FC = () => {
                             <span className="w-2 h-6 bg-cyan-400 rounded-full block"></span>
                             {t('weekly_plan')}
                         </h3>
-                        <button className="text-sm bg-white dark:bg-slate-800 text-blue-600 font-semibold py-2 px-4 rounded-full shadow-sm hover:shadow border border-slate-100 dark:border-slate-700 transition-all">{t('edit_schedule')}</button>
+                        <Link to="/planning" className="text-sm bg-white dark:bg-slate-800 text-blue-600 font-semibold py-2 px-4 rounded-full shadow-sm hover:shadow border border-slate-100 dark:border-slate-700 transition-all">{t('edit_schedule')}</Link>
                     </div>
                     <div className="grid grid-cols-5 gap-4">
                         {weeklyDates.map((dayObj) => {
                             const isToday = dayObj.isToday;
                             const isPast = dayObj.isPast;
+                            const statusDetails = getStatusDetails(dayObj.status);
 
                             if (isToday) {
                                 return (
@@ -398,10 +502,10 @@ const Dashboard: React.FC = () => {
                                         </span>
                                         <span className="text-xs font-bold text-blue-600 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
                                         <div className="flex flex-col items-center py-2">
-                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mb-3 shadow-blue-200 shadow-lg">
-                                                <span className="material-icons text-2xl">{dayObj.status === 'office' ? 'business' : 'home'}</span>
+                                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${statusDetails.gradient} text-white flex items-center justify-center mb-3 shadow-lg ${statusDetails.shadowColor}`}>
+                                                <span className="material-icons text-2xl">{statusDetails.icon}</span>
                                             </div>
-                                            <span className="text-base font-bold text-slate-800 dark:text-white">{dayObj.status === 'office' ? t('at_office') : t('remote')}</span>
+                                            <span className="text-base font-bold text-slate-800 dark:text-white text-center">{statusDetails.label}</span>
                                         </div>
                                     </div>
                                 );
@@ -413,9 +517,9 @@ const Dashboard: React.FC = () => {
                                         <span className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
                                         <div className="flex flex-col items-center py-2">
                                             <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center mb-3">
-                                                <span className="material-icons text-xl">{dayObj.status === 'office' ? 'business' : 'home'}</span>
+                                                <span className="material-icons text-xl">{statusDetails.icon}</span>
                                             </div>
-                                            <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">{dayObj.status === 'office' ? t('at_office') : t('remote')}</span>
+                                            <span className="text-sm font-semibold text-slate-600 dark:text-slate-400 text-center">{statusDetails.label}</span>
                                         </div>
                                     </div>
                                 );
@@ -425,10 +529,10 @@ const Dashboard: React.FC = () => {
                                 <div key={dayObj.dateIso} className="bg-white dark:bg-surface-dark rounded-3xl p-4 border border-slate-100 dark:border-slate-800 hover:border-blue-200 transition-all cursor-pointer group hover:shadow-soft">
                                     <span className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
                                     <div className="flex flex-col items-center py-2">
-                                        <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-slate-700 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-all flex items-center justify-center mb-3">
-                                            <span className="material-icons text-xl">{dayObj.status === 'office' ? 'business' : 'home'}</span>
+                                        <div className={`w-12 h-12 rounded-2xl ${statusDetails.bgColor} ${statusDetails.textColor} ${statusDetails.groupHoverBg} group-hover:text-white transition-all flex items-center justify-center mb-3`}>
+                                            <span className="material-icons text-xl">{statusDetails.icon}</span>
                                         </div>
-                                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{dayObj.status === 'office' ? t('at_office') : t('remote')}</span>
+                                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 text-center">{statusDetails.label}</span>
                                     </div>
                                 </div>
                             );
