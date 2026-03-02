@@ -201,12 +201,12 @@ const Planning: React.FC = () => {
 
         try {
             const token = (await supabase.auth.getSession()).data.session?.access_token;
-            const res = await fetch(
-                `http://localhost:8081/api/v1/attendance/me/range?startDate=${startDate}&endDate=${endDate}`,
+            const response = await fetch(
+                `${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/me/range?startDate=${startDate}&endDate=${endDate}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            if (res.ok) {
-                const json = await res.json();
+            if (response.ok) {
+                const json = await response.json();
                 const records: AttendanceRecord[] = (json.payload || []).map((r: any) => ({
                     id: r.id,
                     workDate: r.workDate,
@@ -272,7 +272,7 @@ const Planning: React.FC = () => {
             // Map frontend status to backend WorkMode enum
             const backendStatus = status === 'IN_OFFICE' ? 'OFFICE' : status;
 
-            await fetch('http://localhost:8081/api/v1/attendance', {
+            const saveResponse = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -16,6 +16,26 @@ const Dashboard: React.FC = () => {
     const [weeklyDates, setWeeklyDates] = useState<{ date: Date, dateIso: string, isToday: boolean, isPast: boolean, status: string, name: string }[]>([]);
     const [dashboardStats, setDashboardStats] = useState<{ officeDays: number, remoteDays: number, sickDays: number, holidayDays: number, totalWorkingDays: number, teamPresencePercentage: number } | null>(null);
     const [todayStatus, setTodayStatus] = useState<string | null>(null);
+    const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+    const fetchDashboardStats = async () => {
+        try {
+            const token = (await supabase.auth.getSession()).data.session?.access_token;
+            const statsResponse = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/stats/dashboard`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (statsResponse.ok) {
+                const statsData = await statsResponse.json();
+                setDashboardStats(statsData.payload);
+            }
+        } catch (err) {
+            console.error("Error fetching dashboard stats:", err);
+        }
+    };
 
     useEffect(() => {
         const fetchUserAndColleagues = async () => {
@@ -80,7 +100,7 @@ const Dashboard: React.FC = () => {
 
                 let myWeeklyAttendances = [];
                 try {
-                    const response = await fetch(`http://localhost:8081/api/v1/attendance/me/range?startDate=${startDateIso}&endDate=${endDateIso}`, {
+                    const response = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/me/range?startDate=${startDateIso}&endDate=${endDateIso}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -98,37 +118,24 @@ const Dashboard: React.FC = () => {
 
                 // Fetch today's planned status
                 try {
-                    const todayRes = await fetch('http://localhost:8081/api/v1/attendance/me/today', {
+                    const todayRes = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/me/today`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (todayRes.ok) {
                         const todayData = await todayRes.json();
                         if (todayData.payload && todayData.payload.status) {
                             setTodayStatus(todayData.payload.status);
+                            setPendingStatus(todayData.payload.status);
                         } else {
                             setTodayStatus(null);
+                            setPendingStatus(null);
                         }
                     }
                 } catch (err) {
                     console.error('Error fetching today status:', err);
                 }
 
-                try {
-                    const statsResponse = await fetch(`http://localhost:8081/api/v1/attendance/stats/dashboard`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    if (statsResponse.ok) {
-                        const statsData = await statsResponse.json();
-                        setDashboardStats(statsData.payload);
-                    } else {
-                        console.error("Failed to fetch dashboard stats from backend:", statsResponse.status);
-                    }
-                } catch (err) {
-                    console.error("Error fetching dashboard stats:", err);
-                }
+                await fetchDashboardStats();
 
                 const newWeeklyDates = weekDates.map(date => {
                     const dateIso = date.toISOString().split('T')[0];
@@ -209,22 +216,21 @@ const Dashboard: React.FC = () => {
         i18n.changeLanguage(newLang);
     };
 
-    const handleUpdateTodayStatus = async (statusKey: string) => {
-        if (!currentUserId) return;
+    const handleConfirmTodayStatus = async () => {
+        if (!currentUserId || !pendingStatus || pendingStatus === todayStatus) return;
+
+        setIsUpdatingStatus(true);
 
         // Optimistic update
-        setTodayStatus(statusKey);
-
-        // Update weekly representation locally
         const todayIso = new Date().toISOString().split('T')[0];
         setWeeklyDates(prevDays =>
-            prevDays.map(d => d.dateIso === todayIso ? { ...d, status: statusKey } : d)
+            prevDays.map(d => d.dateIso === todayIso ? { ...d, status: pendingStatus } : d)
         );
 
         try {
             const token = (await supabase.auth.getSession()).data.session?.access_token;
 
-            await fetch('http://localhost:8081/api/v1/attendance', {
+            await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -233,15 +239,18 @@ const Dashboard: React.FC = () => {
                 body: JSON.stringify({
                     userId: currentUserId,
                     workDate: todayIso,
-                    status: statusKey,
+                    status: pendingStatus,
                     tenantId: userTenantId,
                     departmentId: userDeptId
                 })
             });
-            // We could optionally trigger a full refetch of `fetchUserAndColleagues` here 
-            // to update counts, but optimistic UI generally is sufficient.
+
+            setTodayStatus(pendingStatus);
+            await fetchDashboardStats();
         } catch (err) {
             console.error('Error saving today attendance:', err);
+        } finally {
+            setIsUpdatingStatus(false);
         }
     };
 
@@ -359,10 +368,27 @@ const Dashboard: React.FC = () => {
                 </header>
 
                 <section className="bg-surface-light dark:bg-surface-dark rounded-3xl shadow-soft border border-white dark:border-slate-700 p-8 mb-10 relative overflow-hidden">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6 relative z-10 flex items-center gap-2">
-                        <span className="w-2 h-6 bg-blue-500 rounded-full block"></span>
-                        {t('where_are_you')}
-                    </h2>
+                    <div className="flex justify-between items-center mb-6 relative z-10">
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 m-0">
+                            <span className="w-2 h-6 bg-blue-500 rounded-full block"></span>
+                            {t('where_are_you')}
+                        </h2>
+                        <button
+                            onClick={handleConfirmTodayStatus}
+                            disabled={isUpdatingStatus || pendingStatus === todayStatus || pendingStatus === null}
+                            className={`px-5 py-2 text-sm rounded-xl font-bold transition-all duration-300 flex items-center gap-2 ${pendingStatus !== null && pendingStatus !== todayStatus && !isUpdatingStatus
+                                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md hover:shadow-indigo-500/40 hover:-translate-y-0.5'
+                                : 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                }`}
+                        >
+                            {isUpdatingStatus ? (
+                                <span className="material-icons animate-spin text-[18px]">autorenew</span>
+                            ) : (
+                                <span className="material-icons text-[18px]">check_circle</span>
+                            )}
+                            {i18n.language === 'it' ? 'Conferma' : 'Confirm'}
+                        </button>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
                         {[
                             { key: 'OFFICE', icon: 'business', label: i18n.language === 'it' ? 'In Ufficio' : 'At the Office', gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-400/30', iconBg: 'bg-blue-50', iconColor: 'text-blue-600', hoverRing: 'hover:ring-blue-400/50' },
@@ -370,11 +396,11 @@ const Dashboard: React.FC = () => {
                             { key: 'SICK', icon: 'sick', label: i18n.language === 'it' ? 'Malattia' : 'Sick', gradient: 'from-red-400 to-red-500', ring: 'ring-red-400/30', iconBg: 'bg-red-50', iconColor: 'text-red-500', hoverRing: 'hover:ring-red-400/50' },
                             { key: 'HOLIDAY', icon: 'beach_access', label: i18n.language === 'it' ? 'Ferie' : 'Holiday', gradient: 'from-amber-400 to-orange-400', ring: 'ring-amber-400/30', iconBg: 'bg-amber-50', iconColor: 'text-amber-500', hoverRing: 'hover:ring-amber-400/50' },
                         ].map((s) => {
-                            const isActive = todayStatus === s.key;
+                            const isActive = pendingStatus === s.key;
                             return (
                                 <button
                                     key={s.key}
-                                    onClick={() => handleUpdateTodayStatus(s.key)}
+                                    onClick={() => setPendingStatus(s.key)}
                                     className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden cursor-pointer w-full focus:outline-none ${isActive
                                         ? `border-transparent ring-4 ${s.ring} shadow-lg scale-105`
                                         : `border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-60 hover:opacity-100 hover:scale-[1.02] hover:shadow-md hover:border-transparent hover:ring-2 ${s.hoverRing}`
