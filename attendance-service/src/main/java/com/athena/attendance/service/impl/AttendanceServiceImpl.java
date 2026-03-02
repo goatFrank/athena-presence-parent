@@ -120,15 +120,24 @@ public class AttendanceServiceImpl implements AttendanceService {
                                 userId, firstDayOfMonth, lastDayOfMonth);
                 int officeDays = 0;
                 int remoteDays = 0;
+                int sickDays = 0;
+                int holidayDays = 0;
 
                 for (Attendance att : monthlyAttendances) {
                         if (att.getStatus() != null) {
-                                String status = att.getStatus().name().toLowerCase();
-                                if (status.contains("office") || status.contains("sede")
-                                                || status.equals("in_office")) {
-                                        officeDays++;
-                                } else {
-                                        remoteDays++;
+                                switch (att.getStatus()) {
+                                        case OFFICE:
+                                                officeDays++;
+                                                break;
+                                        case REMOTE:
+                                                remoteDays++;
+                                                break;
+                                        case SICK:
+                                                sickDays++;
+                                                break;
+                                        case HOLIDAY:
+                                                holidayDays++;
+                                                break;
                                 }
                         }
                 }
@@ -160,6 +169,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                 DashboardStatsDTO stats = DashboardStatsDTO.builder()
                                 .officeDays(officeDays)
                                 .remoteDays(remoteDays)
+                                .sickDays(sickDays)
+                                .holidayDays(holidayDays)
                                 .totalWorkingDays(totalWorkingDays)
                                 .teamPresencePercentage(teamPresencePercentage)
                                 .build();
