@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public class DashboardStatsDTO {
     private int officeDays;
     private int remoteDays;
+    private int sickDays;
+    private int holidayDays;
     private int totalWorkingDays;
     private int teamPresencePercentage;
 }
