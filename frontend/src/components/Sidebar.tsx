@@ -8,6 +8,7 @@ const Sidebar: React.FC = () => {
     const location = useLocation();
     const [userName, setUserName] = useState<string>('');
     const [userRole, setUserRole] = useState<string>('');
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -33,6 +34,12 @@ const Sidebar: React.FC = () => {
     const toggleLanguage = () => {
         const newLang = i18n.language === 'it' ? 'en' : 'it';
         i18n.changeLanguage(newLang);
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        // The App.tsx router or auth listener should handle redirecting to login
+        window.location.href = '/login';
     };
 
     return (
@@ -77,14 +84,44 @@ const Sidebar: React.FC = () => {
             </nav>
 
             <div className="p-6">
-                <div className="bg-blue-50/50 dark:bg-slate-800/50 rounded-2xl p-4 border border-blue-100 dark:border-slate-700">
-                    <a className="flex items-center gap-3 hover:opacity-80 transition-opacity" href="#profile">
-                        <img alt="User Profile" className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-2 ring-white dark:ring-slate-700" src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=3B82F6&color=fff&rounded=true&bold=true&size=128`} />
-                        <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{userName}</span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{userRole || 'Team Member'}</span>
+                <div className="relative">
+                    {/* Popover Menu */}
+                    {showProfileMenu && (
+                        <div className="absolute bottom-full left-0 w-full mb-3 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 py-2 z-50 overflow-hidden">
+                            <Link
+                                to="/profile"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            >
+                                <span className="material-icons text-[20px]">person</span>
+                                {t('profile', 'Profilo')}
+                            </Link>
+                            <div className="h-px bg-slate-100 dark:bg-slate-700/50 my-1"></div>
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left"
+                            >
+                                <span className="material-icons text-[20px]">logout</span>
+                                {t('logout', 'Logout')}
+                            </button>
                         </div>
-                    </a>
+                    )}
+
+                    {/* Profile Button */}
+                    <div
+                        onClick={() => setShowProfileMenu(!showProfileMenu)}
+                        className="bg-blue-50/50 dark:bg-slate-800/50 rounded-2xl p-4 border border-blue-100 dark:border-slate-700 cursor-pointer hover:bg-blue-100/50 dark:hover:bg-slate-700/50 transition-colors flex items-center justify-between group"
+                    >
+                        <div className="flex items-center gap-3 min-w-0">
+                            <img alt="User Profile" className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-2 ring-white dark:ring-slate-700" src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=3B82F6&color=fff&rounded=true&bold=true&size=128`} />
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{userName}</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{userRole || 'Team Member'}</span>
+                            </div>
+                        </div>
+                        <span className={`material-icons text-slate-400 group-hover:text-blue-500 transition-all ${showProfileMenu ? 'rotate-180' : ''}`}>
+                            expand_less
+                        </span>
+                    </div>
                 </div>
             </div>
         </aside>
