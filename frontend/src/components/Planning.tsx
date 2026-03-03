@@ -273,7 +273,7 @@ const Planning: React.FC = () => {
             // Map frontend status to backend WorkMode enum
             const backendStatus = status === 'IN_OFFICE' ? 'OFFICE' : status;
 
-            const saveResponse = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance`, {
+            await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -325,14 +325,6 @@ const Planning: React.FC = () => {
             );
         }
 
-        if (d.isWeekend) {
-            return (
-                <div key={idx} className="aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl bg-slate-50/50 text-slate-300">
-                    <span className="font-bold text-sm">{d.day}</span>
-                </div>
-            );
-        }
-
         const cfg = d.status ? statusConfig[d.status] : null;
         const isSelected = selectedDay === d.dateIso;
 
@@ -358,7 +350,7 @@ const Planning: React.FC = () => {
                     className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer bg-gradient-to-b from-white to-indigo-50 ring-4 ring-indigo-200 shadow-lg shadow-indigo-300/40 transition-all duration-300 ${isSelected ? 'z-50 scale-105' : 'z-20 scale-105 hover:z-30'}`}
                     onClick={() => setSelectedDay(isSelected ? null : d.dateIso)}
                 >
-                    <span className="text-indigo-600 font-extrabold text-base drop-shadow-sm">{d.day}</span>
+                    <span className={`font-extrabold text-base drop-shadow-sm ${d.isWeekend ? 'text-red-400' : 'text-indigo-600'}`}>{d.day}</span>
                     <div className="absolute inset-0 bg-indigo-600/5 pointer-events-none rounded-2xl"></div>
                     {cfg && (
                         <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${cfg.dotColor}`}></div>
@@ -370,10 +362,10 @@ const Planning: React.FC = () => {
 
         return (
             <div key={idx}
-                className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer group border-2 border-transparent transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isSelected ? 'z-50 shadow-xl border-indigo-200' : `hover:z-30 ${cfg ? cfg.cellBg : 'bg-white'}`} ${cfg ? cfg.hoverBorder : 'hover:border-indigo-100'}`}
+                className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer group border-2 border-transparent transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isSelected ? 'z-50 shadow-xl border-indigo-200' : `hover:z-30 ${cfg ? cfg.cellBg : (d.isWeekend ? 'bg-slate-50/50' : 'bg-white')}`} ${cfg ? cfg.hoverBorder : 'hover:border-indigo-100'}`}
                 onClick={() => setSelectedDay(isSelected ? null : d.dateIso)}
             >
-                <span className={`text-slate-600 text-sm font-bold ${cfg ? cfg.textHover : 'group-hover:text-indigo-600'}`}>{d.day}</span>
+                <span className={`text-sm font-bold ${cfg ? cfg.textHover : (d.isWeekend ? 'text-red-300 group-hover:text-red-400' : 'text-slate-600 group-hover:text-indigo-600')}`}>{d.day}</span>
                 {cfg && (
                     <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${cfg.dotColor}`}></div>
                 )}
@@ -409,7 +401,7 @@ const Planning: React.FC = () => {
     );
 
     return (
-        <div className="bg-athena-soft text-slate-700 font-calendar antialiased min-h-screen flex w-full overflow-hidden"
+        <div className="bg-athena-soft text-slate-700 min-h-screen flex w-full overflow-hidden"
             style={{ backgroundImage: 'radial-gradient(#E0E7FF 1px, transparent 1px)', backgroundSize: '24px 24px' }}
             onClick={() => setSelectedDay(null)}
         >
@@ -417,7 +409,7 @@ const Planning: React.FC = () => {
 
             <div className="flex-1 ml-80 overflow-y-auto h-screen scroll-smooth">
                 {/* ── Main Content ── */}
-                <main className="max-w-7xl mx-auto w-full px-8 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10"
+                <main className="font-calendar antialiased max-w-7xl mx-auto w-full px-8 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10"
                     onClick={(e) => e.stopPropagation()}>
 
                     {/* ── Calendar Area (8 cols) ── */}

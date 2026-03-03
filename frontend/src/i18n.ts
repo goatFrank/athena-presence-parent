@@ -26,17 +26,28 @@ const resources = {
             "of_working_days": "su {{total}} giorni lavorativi",
             "edit_schedule": "Modifica Piano",
             "mon": "Lun",
+            "save": "Salva",
+            "cancel": "Annulla",
+            "today": "Oggi",
+            "no_history": "Nessuna cronologia disponibile",
             "tue": "Mar",
             "wed": "Mer",
             "thu": "Gio",
             "fri": "Ven",
             "whos_in": "Chi c'è oggi?",
             "find_teammate": "Cerca collega...",
+            "today_presence": "Presenza Oggi",
+            "team_overview": "Team Overview",
+            "manage_team": "Gestisci la posizione e la disponibilità del tuo team.",
+            "today_presence_summary": "Riepilogo Presenze Oggi",
+            "presence_summary_for": "Riepilogo presenze di {{date}}",
+            "in_office": "In Ufficio",
+            "absent": "Assenti",
+            "totals": "Totali",
+            "search_colleagues": "Cerca colleghi...",
             "all": "Tutti",
-            "office": "Ufficio",
-            "happening_now": "In programmazione",
-            "team_lunch": "Pranzo di Squadra",
-            "main_lobby": "Atrio Principale"
+            "no_colleague_found": "Nessun collega trovato",
+            "try_change_filters": "Prova a cambiare i filtri di ricerca"
         }
     },
     en: {
@@ -69,11 +80,22 @@ const resources = {
             "fri": "Fri",
             "whos_in": "Who's in Today?",
             "find_teammate": "Find a teammate...",
+            "today_presence": "Today's Presence",
+            "team_overview": "Team Overview",
+            "manage_team": "Manage your team's location and availability.",
+            "today_presence_summary": "Today's Presence Summary",
+            "presence_summary_for": "Presence Summary for {{date}}",
+            "in_office": "In Office",
+            "absent": "On Leave",
+            "totals": "Total",
+            "search_colleagues": "Search colleagues...",
             "all": "All",
             "office": "Office",
             "happening_now": "Happening Now",
             "team_lunch": "Team Lunch",
-            "main_lobby": "Main Lobby"
+            "main_lobby": "Main Lobby",
+            "no_colleague_found": "No colleague found",
+            "try_change_filters": "Try changing the search filters"
         }
     }
 };

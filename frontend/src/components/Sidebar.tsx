@@ -7,6 +7,7 @@ const Sidebar: React.FC = () => {
     const { t, i18n } = useTranslation();
     const location = useLocation();
     const [userName, setUserName] = useState<string>('');
+    const [userRole, setUserRole] = useState<string>('');
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -14,11 +15,12 @@ const Sidebar: React.FC = () => {
             if (user) {
                 const { data: meData, error: meError } = await supabase
                     .from('profiles')
-                    .select('full_name')
+                    .select('full_name, role_description')
                     .eq('id', user.id);
 
-                if (!meError && meData && meData.length > 0 && meData[0].full_name) {
-                    setUserName(meData[0].full_name);
+                if (!meError && meData && meData.length > 0) {
+                    if (meData[0].full_name) setUserName(meData[0].full_name);
+                    if (meData[0].role_description) setUserRole(meData[0].role_description);
                 } else {
                     const fallbackName = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'User');
                     setUserName(fallbackName);
@@ -34,7 +36,7 @@ const Sidebar: React.FC = () => {
     };
 
     return (
-        <aside className="w-72 bg-surface-light/90 dark:bg-surface-dark/95 backdrop-blur-md border-r border-blue-100 dark:border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] rounded-r-3xl my-4 ml-4 h-[calc(100vh-2rem)]">
+        <aside className="font-display w-72 bg-surface-light/90 dark:bg-surface-dark/95 backdrop-blur-md border-r border-blue-100 dark:border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] rounded-r-3xl my-4 ml-4 h-[calc(100vh-2rem)]">
             <div className="p-8 pb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
@@ -60,15 +62,15 @@ const Sidebar: React.FC = () => {
                     <span className={`material-icons text-[22px] transition-colors ${location.pathname !== '/planning' ? 'group-hover:text-blue-500' : ''}`}>calendar_month</span>
                     {t('my_schedule')}
                 </Link>
-                <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#">
-                    <span className="material-icons text-[22px] group-hover:text-blue-500 transition-colors">groups</span>
+                <Link to="/team" className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/team' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
+                    <span className={`material-icons text-[22px] transition-colors ${location.pathname !== '/team' ? 'group-hover:text-blue-500' : ''}`}>groups</span>
                     {t('team')}
-                </a>
-                <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#">
+                </Link>
+                <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#map">
                     <span className="material-icons text-[22px] group-hover:text-blue-500 transition-colors">map</span>
                     {t('office_map')}
                 </a>
-                <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#">
+                <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#analytics">
                     <span className="material-icons text-[22px] group-hover:text-blue-500 transition-colors">bar_chart</span>
                     {t('analytics')}
                 </a>
@@ -80,7 +82,7 @@ const Sidebar: React.FC = () => {
                         <img alt="User Profile" className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-2 ring-white dark:ring-slate-700" src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=3B82F6&color=fff&rounded=true&bold=true&size=128`} />
                         <div className="flex flex-col min-w-0">
                             <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{userName}</span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">Product Designer</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{userRole || 'Team Member'}</span>
                         </div>
                     </a>
                 </div>

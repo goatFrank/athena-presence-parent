@@ -50,6 +50,9 @@ public interface AttendanceService {
      */
     ResponseDTO<Attendance> getMyTodayStatus(UUID userId);
 
+    ResponseDTO<List<com.athena.common.dto.TeamColleagueDTO>> getTeamOverview(UUID userId, String filter, String search,
+            LocalDate date);
+
     /**
      * Cancella una prenotazione specifica.
      * 

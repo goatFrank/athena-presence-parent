@@ -86,6 +86,19 @@ public class AttendanceController {
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
+    @GetMapping("/team-overview")
+    @Operation(summary = "Recupera la visualizzazione del team filtrata")
+    public ResponseEntity<ResponseDTO<List<com.athena.common.dto.TeamColleagueDTO>>> getTeamOverview(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false, defaultValue = "all") String filter,
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        ResponseDTO<List<com.athena.common.dto.TeamColleagueDTO>> response = attendanceService
+                .getTeamOverview(authenticatedUserId, filter, search, date);
+        return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
+    }
+
     @GetMapping("/me/today")
     @Operation(summary = "Recupera lo stato di presenza dell'utente loggato per oggi")
     public ResponseEntity<ResponseDTO<Attendance>> getMyTodayStatus(@AuthenticationPrincipal Jwt jwt) {

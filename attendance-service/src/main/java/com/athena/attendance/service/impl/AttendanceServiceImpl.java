@@ -248,4 +248,106 @@ public class AttendanceServiceImpl implements AttendanceService {
 
                 repository.delete(attendance);
         }
+
+        @Override
+        public ResponseDTO<List<com.athena.common.dto.TeamColleagueDTO>> getTeamOverview(UUID userId, String filter,
+                        String search, LocalDate date) {
+                // 1. Get the current user's profile to know tenant and department
+                var meProfileOpt = profileRepository.findById(userId);
+                if (meProfileOpt.isEmpty()) {
+                        return ResponseDTO.<List<com.athena.common.dto.TeamColleagueDTO>>builder()
+                                        .message("User profile not found")
+                                        .status(ResponseStatus.ERROR)
+                                        .build();
+                }
+                var me = meProfileOpt.get();
+
+                // 2. Get all other profiles in the same tenant and department
+                List<com.athena.attendance.entity.Profile> colleagues;
+                if (me.getTenantId() != null && me.getDepartmentId() != null) {
+                        colleagues = profileRepository.findByTenantIdAndDepartmentId(me.getTenantId(),
+                                        me.getDepartmentId());
+                } else if (me.getTenantId() != null) {
+                        colleagues = profileRepository.findByTenantId(me.getTenantId());
+                } else {
+                        colleagues = profileRepository.findAll();
+                }
+
+                // Remove self
+                colleagues.removeIf(p -> p.getId().equals(userId));
+
+                // 3. Get target date's attendances for everyone in the department
+                LocalDate targetDate = (date != null) ? date : LocalDate.now();
+                List<Attendance> targetAttendances;
+                if (me.getTenantId() != null && me.getDepartmentId() != null) {
+                        targetAttendances = repository.findByTenantIdAndDepartmentIdAndWorkDate(me.getTenantId(),
+                                        me.getDepartmentId(), targetDate);
+                } else if (me.getTenantId() != null) {
+                        targetAttendances = repository.findByTenantIdAndWorkDate(me.getTenantId(), targetDate);
+                } else {
+                        targetAttendances = repository.findByWorkDate(targetDate);
+                }
+
+                String searchLower = search == null ? "" : search.toLowerCase();
+
+                // 4. Map and filter
+                List<com.athena.common.dto.TeamColleagueDTO> result = colleagues.stream().map(p -> {
+                        Attendance att = targetAttendances.stream()
+                                        .filter(a -> a.getUserId().equals(p.getId()))
+                                        .findFirst()
+                                        .orElse(null);
+
+                        String rawStatus = att != null && att.getStatus() != null ? att.getStatus().name().toLowerCase()
+                                        : "remote";
+                        String workStatus = "remote";
+
+                        if (rawStatus.contains("office") || rawStatus.contains("sede")
+                                        || rawStatus.equals("in_office")) {
+                                workStatus = "office";
+                        } else if (rawStatus.contains("leave") || rawStatus.contains("ferie")
+                                        || rawStatus.contains("malattia") || rawStatus.contains("sick")
+                                        || rawStatus.contains("holiday")) {
+                                workStatus = "leave";
+                        }
+
+                        String locationDetails = att != null && att.getNote() != null && !att.getNote().isBlank()
+                                        ? att.getNote()
+                                        : (workStatus.equals("leave") ? "Non disponibile" : "Disponibile");
+                        if (locationDetails.isBlank() || locationDetails.equals("Disponibile")
+                                        || locationDetails.equals("Non disponibile")) {
+                                locationDetails = workStatus.equals("office") ? "In Sede"
+                                                : (workStatus.equals("leave") ? "Ritarda" : "Smart Working");
+
+                                if (workStatus.equals("leave")) {
+                                        locationDetails = "Non disponibile";
+                                }
+                        }
+
+                        return com.athena.common.dto.TeamColleagueDTO.builder()
+                                        .id(p.getId())
+                                        .fullName(p.getFullName() != null ? p.getFullName() : "Utente")
+                                        .avatarUrl(p.getAvatarUrl() != null ? p.getAvatarUrl() : "")
+                                        .roleDescription(p.getRoleDescription() != null ? p.getRoleDescription() : "")
+                                        .workStatus(workStatus)
+                                        .locationDetails(locationDetails)
+                                        .build();
+                }).filter(dto -> {
+                        // Apply filter tab
+                        boolean matchesFilter = filter == null || filter.isBlank() || filter.equals("all")
+                                        || dto.getWorkStatus().equals(filter);
+
+                        // Apply text search
+                        boolean matchesSearch = searchLower.isBlank() ||
+                                        dto.getFullName().toLowerCase().contains(searchLower) ||
+                                        dto.getLocationDetails().toLowerCase().contains(searchLower);
+
+                        return matchesFilter && matchesSearch;
+                }).toList();
+
+                return ResponseDTO.<List<com.athena.common.dto.TeamColleagueDTO>>builder()
+                                .message("Team overview retrieved successfully")
+                                .payload(result)
+                                .status(ResponseStatus.SUCCESS)
+                                .build();
+        }
 }

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Planning from './components/Planning';
+import Team from './components/Team';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -17,6 +18,11 @@ function App() {
         <Route path="/planning" element={
           <ProtectedRoute>
             <Planning />
+          </ProtectedRoute>
+        } />
+        <Route path="/team" element={
+          <ProtectedRoute>
+            <Team />
           </ProtectedRoute>
         } />
         {/* Default redirect to login */}

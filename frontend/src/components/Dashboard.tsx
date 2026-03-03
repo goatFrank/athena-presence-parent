@@ -270,7 +270,7 @@ const Dashboard: React.FC = () => {
     };
 
     return (
-        <div className="bg-pattern text-slate-800 dark:text-slate-100 font-display min-h-screen flex w-full overflow-hidden">
+        <div className="bg-pattern text-slate-800 dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
 
             {/* Main Content */}

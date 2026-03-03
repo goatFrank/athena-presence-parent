@@ -27,7 +27,13 @@ public class Profile {
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @Column(name = "role_description")
+    private String roleDescription;
 }
