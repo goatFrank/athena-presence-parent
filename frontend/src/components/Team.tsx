@@ -94,7 +94,14 @@ const Team: React.FC = () => {
                             work_status: c.workStatus || 'remote',
                             location_details: c.locationDetails || '',
                             role_description: c.roleDescription || ''
-                        }));
+                        })).sort((a: any, b: any) => {
+                            const statusWeight = (status: string) => {
+                                if (status === 'office') return 1;
+                                if (status === 'remote') return 2;
+                                return 3; // leave/absent
+                            };
+                            return statusWeight(a.work_status) - statusWeight(b.work_status);
+                        });
                         setColleagues(mappedColleagues);
                     }
                 } else {

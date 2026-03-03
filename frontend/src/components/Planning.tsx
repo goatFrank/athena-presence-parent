@@ -96,6 +96,7 @@ const Planning: React.FC = () => {
     const [userName, setUserName] = useState('');
     const [userTenantId, setUserTenantId] = useState<number | null>(null);
     const [userDeptId, setUserDeptId] = useState<number | null>(null);
+    const [allowOvertime, setAllowOvertime] = useState<boolean>(false);
     const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
     const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); // 0-indexed
     const [days, setDays] = useState<DayInfo[]>([]);
@@ -116,11 +117,12 @@ const Planning: React.FC = () => {
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data } = await supabase.from('profiles').select('full_name, tenant_id, department_id').eq('id', user.id);
+                const { data } = await supabase.from('profiles').select('full_name, tenant_id, department_id, allow_overtime').eq('id', user.id);
                 if (data && data[0]) {
                     setUserName(data[0].full_name || user.email?.split('@')[0] || 'User');
                     setUserTenantId(data[0].tenant_id);
                     setUserDeptId(data[0].department_id);
+                    setAllowOvertime(!!data[0].allow_overtime);
                 } else {
                     setUserName(user.email?.split('@')[0] || 'User');
                 }
@@ -321,6 +323,18 @@ const Planning: React.FC = () => {
             return (
                 <div key={idx} className="aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl transition-all duration-300 relative overflow-hidden opacity-30">
                     <span className="text-slate-400 text-sm font-bold">{d.day}</span>
+                </div>
+            );
+        }
+
+        // If weekend and overtime not allowed, render grey disabled cell
+        if (d.isWeekend && !allowOvertime) {
+            return (
+                <div key={idx}
+                    className="aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl bg-slate-50/50 text-slate-300 relative overflow-hidden cursor-not-allowed"
+                    title={isIt ? 'Modifica non abilitata per i weekend' : 'Weekend editing disabled'}
+                >
+                    <span className="font-bold text-sm">{d.day}</span>
                 </div>
             );
         }

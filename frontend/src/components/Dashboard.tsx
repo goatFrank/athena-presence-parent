@@ -166,6 +166,7 @@ const Dashboard: React.FC = () => {
                     .select(`
                         id,
                         full_name,
+                        avatar_url,
                         departments (
                             name
                         )
@@ -181,28 +182,67 @@ const Dashboard: React.FC = () => {
 
                 const { data: profiles, error: profilesError } = await profilesQuery;
 
-                // Fetch today's attendance for everyone
+                // Fetch today's attendance for everyone via backend (bypassing RLS)
                 const today = new Date().toISOString().split('T')[0];
-                const { data: attendances } = await supabase
-                    .from('attendance')
-                    .select('user_id, status, note')
-                    .eq('work_date', today);
+                let attendances: any[] = [];
+                try {
+                    const token = (await supabase.auth.getSession()).data.session?.access_token;
+                    let endpoint = `/api/v1/attendance/team-overview?date=${today}`;
+
+                    if (myTenantId !== null && myDeptId !== null) {
+                        endpoint = `/api/v1/attendance/team/${myTenantId}/${myDeptId}?date=${today}`;
+                    } else if (myTenantId !== null) {
+                        endpoint = `/api/v1/attendance/tenant/${myTenantId}?date=${today}`;
+                    }
+
+                    const res = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}${endpoint}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (res.ok) {
+                        const td = await res.json();
+                        attendances = td.payload || [];
+                    } else {
+                        setDebugInfo((prev: string) => prev + `\nAPI Fetch Failed for team overview: ${res.status}`);
+                    }
+                } catch (e: any) {
+                    console.error('Error fetching attendances:', e);
+                    setDebugInfo((prev: string) => prev + `\nException in team fetch: ${e.message}`);
+                }
 
                 if (!profilesError && profiles) {
+                    const mappedColleagues = profiles
+                        // Only include those who have explicitly set an attendance status for today
+                        .filter((p: any) => attendances?.some((a: any) => a.id === p.id || a.userId === p.id))
+                        .map((p: any) => {
+                            const todayAtt = attendances?.find((a: any) => a.id === p.id || a.userId === p.id);
 
-                    const mappedColleagues = profiles.map((p: any) => {
-                        const todayAtt = attendances?.find(a => a.user_id === p.id);
-                        const rawStatus = (todayAtt?.status || 'remote').toLowerCase();
-                        const isOffice = rawStatus.includes('office') || rawStatus.includes('sede') || rawStatus === 'in_office';
+                            // the backend returns TeamColleagueDTO with workStatus like 'office', 'remote', or 'leave'
+                            // OR it returns Attendance which has 'status' (e.g. 'OFFICE', 'REMOTE')
+                            const rawStatus = (todayAtt?.workStatus || todayAtt?.status || '').toLowerCase();
+                            const isOffice = rawStatus.includes('office') || rawStatus.includes('sede') || rawStatus === 'in_office';
+                            const isSickOrHoliday = rawStatus.includes('sick') || rawStatus.includes('holiday') || rawStatus.includes('malattia') || rawStatus.includes('ferie') || rawStatus.includes('leave') || rawStatus.includes('absent');
 
-                        return {
-                            id: p.id,
-                            full_name: p.full_name || 'Utente',
-                            avatar_url: '',
-                            work_status: isOffice ? 'office' : 'remote',
-                            location_details: todayAtt?.note || p.departments?.name || 'Available'
-                        };
-                    });
+                            let workStatus = 'remote';
+                            if (isOffice) workStatus = 'office';
+                            else if (isSickOrHoliday) workStatus = 'absent';
+
+                            return {
+                                id: p.id,
+                                full_name: p.full_name || 'Utente',
+                                avatar_url: p.avatar_url || '',
+                                work_status: workStatus,
+                                location_details: p.departments?.name || 'Senza Dipartimento'
+                            };
+                        })
+                        .sort((a: any, b: any) => {
+                            const statusWeight = (status: string) => {
+                                if (status === 'office') return 1;
+                                if (status === 'remote') return 2;
+                                return 3; // absent/leave
+                            };
+                            return statusWeight(a.work_status) - statusWeight(b.work_status);
+                        });
                     setColleagues(mappedColleagues);
                 } else {
                     console.error("Could not fetch profiles. Error:", profilesError);
@@ -544,24 +584,30 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="space-y-2 flex-1 overflow-y-auto px-4 pb-4">
+                    {debugInfo && (
+                        <div className="text-xs break-all text-red-500 bg-red-100 dark:bg-red-900/30 p-2 rounded-lg mb-2">DEBUG: {debugInfo}</div>
+                    )}
                     {colleagues
-                        .filter(c => colleagueFilter === 'all' || c.work_status === colleagueFilter)
-                        .map(colleague => (
-                            <div key={colleague.id} className={`flex items-center gap-3 group cursor-pointer p-3 hover:bg-white dark:hover:bg-slate-800 rounded-2xl transition-all hover:shadow-soft border border-transparent hover:border-slate-50 dark:hover:border-slate-700 ${colleague.work_status === 'remote' ? 'opacity-70 hover:opacity-100' : ''}`}>
-                                <div className="relative">
-                                    <img alt={`${colleague.full_name} avatar`} className={`w-11 h-11 rounded-2xl object-cover ${colleague.work_status === 'office' ? 'ring-2 ring-white dark:ring-slate-700' : 'grayscale'}`} src={colleague.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(colleague.full_name)}&background=random`} />
-                                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full flex items-center justify-center ${colleague.work_status === 'office' ? 'bg-green-500' : colleague.location_details === 'Busy' ? 'bg-amber-400' : 'bg-slate-400'}`}>
-                                        {colleague.work_status === 'office' && <div className="w-1.5 h-1.5 bg-white rounded-full opacity-50"></div>}
+                        .filter(c => colleagueFilter === 'all' || (c.work_status === 'office' && colleagueFilter === 'office') || (c.work_status === 'remote' && colleagueFilter === 'remote'))
+                        .map(colleague => {
+                            const isAbsent = colleague.work_status === 'leave' || colleague.work_status === 'absent';
+                            return (
+                                <div key={colleague.id} className={`flex items-center gap-3 group cursor-pointer p-3 hover:bg-white dark:hover:bg-slate-800 rounded-2xl transition-all hover:shadow-soft border border-transparent hover:border-slate-50 dark:hover:border-slate-700 ${colleague.work_status === 'remote' ? 'opacity-90' : isAbsent ? 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0' : ''}`}>
+                                    <div className="relative">
+                                        <img alt={`${colleague.full_name} avatar`} className={`w-11 h-11 rounded-2xl object-cover ${colleague.work_status === 'office' ? 'ring-2 ring-white dark:ring-slate-700' : ''}`} src={colleague.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(colleague.full_name)}&background=random`} />
+                                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full flex items-center justify-center ${colleague.work_status === 'office' ? 'bg-green-500' : colleague.work_status === 'remote' ? 'bg-amber-400' : 'bg-slate-400'}`}>
+                                            {colleague.work_status === 'office' && <div className="w-1.5 h-1.5 bg-white rounded-full opacity-50"></div>}
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`text-sm font-bold truncate ${isAbsent ? 'text-slate-500 dark:text-slate-400' : 'text-slate-800 dark:text-white'}`}>{colleague.full_name}</p>
+                                        <p className={`text-xs truncate font-medium ${colleague.work_status === 'office' ? 'text-blue-500' : colleague.work_status === 'remote' ? 'text-amber-500' : 'text-slate-400'}`}>
+                                            {colleague.work_status === 'office' ? (i18n.language === 'it' ? 'In Ufficio' : 'In Office') : colleague.work_status === 'remote' ? (i18n.language === 'it' ? 'Da Remoto' : 'Remote') : (i18n.language === 'it' ? 'Non Disponibile' : 'Unavailable')} • {colleague.location_details}
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{colleague.full_name}</p>
-                                    <p className={`text-xs truncate font-medium ${colleague.work_status === 'office' ? 'text-blue-500' : 'text-slate-400'}`}>
-                                        {colleague.work_status === 'office' ? 'In Office' : 'Remote'} • {colleague.location_details}
-                                    </p>
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     }
                     {colleagues.length === 0 && (
                         <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm">
