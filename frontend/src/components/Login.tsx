@@ -62,8 +62,8 @@ const Login: React.FC = () => {
             <div className="fixed top-10 left-10 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl"></div>
             <div className="fixed bottom-10 right-10 w-48 h-48 bg-indigo-400/10 rounded-full blur-3xl"></div>
             <div className="bg-white rounded-[32px] shadow-deep border border-slate-100 flex flex-col md:flex-row overflow-hidden min-h-[600px] relative z-20 mx-4 lg:mx-0 mt-8 mb-8">
-                {/* Left Side (Illustration) */}
-                <div className="w-full md:w-1/2 bg-gradient-to-br from-blue-50 to-indigo-50 relative flex flex-col items-center justify-center p-8 md:p-12 overflow-hidden">
+                {/* Left Side (Illustration) - Hidden on mobile, visible on md+ */}
+                <div className="hidden md:flex w-full md:w-1/2 bg-gradient-to-br from-blue-50 to-indigo-50 relative flex-col items-center justify-center p-8 md:p-12 overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200/20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
 
