@@ -3,6 +3,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Planning from './components/Planning';
 import Team from './components/Team';
+import Profile from './components/Profile';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -23,6 +24,11 @@ function App() {
         <Route path="/team" element={
           <ProtectedRoute>
             <Team />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         } />
         {/* Default redirect to login */}

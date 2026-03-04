@@ -87,18 +87,20 @@ const Sidebar: React.FC = () => {
                 <div className="relative">
                     {/* Popover Menu */}
                     {showProfileMenu && (
-                        <div className="absolute bottom-full left-0 w-full mb-3 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 py-2 z-50 overflow-hidden">
+                        <div className="absolute bottom-[calc(100%+12px)] left-0 w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 py-2 z-50 overflow-hidden">
                             <Link
                                 to="/profile"
-                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                onClick={() => setShowProfileMenu(false)}
+                                className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                             >
-                                <span className="material-icons text-[20px]">person</span>
+                                <span className="material-icons text-[20px] text-blue-500">person</span>
                                 {t('profile', 'Profilo')}
                             </Link>
-                            <div className="h-px bg-slate-100 dark:bg-slate-700/50 my-1"></div>
+                            <div className="h-px bg-slate-100 dark:bg-slate-700/50 my-1 mx-4"></div>
                             <button
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left"
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+                                className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                             >
                                 <span className="material-icons text-[20px]">logout</span>
                                 {t('logout', 'Logout')}
