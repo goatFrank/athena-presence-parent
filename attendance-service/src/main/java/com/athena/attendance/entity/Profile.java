@@ -36,4 +36,7 @@ public class Profile {
 
     @Column(name = "role_description")
     private String roleDescription;
+
+    @Column(name = "profile_cellphone")
+    private String profileCellphone;
 }

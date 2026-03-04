@@ -17,7 +17,7 @@ public class ProfileDTO {
     private String role;
     private Long tenantId;
     private Long departmentId;
-    private String tenantName;      // Added for convenience
-    private String departmentName;  // Added for convenience
+    private String tenantName; // Added for convenience
+    private String departmentName; // Added for convenience
+    private String profileCellphone;
 }
-

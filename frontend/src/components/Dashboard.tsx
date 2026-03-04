@@ -298,15 +298,15 @@ const Dashboard: React.FC = () => {
     const getStatusDetails = (status: string) => {
         const s = status.toUpperCase();
         if (s.includes('SICK') || s.includes('MALATTIA')) {
-            return { icon: 'sick', label: i18n.language === 'it' ? 'Malattia' : 'Sick', textColor: 'text-red-500', bgColor: 'bg-red-50 dark:bg-red-900/20', gradient: 'from-red-400 to-red-500', groupHoverBg: 'group-hover:bg-red-500', shadowColor: 'shadow-red-200 dark:shadow-red-900/30' };
+            return { icon: 'sick', label: t('sick'), textColor: 'text-red-500', bgColor: 'bg-red-50 dark:bg-red-900/20', gradient: 'from-red-400 to-red-500', groupHoverBg: 'group-hover:bg-red-500', shadowColor: 'shadow-red-200 dark:shadow-red-900/30' };
         }
         if (s.includes('HOLIDAY') || s.includes('FERIE')) {
-            return { icon: 'beach_access', label: i18n.language === 'it' ? 'Ferie' : 'Holiday', textColor: 'text-amber-500', bgColor: 'bg-amber-50 dark:bg-amber-900/20', gradient: 'from-amber-400 to-orange-400', groupHoverBg: 'group-hover:bg-amber-500', shadowColor: 'shadow-amber-200 dark:shadow-amber-900/30' };
+            return { icon: 'beach_access', label: t('holiday'), textColor: 'text-amber-500', bgColor: 'bg-amber-50 dark:bg-amber-900/20', gradient: 'from-amber-400 to-orange-400', groupHoverBg: 'group-hover:bg-amber-500', shadowColor: 'shadow-amber-200 dark:shadow-amber-900/30' };
         }
         if (s.includes('REMOTE') || s.includes('SMART')) {
-            return { icon: 'home', label: i18n.language === 'it' ? 'Da Remoto' : 'Remote', textColor: 'text-cyan-600', bgColor: 'bg-cyan-50 dark:bg-slate-700', gradient: 'from-cyan-400 to-blue-400', groupHoverBg: 'group-hover:bg-cyan-500', shadowColor: 'shadow-cyan-200 dark:shadow-cyan-900/30' };
+            return { icon: 'home', label: t('remote'), textColor: 'text-cyan-600', bgColor: 'bg-cyan-50 dark:bg-slate-700', gradient: 'from-cyan-400 to-blue-400', groupHoverBg: 'group-hover:bg-cyan-500', shadowColor: 'shadow-cyan-200 dark:shadow-cyan-900/30' };
         }
-        return { icon: 'business', label: i18n.language === 'it' ? 'In Ufficio' : 'At Office', textColor: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-slate-700', gradient: 'from-blue-500 to-blue-600', groupHoverBg: 'group-hover:bg-blue-500', shadowColor: 'shadow-blue-200 dark:shadow-blue-900/30' };
+        return { icon: 'business', label: t('at_office'), textColor: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-slate-700', gradient: 'from-blue-500 to-blue-600', groupHoverBg: 'group-hover:bg-blue-500', shadowColor: 'shadow-blue-200 dark:shadow-blue-900/30' };
     };
 
     return (
@@ -322,7 +322,7 @@ const Dashboard: React.FC = () => {
                     <div className="relative z-10 max-w-lg">
                         <div className="inline-flex items-center gap-2 bg-white/60 dark:bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-600 dark:text-blue-300 mb-3 border border-white/50 dark:border-white/10 shadow-sm">
                             <span className="material-symbols-outlined text-[16px]">wb_sunny</span>
-                            <span>Sunny Office Vibes</span>
+                            <span>{t('sunny_vibes')}</span>
                         </div>
                         <h1 className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight mb-2">{t('good_morning')}, {userName}!</h1>
                         <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed mb-2">{t(greetingKey, { day: currentDayName })}</p>
@@ -370,15 +370,15 @@ const Dashboard: React.FC = () => {
                             ) : (
                                 <span className="material-icons text-[18px]">check_circle</span>
                             )}
-                            {i18n.language === 'it' ? 'Conferma' : 'Confirm'}
+                            {t('confirm')}
                         </button>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
                         {[
-                            { key: 'OFFICE', icon: 'business', label: i18n.language === 'it' ? 'In Ufficio' : 'At the Office', gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-400/30', iconBg: 'bg-blue-50', iconColor: 'text-blue-600', hoverRing: 'hover:ring-blue-400/50' },
-                            { key: 'REMOTE', icon: 'home', label: i18n.language === 'it' ? 'Da Remoto' : 'Remote', gradient: 'from-cyan-400 to-blue-400', ring: 'ring-cyan-400/30', iconBg: 'bg-cyan-50', iconColor: 'text-cyan-600', hoverRing: 'hover:ring-cyan-400/50' },
-                            { key: 'SICK', icon: 'sick', label: i18n.language === 'it' ? 'Malattia' : 'Sick', gradient: 'from-red-400 to-red-500', ring: 'ring-red-400/30', iconBg: 'bg-red-50', iconColor: 'text-red-500', hoverRing: 'hover:ring-red-400/50' },
-                            { key: 'HOLIDAY', icon: 'beach_access', label: i18n.language === 'it' ? 'Ferie' : 'Holiday', gradient: 'from-amber-400 to-orange-400', ring: 'ring-amber-400/30', iconBg: 'bg-amber-50', iconColor: 'text-amber-500', hoverRing: 'hover:ring-amber-400/50' },
+                            { key: 'OFFICE', icon: 'business', label: t('at_office'), gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-400/30', iconBg: 'bg-blue-50', iconColor: 'text-blue-600', hoverRing: 'hover:ring-blue-400/50' },
+                            { key: 'REMOTE', icon: 'home', label: t('remote'), gradient: 'from-cyan-400 to-blue-400', ring: 'ring-cyan-400/30', iconBg: 'bg-cyan-50', iconColor: 'text-cyan-600', hoverRing: 'hover:ring-cyan-400/50' },
+                            { key: 'SICK', icon: 'sick', label: t('sick'), gradient: 'from-red-400 to-red-500', ring: 'ring-red-400/30', iconBg: 'bg-red-50', iconColor: 'text-red-500', hoverRing: 'hover:ring-red-400/50' },
+                            { key: 'HOLIDAY', icon: 'beach_access', label: t('holiday'), gradient: 'from-amber-400 to-orange-400', ring: 'ring-amber-400/30', iconBg: 'bg-amber-50', iconColor: 'text-amber-500', hoverRing: 'hover:ring-amber-400/50' },
                         ].map((s) => {
                             const isActive = pendingStatus === s.key;
                             return (
@@ -434,8 +434,8 @@ const Dashboard: React.FC = () => {
                             const plannedStats = [
                                 { id: 'office', count: dashboardStats?.officeDays ?? 0, label: t('office'), color: 'bg-indigo-600' },
                                 { id: 'remote', count: dashboardStats?.remoteDays ?? 0, label: t('remote'), color: 'bg-sky-400' },
-                                { id: 'holiday', count: dashboardStats?.holidayDays ?? 0, label: 'Filtri / Ferie', color: 'bg-amber-400' },
-                                { id: 'sick', count: dashboardStats?.sickDays ?? 0, label: 'Malattia', color: 'bg-red-400' },
+                                { id: 'holiday', count: dashboardStats?.holidayDays ?? 0, label: t('holidays_leaves'), color: 'bg-amber-400' },
+                                { id: 'sick', count: dashboardStats?.sickDays ?? 0, label: t('sick'), color: 'bg-red-400' },
                             ].filter(s => s.count > 0).sort((a, b) => b.count - a.count); // Sort descending
 
                             const totalPlanned = plannedStats.reduce((sum, s) => sum + s.count, 0);
@@ -472,7 +472,7 @@ const Dashboard: React.FC = () => {
                                         {unplanned > 0 && (
                                             <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 ml-auto bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-md">
                                                 <span className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-600"></span>
-                                                Da pianificare: {unplanned}
+                                                {t('to_plan')}: {unplanned}
                                             </div>
                                         )}
                                     </div>
@@ -602,7 +602,7 @@ const Dashboard: React.FC = () => {
                                     <div className="flex-1 min-w-0">
                                         <p className={`text-sm font-bold truncate ${isAbsent ? 'text-slate-500 dark:text-slate-400' : 'text-slate-800 dark:text-white'}`}>{colleague.full_name}</p>
                                         <p className={`text-xs truncate font-medium ${colleague.work_status === 'office' ? 'text-blue-500' : colleague.work_status === 'remote' ? 'text-amber-500' : 'text-slate-400'}`}>
-                                            {colleague.work_status === 'office' ? (i18n.language === 'it' ? 'In Ufficio' : 'In Office') : colleague.work_status === 'remote' ? (i18n.language === 'it' ? 'Da Remoto' : 'Remote') : (i18n.language === 'it' ? 'Non Disponibile' : 'Unavailable')} • {colleague.location_details}
+                                            {colleague.work_status === 'office' ? t('in_office_status') : colleague.work_status === 'remote' ? t('remote_status') : t('unavailable')} • {colleague.location_details}
                                         </p>
                                     </div>
                                 </div>

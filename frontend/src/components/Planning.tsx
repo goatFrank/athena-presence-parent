@@ -90,7 +90,7 @@ function toIso(year: number, month: number, day: number) {
 
 // ── Component ──────────────────────────────────────────────────────
 const Planning: React.FC = () => {
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
     const isIt = i18n.language === 'it';
 
     const [userName, setUserName] = useState('');
@@ -332,7 +332,7 @@ const Planning: React.FC = () => {
             return (
                 <div key={idx}
                     className="aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl bg-slate-50/50 text-slate-300 relative overflow-hidden cursor-not-allowed"
-                    title={isIt ? 'Modifica non abilitata per i weekend' : 'Weekend editing disabled'}
+                    title={t('weekend_disabled')}
                 >
                     <span className="font-bold text-sm">{d.day}</span>
                 </div>
@@ -347,7 +347,7 @@ const Planning: React.FC = () => {
             return (
                 <div key={idx}
                     className="aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-hidden opacity-50 cursor-not-allowed bg-slate-50/30"
-                    title={isIt ? 'Non puoi modificare i giorni passati' : 'Cannot edit past days'}
+                    title={t('cannot_edit_past')}
                 >
                     <span className="text-slate-400 text-sm font-bold">{d.day}</span>
                     {cfg && (
@@ -439,7 +439,7 @@ const Planning: React.FC = () => {
                                         {monthNames[currentMonth]} <span className="text-indigo-400">{currentYear}</span>
                                     </h2>
                                     <p className="text-slate-500 font-medium">
-                                        {isIt ? 'Dove creerai la magia questo mese?' : 'Where will you create magic this month?'}
+                                        {t('where_create_magic')}
                                     </p>
                                 </div>
                             </div>
@@ -448,7 +448,7 @@ const Planning: React.FC = () => {
                                     <span className="material-icons">chevron_left</span>
                                 </button>
                                 <button onClick={goToToday} className="px-6 font-bold text-slate-600 select-none bg-transparent hover:text-indigo-600 transition-colors border-0">
-                                    {isIt ? 'Oggi' : 'Today'}
+                                    {t('today')}
                                 </button>
                                 <button onClick={goToNextMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
                                     <span className="material-icons">chevron_right</span>
@@ -492,9 +492,9 @@ const Planning: React.FC = () => {
                                     <span className="material-icons text-5xl text-indigo-500">face_5</span>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                                    <p className="font-bold text-lg">{isIt ? 'Ciao' : 'Hello'}, {userName || 'User'}!</p>
+                                    <p className="font-bold text-lg">{t('hello')}, {userName || 'User'}!</p>
                                     <p className="text-indigo-100 text-sm">
-                                        {isIt ? 'Pianifica il tuo mese qui sotto.' : 'Plan your month below.'}
+                                        {t('plan_your_month')}
                                     </p>
                                 </div>
                             </div>
@@ -503,7 +503,7 @@ const Planning: React.FC = () => {
                         {/* Monthly Pulse */}
                         <div className="bg-white rounded-3xl shadow-soft-glow border border-indigo-50 p-6 relative overflow-hidden">
                             <h3 className="text-lg font-extrabold text-slate-800 mb-6 flex items-center gap-2">
-                                {isIt ? 'Riepilogo Mensile' : 'Monthly Pulse'}
+                                {t('monthly_pulse')}
                             </h3>
                             <div className="space-y-6 relative z-10">
                                 {/* Office */}
@@ -514,7 +514,7 @@ const Planning: React.FC = () => {
                                                 <span className="material-icons text-xl">business</span>
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-slate-800">{isIt ? 'In Ufficio' : 'In Office'}</p>
+                                                <p className="text-sm font-bold text-slate-800">{t('in_office_label')}</p>
                                             </div>
                                         </div>
                                         <span className="text-2xl font-black text-indigo-600">{officeCount}</span>
@@ -533,7 +533,7 @@ const Planning: React.FC = () => {
                                                 <span className="material-icons text-xl">home</span>
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-slate-800">{isIt ? 'Remoto' : 'Remote'}</p>
+                                                <p className="text-sm font-bold text-slate-800">{t('remote_single')}</p>
                                             </div>
                                         </div>
                                         <span className="text-2xl font-black text-sky-500">{remoteCount}</span>
@@ -548,12 +548,12 @@ const Planning: React.FC = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-red-50/50 rounded-2xl p-4 border border-red-100 text-center hover:bg-red-50 transition-colors">
                                         <span className="material-icons text-red-400 mb-1">sick</span>
-                                        <p className="text-xs font-bold text-red-400 uppercase">{isIt ? 'Malattia' : 'Sick'}</p>
+                                        <p className="text-xs font-bold text-red-400 uppercase">{t('sick_label')}</p>
                                         <span className="text-xl font-black text-slate-800">{sickCount}</span>
                                     </div>
                                     <div className="bg-amber-50/50 rounded-2xl p-4 border border-amber-100 text-center hover:bg-amber-50 transition-colors">
                                         <span className="material-icons text-amber-400 mb-1">beach_access</span>
-                                        <p className="text-xs font-bold text-amber-400 uppercase">{isIt ? 'Ferie' : 'Holiday'}</p>
+                                        <p className="text-xs font-bold text-amber-400 uppercase">{t('holiday_label')}</p>
                                         <span className="text-xl font-black text-slate-800">{holidayCount}</span>
                                     </div>
                                 </div>
@@ -576,7 +576,7 @@ const Planning: React.FC = () => {
                         <div className="bg-gradient-to-br from-indigo-50 to-white rounded-3xl shadow-soft-glow border border-indigo-100 p-6 relative overflow-hidden">
                             <div className="relative z-10 text-center">
                                 <p className="text-slate-500 text-sm mb-4 font-medium">
-                                    {isIt ? 'Torna alla panoramica' : 'Back to overview'}
+                                    {t('back_to_overview')}
                                 </p>
                                 <Link to="/dashboard"
                                     className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
@@ -586,16 +586,16 @@ const Planning: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                </main>
+                </main >
 
                 {/* ── Footer ── */}
-                <footer className="mt-10 border-t border-indigo-100 bg-white/50 backdrop-blur-sm py-8">
+                < footer className="mt-10 border-t border-indigo-100 bg-white/50 backdrop-blur-sm py-8" >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                         <p className="text-slate-400 text-sm font-medium">© 2026 Athena Systems. Crafted with 💙 for the team.</p>
                     </div>
-                </footer>
-            </div>
-        </div>
+                </footer >
+            </div >
+        </div >
     );
 };
 

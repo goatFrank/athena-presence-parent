@@ -229,7 +229,7 @@ const Team: React.FC = () => {
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-sky-400 dark:bg-sky-400"></div>
-                                        <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{i18n.language === 'it' ? 'Remoto' : 'Remote'}</span>
+                                        <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{t('remote_label')}</span>
                                     </div>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-3xl font-bold text-[#0e121b] dark:text-white">{remoteCount}</span>
@@ -288,7 +288,7 @@ const Team: React.FC = () => {
                             <button
                                 onClick={() => setFilter('remote')}
                                 className={`whitespace-nowrap flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all text-sm active:scale-95 border ${filter === 'remote' ? 'bg-sky-400 text-white shadow-md shadow-sky-400/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-sky-500 border-slate-200 dark:border-slate-700 hover:border-sky-500/30'}`}>
-                                {i18n.language === 'it' ? 'Remoto' : 'Remote'} <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'remote' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{remoteCount}</span>
+                                {t('remote_label')} <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'remote' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{remoteCount}</span>
                             </button>
                             <button
                                 onClick={() => setFilter('leave')}
@@ -348,7 +348,7 @@ const Team: React.FC = () => {
                                             {colleague.work_status === 'remote' && (
                                                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-bold ring-1 ring-sky-500/20 shadow-sm">
                                                     <span className="material-symbols-outlined text-[14px]">home</span>
-                                                    {i18n.language === 'it' ? 'Remoto' : 'Remote'}
+                                                    {t('remote_label')}
                                                 </span>
                                             )}
                                             {colleague.work_status === 'leave' && (

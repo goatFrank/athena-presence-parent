@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../api/supabase';
+import { useTranslation } from 'react-i18next';
+import { supabase, setRememberMe as setRememberMePref } from '../api/supabase';
 
 const Login: React.FC = () => {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -16,6 +20,8 @@ const Login: React.FC = () => {
         setLoading(true);
 
         try {
+            setRememberMePref(rememberMe);
+
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
@@ -24,13 +30,10 @@ const Login: React.FC = () => {
             if (signInError) {
                 setError(signInError.message);
             } else {
-                // If login is successful, Supabase automatically saves the session to localStorage
-                console.log('Login successful');
                 navigate('/dashboard');
             }
-        } catch (err: any) {
-            setError('An unexpected error occurred during login.');
-            console.error(err);
+        } catch {
+            setError(t('login_error_unexpected'));
         } finally {
             setLoading(false);
         }
@@ -38,6 +41,24 @@ const Login: React.FC = () => {
 
     return (
         <main className="w-full max-w-5xl relative z-10 m-auto">
+            <style>
+                {`
+                    @keyframes spyRight {
+                        0% { transform: translate(0, 0); }
+                        100% { transform: translate(4px, 0); }
+                    }
+                    .character-eye-spy {
+                        animation: spyRight 0.3s forwards;
+                    }
+                    .character-head-spy {
+                        transform: rotate(15deg) translateX(64px) translateY(-10px);
+                        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    }
+                    .character-hand {
+                        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    }
+                `}
+            </style>
             <div className="fixed top-10 left-10 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl"></div>
             <div className="fixed bottom-10 right-10 w-48 h-48 bg-indigo-400/10 rounded-full blur-3xl"></div>
             <div className="bg-white rounded-[32px] shadow-deep border border-slate-100 flex flex-col md:flex-row overflow-hidden min-h-[600px] relative z-20 mx-4 lg:mx-0 mt-8 mb-8">
@@ -48,18 +69,35 @@ const Login: React.FC = () => {
 
                     <div className="relative z-10 w-full max-w-sm mx-auto aspect-square flex items-center justify-center">
                         <div className="relative w-64 h-64">
-                            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-24 h-28 bg-orange-200 rounded-[2rem] shadow-lg z-20">
-                                <div className="absolute top-10 left-4 w-4 h-4 bg-slate-800 rounded-full"></div>
-                                <div className="absolute top-10 right-4 w-4 h-4 bg-slate-800 rounded-full"></div>
+                            {/* The Character */}
+                            <div className={`absolute top-10 left-1/2 -translate-x-1/2 w-24 h-28 bg-orange-200 rounded-[2rem] shadow-lg z-20 transition-all duration-300 ${focusedField === 'email' ? 'character-head-spy' : ''}`}>
+                                {/* Eyes - moved back up slightly and styled to pop */}
+                                <div className={`absolute top-10 left-4 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-inner overflow-hidden transition-all duration-300 ${focusedField === 'email' ? 'scale-125' : ''}`}>
+                                    <div className={`w-3 h-3 bg-slate-800 rounded-full transition-all duration-300 ${focusedField === 'email' ? 'translate-x-1.5' : ''}`}></div>
+                                </div>
+                                <div className={`absolute top-10 right-4 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-inner overflow-hidden transition-all duration-300 ${focusedField === 'email' ? 'scale-125' : ''}`}>
+                                    <div className={`w-3 h-3 bg-slate-800 rounded-full transition-all duration-300 ${focusedField === 'email' ? 'translate-x-1.5' : ''}`}></div>
+                                </div>
+
+                                {/* Mouth/Blush */}
                                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-6 h-3 bg-red-300 rounded-full opacity-50"></div>
-                                <div className="absolute -top-4 -left-2 w-28 h-16 bg-slate-800 rounded-t-full rounded-bl-3xl"></div>
+
+                                {/* Hair/Helmet - moved up to -top-6 */}
+                                <div className="absolute -top-6 -left-2 w-28 h-16 bg-slate-800 rounded-t-full rounded-bl-3xl"></div>
+
+                                {/* Hands that cover eyes when password is focused */}
+                                <div className={`absolute top-8 left-1 w-8 h-8 bg-orange-200 rounded-full shadow-md z-30 character-hand ${focusedField === 'password' ? 'translate-y-0 opacity-100 scale-110' : 'translate-y-12 opacity-0'}`}></div>
+                                <div className={`absolute top-8 right-1 w-8 h-8 bg-orange-200 rounded-full shadow-md z-30 character-hand ${focusedField === 'password' ? 'translate-y-0 opacity-100 scale-110' : 'translate-y-12 opacity-0'}`}></div>
                             </div>
+
                             <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-48 h-32 bg-slate-200 rounded-xl shadow-xl z-30 flex items-center justify-center border-b-8 border-slate-300">
                                 <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
                                     <span className="material-icons text-blue-500 text-sm">shield</span>
                                 </div>
                             </div>
                             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-36 h-24 bg-blue-500 rounded-t-[3rem] z-10"></div>
+
+                            {/* Animated floating items */}
                             <div className="absolute top-0 right-0 w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center rotate-12 animate-bounce flex-shrink-0" style={{ animationDuration: '3s' }}>
                                 <span className="material-icons text-yellow-500">work</span>
                             </div>
@@ -70,8 +108,8 @@ const Login: React.FC = () => {
                     </div>
 
                     <div className="mt-8 text-center relative z-10">
-                        <h2 className="text-2xl font-brand font-semibold text-slate-800 mb-2">Workspace Freedom</h2>
-                        <p className="text-slate-500 text-sm max-w-xs mx-auto">Seamlessly track your location and connect with your team, wherever you are.</p>
+                        <h2 className="text-2xl font-brand font-semibold text-slate-800 mb-2">{t('workspace_freedom')}</h2>
+                        <p className="text-slate-500 text-sm max-w-xs mx-auto">{t('workspace_freedom_desc')}</p>
                     </div>
                 </div>
 
@@ -88,8 +126,8 @@ const Login: React.FC = () => {
                             <span className="text-2xl font-brand font-bold text-slate-800 tracking-tight">Athena</span>
                         </div>
 
-                        <h1 className="text-2xl font-bold text-slate-900 mb-2">Welcome back!</h1>
-                        <p className="text-slate-500 mb-8 text-sm">Please enter your details to sign in.</p>
+                        <h1 className="text-2xl font-bold text-slate-900 mb-2">{t('welcome_back')}</h1>
+                        <p className="text-slate-500 mb-8 text-sm">{t('enter_details')}</p>
 
                         {error && (
                             <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-start gap-2">
@@ -101,7 +139,7 @@ const Login: React.FC = () => {
                         <form onSubmit={handleLogin} className="space-y-5">
                             <div className="space-y-1.5">
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500" htmlFor="email">
-                                    Email Address
+                                    {t('email_address')}
                                 </label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -116,6 +154,8 @@ const Login: React.FC = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
+                                        onFocus={() => setFocusedField('email')}
+                                        onBlur={() => setFocusedField(null)}
                                         disabled={loading}
                                     />
                                 </div>
@@ -123,7 +163,7 @@ const Login: React.FC = () => {
 
                             <div className="space-y-1.5">
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500" htmlFor="password">
-                                    Password
+                                    {t('password')}
                                 </label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -138,6 +178,8 @@ const Login: React.FC = () => {
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
+                                        onFocus={() => setFocusedField('password')}
+                                        onBlur={() => setFocusedField(null)}
                                         disabled={loading}
                                     />
                                     <button
@@ -152,11 +194,19 @@ const Login: React.FC = () => {
 
                             <div className="flex items-center justify-between pt-1">
                                 <div className="flex items-center">
-                                    <input className="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded" id="remember-me" name="remember-me" type="checkbox" disabled={loading} />
-                                    <label className="ml-2 block text-sm text-slate-600" htmlFor="remember-me">Remember me</label>
+                                    <input
+                                        className="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded"
+                                        id="remember-me"
+                                        name="remember-me"
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        disabled={loading}
+                                    />
+                                    <label className="ml-2 block text-sm text-slate-600" htmlFor="remember-me">{t('remember_me')}</label>
                                 </div>
                                 <a className="text-sm font-semibold text-primary hover:text-blue-700 transition-colors" href="#">
-                                    Forgot password?
+                                    {t('forgot_password')}
                                 </a>
                             </div>
 
@@ -171,10 +221,10 @@ const Login: React.FC = () => {
                                 {loading ? (
                                     <>
                                         <span className="material-icons animate-spin mr-2 text-sm">autorenew</span>
-                                        Signing in...
+                                        {t('signing_in')}
                                     </>
                                 ) : (
-                                    'Sign In'
+                                    t('sign_in')
                                 )}
                             </button>
                         </form>
@@ -184,17 +234,17 @@ const Login: React.FC = () => {
                                 <div className="w-full border-t border-slate-100"></div>
                             </div>
                             <div className="relative flex justify-center text-xs uppercase tracking-wide">
-                                <span className="px-4 bg-white text-slate-400 font-medium">Or continue with</span>
+                                <span className="px-4 bg-white text-slate-400 font-medium">{t('or_continue_with')}</span>
                             </div>
                         </div>
 
                         <button className="w-full flex justify-center items-center py-3.5 px-4 border border-slate-200 rounded-2xl bg-white text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 transition-all duration-200 group" type="button" disabled={loading}>
                             <img alt="SSO" className="w-5 h-5 mr-3 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVS2CBsKogNkmvrqwDY2CZRQXv65uWoaE8lQLi_YS6pWgPFzM574z3jUDhwwUbKa3ukke8pNgXzHdiLMwkotakFO4yolmn-AQMN5DK2huCB089LGBQIzVRuuEV9Cjzo6hTCxJnEmGUSg40Vu3baWxttEVMU2aFa09iBafuu_ABNtcHM5T2GkP-VhSF1uc80BIT-ntDox-L6_knFBgPPMRvg-dT9jzA85pACYM6Co8x69ITTHBVSKUuGTxBLbWd6OX7nntKtMFlgu0" />
-                            Single Sign-On (SSO)
+                            {t('sso')}
                         </button>
 
                         <p className="mt-8 text-center text-xs text-slate-400">
-                            Don't have an account? <a className="text-primary font-semibold hover:underline" href="#">Contact HR</a>
+                            {t('no_account')} <a className="text-primary font-semibold hover:underline" href="#">{t('contact_hr')}</a>
                         </p>
                     </div>
                 </div>
@@ -202,11 +252,11 @@ const Login: React.FC = () => {
 
             <div className="mt-8 text-center pb-8">
                 <div className="flex justify-center space-x-6 text-xs text-slate-400 font-medium">
-                    <a className="hover:text-slate-600 transition-colors" href="#">Privacy</a>
+                    <a className="hover:text-slate-600 transition-colors" href="#">{t('privacy')}</a>
                     <span className="text-slate-300">•</span>
-                    <a className="hover:text-slate-600 transition-colors" href="#">Terms</a>
+                    <a className="hover:text-slate-600 transition-colors" href="#">{t('terms')}</a>
                     <span className="text-slate-300">•</span>
-                    <a className="hover:text-slate-600 transition-colors" href="#">Help</a>
+                    <a className="hover:text-slate-600 transition-colors" href="#">{t('help')}</a>
                 </div>
                 <p className="mt-4 text-[10px] text-slate-400 opacity-60">
                     © 2024 Athena Inc. Internal System.

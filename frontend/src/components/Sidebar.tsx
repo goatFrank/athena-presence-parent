@@ -8,6 +8,7 @@ const Sidebar: React.FC = () => {
     const location = useLocation();
     const [userName, setUserName] = useState<string>('');
     const [userRole, setUserRole] = useState<string>('');
+    const [userAvatar, setUserAvatar] = useState<string>('');
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
     useEffect(() => {
@@ -16,12 +17,16 @@ const Sidebar: React.FC = () => {
             if (user) {
                 const { data: meData, error: meError } = await supabase
                     .from('profiles')
-                    .select('full_name, role_description')
+                    .select('full_name, role_description, avatar_url')
                     .eq('id', user.id);
 
                 if (!meError && meData && meData.length > 0) {
                     if (meData[0].full_name) setUserName(meData[0].full_name);
                     if (meData[0].role_description) setUserRole(meData[0].role_description);
+                    if (meData[0].avatar_url) {
+                        const rawAvatar = meData[0].avatar_url;
+                        setUserAvatar(rawAvatar.startsWith('http') ? rawAvatar : `${import.meta.env.VITE_ATTENDANCE_API_URL}${rawAvatar}`);
+                    }
                 } else {
                     const fallbackName = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'User');
                     setUserName(fallbackName);
@@ -114,7 +119,16 @@ const Sidebar: React.FC = () => {
                         className="bg-blue-50/50 dark:bg-slate-800/50 rounded-2xl p-4 border border-blue-100 dark:border-slate-700 cursor-pointer hover:bg-blue-100/50 dark:hover:bg-slate-700/50 transition-colors flex items-center justify-between group"
                     >
                         <div className="flex items-center gap-3 min-w-0">
-                            <img alt="User Profile" className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-2 ring-white dark:ring-slate-700" src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=3B82F6&color=fff&rounded=true&bold=true&size=128`} />
+                            <img
+                                alt="User Profile"
+                                className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-2 ring-white dark:ring-slate-700"
+                                src={userAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=3B82F6&color=fff&rounded=true&bold=true&size=128`}
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.onerror = null;
+                                    target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=3B82F6&color=fff&rounded=true&bold=true&size=128`;
+                                }}
+                            />
                             <div className="flex flex-col min-w-0">
                                 <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{userName}</span>
                                 <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{userRole || 'Team Member'}</span>

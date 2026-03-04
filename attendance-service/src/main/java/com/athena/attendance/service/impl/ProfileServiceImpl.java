@@ -50,6 +50,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .departmentId(profile.getDepartmentId())
                 .tenantName(tenantName)
                 .departmentName(departmentName)
+                .profileCellphone(profile.getProfileCellphone())
                 .build();
     }
 

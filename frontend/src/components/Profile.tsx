@@ -31,7 +31,12 @@ const Profile: React.FC = () => {
 
     // Settings mock state
     const [emailNotifications, setEmailNotifications] = useState(true);
-    const [profileVisibility, setProfileVisibility] = useState(true);
+
+
+    // Phone editing state
+    const [editPhone, setEditPhone] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
     // Avatar Upload State
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -101,35 +106,35 @@ const Profile: React.FC = () => {
                 setAvatarFile(null);
                 setAvatarPreview(null);
             } else {
-                let errorMessage = `Caricamento fallito (${response.status}: ${response.statusText}).`;
+                let errorMessage = t('upload_failed_generic', 'Caricamento fallito. Impossibile aggiornare l\'avatar.');
                 try {
                     const textData = await response.text();
                     try {
                         const errorData = JSON.parse(textData);
                         if (errorData.message) {
-                            errorMessage = `Errore API: ${errorData.message}`;
-                        } else if (textData) {
-                            errorMessage += ` Dettagli: ${textData.substring(0, 100)}`;
+                            errorMessage = errorData.message;
                         }
                     } catch (parseError) {
+                        console.warn('Could not parse error response as JSON:', parseError);
                         if (response.status === 413) {
-                            errorMessage = 'Il file è troppo grande o supera il limite del server (Max 4MB).';
-                        } else if (response.status === 403) {
-                            errorMessage = 'Accesso negato backend (403). Controlla il JWT.';
-                        } else if (response.status === 404) {
-                            errorMessage = 'Endpoint non trovato (404). Hai riavviato il backend?';
-                        } else {
-                            errorMessage += ` Risposta server: ${textData.substring(0, 150)}`;
+                            errorMessage = t('error_file_too_large', 'L\'immagine è troppo grande. Il limite massimo è 4MB.');
+                        } else if (response.status === 400) {
+                            errorMessage = t('error_bad_request', 'Il formato del file non è corretto o l\'immagine è corrotta.');
+                        } else if (response.status === 401 || response.status === 403) {
+                            errorMessage = t('error_unauthorized', 'Sessione scaduta o non sei autorizzato. Prova ad effettuare nuovamente il login.');
+                        } else if (response.status >= 500) {
+                            errorMessage = t('error_server', 'Si è verificato un errore sul server. Riprova più tardi.');
                         }
                     }
                 } catch (textError) {
-                    errorMessage += ' (Impossibile leggere la risposta del server)';
+                    console.warn('Failed to read response text:', textError);
+                    // Fallback to generic message
                 }
                 setUploadError(errorMessage);
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error uploading avatar:', error);
-            setUploadError(`Errore di connessione o CORS: ${error.message || 'Controlla la console'}`);
+            setUploadError(t('error_connection', 'Errore di connessione. Verifica di essere connesso a internet e riprova.'));
         } finally {
             setIsUploading(false);
         }
@@ -149,6 +154,7 @@ const Profile: React.FC = () => {
             full_name,
             avatar_url,
             role_description,
+            profile_cellphone,
             departments ( name )
           `)
                     .eq('id', user.id)
@@ -157,16 +163,25 @@ const Profile: React.FC = () => {
                 if (profileError) {
                     console.error("Error fetching profile:", profileError);
                 } else if (profileData) {
+                    const rawAvatarUrl = profileData.avatar_url;
+                    let finalAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.full_name || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`;
+                    if (rawAvatarUrl) {
+                        finalAvatarUrl = rawAvatarUrl.startsWith('http')
+                            ? rawAvatarUrl
+                            : `${import.meta.env.VITE_ATTENDANCE_API_URL}${rawAvatarUrl}`;
+                    }
+
                     setProfile({
                         id: profileData.id,
                         email: user.email || '',
                         fullName: profileData.full_name || user.email?.split('@')[0] || 'User',
-                        avatarUrl: profileData.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.full_name || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`,
+                        avatarUrl: finalAvatarUrl,
                         department: (profileData.departments as any)?.name || 'Senza dipartimento',
-                        officeLocation: 'Milan HQ', // Currently static as per mock, could be added to DB later
+                        officeLocation: 'Milan HQ',
                         roleDescription: profileData.role_description || 'Team Member',
-                        phone: '+39 000 000 0000' // Mock data
+                        phone: profileData.profile_cellphone || ''
                     });
+                    setEditPhone(profileData.profile_cellphone || '');
                 }
 
                 // Fetch Work Statistics from backend
@@ -191,6 +206,30 @@ const Profile: React.FC = () => {
 
         fetchProfileData();
     }, []);
+
+    const handleSaveProfile = async () => {
+        if (!profile) return;
+        setIsSaving(true);
+        setSaveSuccess(false);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ profile_cellphone: editPhone })
+                .eq('id', profile.id);
+
+            if (error) {
+                console.error('Error saving profile:', error);
+            } else {
+                setProfile(prev => prev ? { ...prev, phone: editPhone } : null);
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 2000);
+            }
+        } catch (e) {
+            console.error('Exception saving profile:', e);
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -221,9 +260,14 @@ const Profile: React.FC = () => {
                         <div className="relative group">
                             <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 p-1 cursor-pointer transition-transform hover:scale-105">
                                 <img
-                                    alt={profile?.fullName}
+                                    alt={profile?.fullName || 'User Profile'}
                                     className="w-full h-full object-cover rounded-full border-4 border-white dark:border-slate-800"
-                                    src={profile?.avatarUrl}
+                                    src={profile?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`}
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.onerror = null; // Prevent infinite loop if fallback also fails
+                                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`;
+                                    }}
                                 />
                             </div>
                             <button onClick={() => setIsAvatarModalOpen(true)} className="absolute bottom-0 right-0 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-full p-2.5 shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-colors border border-slate-100 dark:border-slate-600 group-hover:scale-110 flex items-center justify-center">
@@ -249,8 +293,18 @@ const Profile: React.FC = () => {
                                     </div>
                                     {t('personal_information', 'Personal Information')}
                                 </h2>
-                                <button className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700">
-                                    {t('save_changes', 'Save Changes')}
+                                <button
+                                    onClick={handleSaveProfile}
+                                    disabled={isSaving}
+                                    className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 disabled:opacity-50 flex items-center gap-1.5"
+                                >
+                                    {isSaving ? (
+                                        <><span className="animate-spin material-icons text-[16px]">autorenew</span> {t('saving', 'Salvataggio...')}</>
+                                    ) : saveSuccess ? (
+                                        <><span className="material-icons text-[16px] text-green-500">check_circle</span> {t('saved', 'Salvato!')}</>
+                                    ) : (
+                                        t('save_changes', 'Save Changes')
+                                    )}
                                 </button>
                             </div>
 
@@ -268,7 +322,9 @@ const Profile: React.FC = () => {
                                     <input
                                         className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-800 font-medium"
                                         type="tel"
-                                        defaultValue={profile?.phone}
+                                        value={editPhone}
+                                        onChange={(e) => setEditPhone(e.target.value)}
+                                        placeholder="+39 000 000 0000"
                                     />
                                 </div>
                                 <div>
@@ -327,24 +383,20 @@ const Profile: React.FC = () => {
                                                 style={{ transition: 'stroke-dasharray 1s ease-out' }}
                                             />
                                         </svg>
-                                        <div className="text-center z-10">
-                                            <span className="block text-2xl font-bold text-slate-800 dark:text-white">{remotePercent}%</span>
-                                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('remote', 'Remote')}</span>
-                                        </div>
                                     </div>
 
                                     <div className="space-y-4 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></div>
-                                                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Remote Work</span>
+                                                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('remote_work')}</span>
                                             </div>
                                             <span className="text-sm font-bold text-slate-800 dark:text-white">{remotePercent}% <span className="text-slate-400 font-medium ml-1">({stats?.remoteDays || 0}d)</span></span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-3 h-3 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></div>
-                                                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Office</span>
+                                                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('office')}</span>
                                             </div>
                                             <span className="text-sm font-bold text-slate-800 dark:text-white">{officePercent}% <span className="text-slate-400 font-medium ml-1">({stats?.officeDays || 0}d)</span></span>
                                         </div>
@@ -364,23 +416,14 @@ const Profile: React.FC = () => {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600 cursor-pointer" onClick={() => setEmailNotifications(!emailNotifications)}>
                                         <div>
-                                            <p className="font-semibold text-slate-800 dark:text-slate-200">Email Notifications</p>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Receive daily digest of location updates.</p>
+                                            <p className="font-semibold text-slate-800 dark:text-slate-200">{t('email_notifications')}</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{t('email_notifications_desc')}</p>
                                         </div>
                                         <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailNotifications ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-600'}`}>
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${emailNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600 cursor-pointer" onClick={() => setProfileVisibility(!profileVisibility)}>
-                                        <div>
-                                            <p className="font-semibold text-slate-800 dark:text-slate-200">Profile Visibility</p>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Allow colleagues to see your stats.</p>
-                                        </div>
-                                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profileVisibility ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-600'}`}>
-                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${profileVisibility ? 'translate-x-6' : 'translate-x-1'}`} />
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -403,8 +446,8 @@ const Profile: React.FC = () => {
                                     <div className="absolute inset-0 bg-blue-200 dark:bg-blue-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
                                     <span className="material-icons text-3xl text-blue-600 dark:text-blue-400">home_work</span>
                                 </div>
-                                <h3 className="font-bold text-slate-800 dark:text-white text-center">Remote Champion</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{stats?.remoteDays || 0} days working remotely</p>
+                                <h3 className="font-bold text-slate-800 dark:text-white text-center">{t('remote_champion')}</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('days_working_remotely', { count: stats?.remoteDays || 0 })}</p>
                             </div>
 
                             <div className="flex flex-col items-center p-6 bg-gradient-to-b from-amber-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-3xl border border-amber-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group">
@@ -412,8 +455,8 @@ const Profile: React.FC = () => {
                                     <div className="absolute inset-0 bg-amber-200 dark:bg-amber-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
                                     <span className="material-icons text-3xl text-amber-600 dark:text-amber-400">domain</span>
                                 </div>
-                                <h3 className="font-bold text-slate-800 dark:text-white text-center">Office Regular</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{stats?.officeDays || 0} days in office</p>
+                                <h3 className="font-bold text-slate-800 dark:text-white text-center">{t('office_regular')}</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('days_in_office', { count: stats?.officeDays || 0 })}</p>
                             </div>
 
                             <div className="flex flex-col items-center p-6 bg-gradient-to-b from-emerald-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-3xl border border-emerald-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group">
@@ -421,8 +464,8 @@ const Profile: React.FC = () => {
                                     <div className="absolute inset-0 bg-emerald-200 dark:bg-emerald-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
                                     <span className="material-icons text-3xl text-emerald-600 dark:text-emerald-400">event_available</span>
                                 </div>
-                                <h3 className="font-bold text-slate-800 dark:text-white text-center">Always Updated</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{stats?.totalWorkingDays || 0} logged days</p>
+                                <h3 className="font-bold text-slate-800 dark:text-white text-center">{t('always_updated')}</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('logged_days', { count: stats?.totalWorkingDays || 0 })}</p>
                             </div>
 
                             <div className="flex flex-col items-center p-6 bg-gradient-to-b from-rose-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-3xl border border-rose-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group opacity-60 grayscale hover:grayscale-0">
@@ -430,8 +473,8 @@ const Profile: React.FC = () => {
                                     <div className="absolute inset-0 bg-rose-200 dark:bg-rose-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
                                     <span className="material-icons text-3xl text-rose-600 dark:text-rose-400">local_cafe</span>
                                 </div>
-                                <h3 className="font-bold text-slate-800 dark:text-white text-center">Coffee Lover</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">Coming soon</p>
+                                <h3 className="font-bold text-slate-800 dark:text-white text-center">{t('coffee_lover')}</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('coming_soon')}</p>
                             </div>
 
                         </div>
@@ -493,7 +536,16 @@ const Profile: React.FC = () => {
                                 <div className="space-y-6">
                                     <div className="flex flex-col items-center justify-center p-6 border border-slate-100 dark:border-slate-700 rounded-3xl bg-slate-50 dark:bg-slate-900/50 relative group">
                                         <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden relative">
-                                            <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                                            <img
+                                                src={avatarPreview}
+                                                alt="Preview"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.onerror = null;
+                                                    target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`;
+                                                }}
+                                            />
                                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => { setAvatarFile(null); setAvatarPreview(null); }}
