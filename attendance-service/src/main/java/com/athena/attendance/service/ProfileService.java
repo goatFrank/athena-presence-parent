@@ -1,9 +1,11 @@
 package com.athena.attendance.service;
 
 import com.athena.common.dto.ProfileDTO;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 public interface ProfileService {
     ProfileDTO getProfile(UUID userId);
-}
 
+    String updateAvatar(UUID userId, MultipartFile file);
+}
