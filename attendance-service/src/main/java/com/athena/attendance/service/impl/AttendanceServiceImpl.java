@@ -29,7 +29,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         @Override
         @Transactional
-        public ResponseDTO<Attendance> saveAttendance(AttendanceDTO dto) {
+        public ResponseDTO<Attendance> saveAttendance(AttendanceDTO dto, UUID authenticatedUserId) {
 
                 // Cannot modify past days
                 if (dto.getWorkDate().isBefore(LocalDate.now())) {
@@ -40,14 +40,23 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         .build();
                 }
 
+                // Security Enforcement: fetch true Profile linked to auth UUID
+                com.athena.attendance.entity.Profile profile = profileRepository.findById(authenticatedUserId)
+                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.NOT_FOUND,
+                                                "UserProfile not found for authenticated user"));
+
                 // Cerchiamo se esiste già un record per l'utente in quel giorno (Update)
                 // altrimenti ne istanziamo uno nuovo (Create)
-                Attendance attendance = repository.findByUserIdAndWorkDate(dto.getUserId(), dto.getWorkDate())
+                Attendance attendance = repository.findByUserIdAndWorkDate(authenticatedUserId, dto.getWorkDate())
                                 .orElse(new Attendance());
 
-                attendance.setUserId(dto.getUserId());
-                attendance.setTenantId(dto.getTenantId());
-                attendance.setDepartmentId(dto.getDepartmentId());
+                // Forziamo i dati dal profilo vero invece di fidarci del DTO (che può essere
+                // manomesso dal client)
+                attendance.setUserId(authenticatedUserId);
+                attendance.setTenantId(profile.getTenantId());
+                attendance.setDepartmentId(profile.getDepartmentId());
+
                 attendance.setWorkDate(dto.getWorkDate());
                 attendance.setStatus(dto.getStatus());
                 attendance.setNote(dto.getNote());

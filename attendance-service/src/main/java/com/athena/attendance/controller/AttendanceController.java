@@ -28,8 +28,10 @@ public class AttendanceController {
 
     @PostMapping
     @Operation(summary = "Registra o aggiorna la presenza giornaliera")
-    public ResponseEntity<ResponseDTO<Attendance>> save(@Valid @RequestBody AttendanceDTO dto) {
-        ResponseDTO<Attendance> response = attendanceService.saveAttendance(dto);
+    public ResponseEntity<ResponseDTO<Attendance>> save(@Valid @RequestBody AttendanceDTO dto,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        ResponseDTO<Attendance> response = attendanceService.saveAttendance(dto, authenticatedUserId);
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 

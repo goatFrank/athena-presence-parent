@@ -11,8 +11,10 @@ public interface AttendanceService {
 
     /**
      * Registra o aggiorna la presenza di un utente per una specifica data.
+     * Utilizza authenticatedUserId per derivare in sicurezza ID utente, tenant e
+     * dipartimento.
      */
-    ResponseDTO<Attendance> saveAttendance(AttendanceDTO dto);
+    ResponseDTO<Attendance> saveAttendance(AttendanceDTO dto, UUID authenticatedUserId);
 
     /**
      * Aggiorna la presenza esistente di un utente per una specifica data. Se il
