@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import { supabase } from '../api/supabase';
+import Footer from './Footer';
 
 interface Colleague {
     id: string;
@@ -164,8 +165,8 @@ const Team: React.FC = () => {
         <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
 
-            <div className="flex-1 ml-80 overflow-y-auto h-screen scroll-smooth">
-                <main className="w-full max-w-[1440px] mx-auto p-6 lg:p-10 flex flex-col gap-8">
+            <div className="flex-1 flex flex-col ml-80 overflow-y-auto h-screen scroll-smooth">
+                <main className="flex-1 w-full max-w-[1440px] mx-auto p-6 lg:p-10 flex flex-col gap-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold text-[#0e121b] dark:text-white tracking-tight">{t('team_overview')}</h1>
@@ -370,6 +371,7 @@ const Team: React.FC = () => {
                         )}
                     </div>
                 </main>
+                <Footer />
             </div>
         </div>
     );

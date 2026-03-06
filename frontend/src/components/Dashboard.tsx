@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
 import Sidebar from './Sidebar';
+import Footer from './Footer';
 
 const Dashboard: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -313,243 +314,247 @@ const Dashboard: React.FC = () => {
         <div className="bg-pattern text-slate-800 dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
 
-            {/* Main Content */}
-            <main className="flex-1 ml-80 mr-80 p-10 overflow-y-auto h-screen scroll-smooth">
-                <header className="mb-10 relative overflow-hidden bg-gradient-to-r from-blue-100 to-cyan-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-8 shadow-soft flex items-center justify-between min-h-[180px]">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-200/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none mix-blend-multiply dark:mix-blend-soft-light"></div>
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-300/30 rounded-full blur-2xl translate-y-1/4 -translate-x-1/4 pointer-events-none mix-blend-multiply dark:mix-blend-soft-light"></div>
+            {/* Main Content wrapper */}
+            <div className="flex-1 flex flex-col ml-80 mr-80 overflow-y-auto h-screen scroll-smooth">
+                <main className="flex-1 p-10 flex flex-col">
+                    <header className="mb-10 relative overflow-hidden bg-gradient-to-r from-blue-100 to-cyan-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-8 shadow-soft flex items-center justify-between min-h-[180px]">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-200/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none mix-blend-multiply dark:mix-blend-soft-light"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-300/30 rounded-full blur-2xl translate-y-1/4 -translate-x-1/4 pointer-events-none mix-blend-multiply dark:mix-blend-soft-light"></div>
 
-                    <div className="relative z-10 max-w-lg">
-                        <div className="inline-flex items-center gap-2 bg-white/60 dark:bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-600 dark:text-blue-300 mb-3 border border-white/50 dark:border-white/10 shadow-sm">
-                            <span className="material-symbols-outlined text-[16px]">wb_sunny</span>
-                            <span>{t('sunny_vibes')}</span>
-                        </div>
-                        <h1 className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight mb-2">{t('good_morning')}, {userName}!</h1>
-                        <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed mb-2">{t(greetingKey, { day: currentDayName })}</p>
-                        {debugInfo && (
-                            <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg shadow-sm">
-                                <p className="text-xs text-red-700 dark:text-red-300 font-mono break-words">{debugInfo}</p>
+                        <div className="relative z-10 max-w-lg">
+                            <div className="inline-flex items-center gap-2 bg-white/60 dark:bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-600 dark:text-blue-300 mb-3 border border-white/50 dark:border-white/10 shadow-sm">
+                                <span className="material-symbols-outlined text-[16px]">wb_sunny</span>
+                                <span>{t('sunny_vibes')}</span>
                             </div>
-                        )}
-                    </div>
-
-                    <div className="relative z-10 hidden lg:block pr-8">
-                        <svg className="drop-shadow-lg" fill="none" height="140" viewBox="0 0 200 140" width="200" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="160" cy="40" fill="#FDE047" fillOpacity="0.8" r="30"></circle>
-                            <path d="M40 140V80C40 74.4772 44.4772 70 50 70H150C155.523 70 160 74.4772 160 80V140H40Z" fill="url(#paint0_linear)"></path>
-                            <rect fill="white" fillOpacity="0.9" height="40" rx="4" width="90" x="55" y="90"></rect>
-                            <rect fill="#E2E8F0" height="2" rx="1" width="70" x="65" y="100"></rect>
-                            <rect fill="#E2E8F0" height="2" rx="1" width="50" x="65" y="108"></rect>
-                            <path d="M20 140H60V110C60 104.477 55.523 100 50 100H30C24.4772 100 20 104.477 20 110V140Z" fill="#CBD5E1"></path>
-                            <defs>
-                                <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear" x1="100" x2="100" y1="70" y2="140">
-                                    <stop stopColor="#60A5FA"></stop>
-                                    <stop offset="1" stopColor="#3B82F6"></stop>
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
-                </header>
-
-                <section className="bg-surface-light dark:bg-surface-dark rounded-3xl shadow-soft border border-white dark:border-slate-700 p-8 mb-10 relative overflow-hidden">
-                    <div className="flex justify-between items-center mb-6 relative z-10">
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 m-0">
-                            <span className="w-2 h-6 bg-blue-500 rounded-full block"></span>
-                            {t('where_are_you')}
-                        </h2>
-                        <button
-                            onClick={handleConfirmTodayStatus}
-                            disabled={isUpdatingStatus || pendingStatus === todayStatus || pendingStatus === null}
-                            className={`px-5 py-2 text-sm rounded-xl font-bold transition-all duration-300 flex items-center gap-2 ${pendingStatus !== null && pendingStatus !== todayStatus && !isUpdatingStatus
-                                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md hover:shadow-indigo-500/40 hover:-translate-y-0.5'
-                                : 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                                }`}
-                        >
-                            {isUpdatingStatus ? (
-                                <span className="material-icons animate-spin text-[18px]">autorenew</span>
-                            ) : (
-                                <span className="material-icons text-[18px]">check_circle</span>
+                            <h1 className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight mb-2">{t('good_morning')}, {userName}!</h1>
+                            <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed mb-2">{t(greetingKey, { day: currentDayName })}</p>
+                            {debugInfo && (
+                                <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg shadow-sm">
+                                    <p className="text-xs text-red-700 dark:text-red-300 font-mono break-words">{debugInfo}</p>
+                                </div>
                             )}
-                            {t('confirm')}
-                        </button>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
-                        {[
-                            { key: 'OFFICE', icon: 'business', label: t('at_office'), gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-400/30', iconBg: 'bg-blue-50', iconColor: 'text-blue-600', hoverRing: 'hover:ring-blue-400/50' },
-                            { key: 'REMOTE', icon: 'home', label: t('remote'), gradient: 'from-cyan-400 to-blue-400', ring: 'ring-cyan-400/30', iconBg: 'bg-cyan-50', iconColor: 'text-cyan-600', hoverRing: 'hover:ring-cyan-400/50' },
-                            { key: 'SICK', icon: 'sick', label: t('sick'), gradient: 'from-red-400 to-red-500', ring: 'ring-red-400/30', iconBg: 'bg-red-50', iconColor: 'text-red-500', hoverRing: 'hover:ring-red-400/50' },
-                            { key: 'HOLIDAY', icon: 'beach_access', label: t('holiday'), gradient: 'from-amber-400 to-orange-400', ring: 'ring-amber-400/30', iconBg: 'bg-amber-50', iconColor: 'text-amber-500', hoverRing: 'hover:ring-amber-400/50' },
-                        ].map((s) => {
-                            const isActive = pendingStatus === s.key;
-                            return (
-                                <button
-                                    key={s.key}
-                                    onClick={() => setPendingStatus(s.key)}
-                                    className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden cursor-pointer w-full focus:outline-none ${isActive
-                                        ? `border-transparent ring-4 ${s.ring} shadow-lg scale-105`
-                                        : `border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-60 hover:opacity-100 hover:scale-[1.02] hover:shadow-md hover:border-transparent hover:ring-2 ${s.hoverRing}`
-                                        }`}>
-                                    {isActive && <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-100`}></div>}
-                                    <div className="relative z-10 flex flex-col items-center text-center">
-                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 text-2xl shadow-inner transition-colors ${isActive ? 'bg-white/20 text-white' : `${s.iconBg} ${s.iconColor}`}`}>
-                                            <span className="material-icons">{s.icon}</span>
-                                        </div>
-                                        <span className={`block text-sm font-bold mb-0.5 transition-colors ${isActive ? 'text-white' : 'text-slate-600 dark:text-white'}`}>{s.label}</span>
-                                    </div>
-                                    {isActive && (
-                                        <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white text-green-500 flex items-center justify-center shadow-md z-10">
-                                            <span className="material-icons text-sm font-bold">check</span>
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </section>
-
-                <div className="grid grid-cols-3 gap-6 mb-10">
-                    <div className="col-span-2 bg-white dark:bg-surface-dark p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow flex flex-col justify-center">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center">
-                                    <span className="material-icons text-xl">calendar_month</span>
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">{t('monthly_plan')}</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                        {t('planned_days')} <span className="font-bold text-slate-700 dark:text-slate-300">{(dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)}</span> {t('of_working_days', { total: dashboardStats?.totalWorkingDays ?? 20 })}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <span className="text-2xl font-bold text-slate-800 dark:text-white">
-                                    {Math.round((((dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)) / (dashboardStats?.totalWorkingDays || 20)) * 100)}%
-                                </span>
-                            </div>
                         </div>
 
-                        {/* Computed Progress Array */}
-                        {(() => {
-                            const totalDays = dashboardStats?.totalWorkingDays || 20;
-                            const plannedStats = [
-                                { id: 'office', count: dashboardStats?.officeDays ?? 0, label: t('office'), color: 'bg-indigo-600' },
-                                { id: 'remote', count: dashboardStats?.remoteDays ?? 0, label: t('remote'), color: 'bg-sky-400' },
-                                { id: 'holiday', count: dashboardStats?.holidayDays ?? 0, label: t('holidays_leaves'), color: 'bg-amber-400' },
-                                { id: 'sick', count: dashboardStats?.sickDays ?? 0, label: t('sick'), color: 'bg-red-400' },
-                            ].filter(s => s.count > 0).sort((a, b) => b.count - a.count); // Sort descending
+                        <div className="relative z-10 hidden lg:block pr-8">
+                            <svg className="drop-shadow-lg" fill="none" height="140" viewBox="0 0 200 140" width="200" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="160" cy="40" fill="#FDE047" fillOpacity="0.8" r="30"></circle>
+                                <path d="M40 140V80C40 74.4772 44.4772 70 50 70H150C155.523 70 160 74.4772 160 80V140H40Z" fill="url(#paint0_linear)"></path>
+                                <rect fill="white" fillOpacity="0.9" height="40" rx="4" width="90" x="55" y="90"></rect>
+                                <rect fill="#E2E8F0" height="2" rx="1" width="70" x="65" y="100"></rect>
+                                <rect fill="#E2E8F0" height="2" rx="1" width="50" x="65" y="108"></rect>
+                                <path d="M20 140H60V110C60 104.477 55.523 100 50 100H30C24.4772 100 20 104.477 20 110V140Z" fill="#CBD5E1"></path>
+                                <defs>
+                                    <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear" x1="100" x2="100" y1="70" y2="140">
+                                        <stop stopColor="#60A5FA"></stop>
+                                        <stop offset="1" stopColor="#3B82F6"></stop>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                    </header>
 
-                            const totalPlanned = plannedStats.reduce((sum, s) => sum + s.count, 0);
-                            const unplanned = Math.max(0, totalDays - totalPlanned);
-
-                            let currentLeft = 0;
-
-                            return (
-                                <>
-                                    {/* Progress Bar */}
-                                    <div className="relative w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4 shadow-inner">
-                                        {plannedStats.map(stat => {
-                                            const widthPct = (stat.count / totalDays) * 100;
-                                            const style = { left: `${currentLeft}%`, width: `${widthPct}%` };
-                                            currentLeft += widthPct;
-                                            return (
-                                                <div
-                                                    key={stat.id}
-                                                    className={`absolute top-0 h-full ${stat.color} transition-all duration-1000 ease-out`}
-                                                    style={style}
-                                                ></div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {/* Legend */}
-                                    <div className="flex items-center flex-wrap gap-4 text-xs font-semibold">
-                                        {plannedStats.map(stat => (
-                                            <div key={stat.id} className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-md">
-                                                <span className={`w-2 h-2 rounded-full ${stat.color}`}></span>
-                                                {stat.label}: {stat.count}
+                    <section className="bg-surface-light dark:bg-surface-dark rounded-3xl shadow-soft border border-white dark:border-slate-700 p-8 mb-10 relative overflow-hidden">
+                        <div className="flex justify-between items-center mb-6 relative z-10">
+                            <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 m-0">
+                                <span className="w-2 h-6 bg-blue-500 rounded-full block"></span>
+                                {t('where_are_you')}
+                            </h2>
+                            <button
+                                onClick={handleConfirmTodayStatus}
+                                disabled={isUpdatingStatus || pendingStatus === todayStatus || pendingStatus === null}
+                                className={`px-5 py-2 text-sm rounded-xl font-bold transition-all duration-300 flex items-center gap-2 ${pendingStatus !== null && pendingStatus !== todayStatus && !isUpdatingStatus
+                                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md hover:shadow-indigo-500/40 hover:-translate-y-0.5'
+                                    : 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                    }`}
+                            >
+                                {isUpdatingStatus ? (
+                                    <span className="material-icons animate-spin text-[18px]">autorenew</span>
+                                ) : (
+                                    <span className="material-icons text-[18px]">check_circle</span>
+                                )}
+                                {t('confirm')}
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+                            {[
+                                { key: 'OFFICE', icon: 'business', label: t('at_office'), gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-400/30', iconBg: 'bg-blue-50', iconColor: 'text-blue-600', hoverRing: 'hover:ring-blue-400/50' },
+                                { key: 'REMOTE', icon: 'home', label: t('remote'), gradient: 'from-cyan-400 to-blue-400', ring: 'ring-cyan-400/30', iconBg: 'bg-cyan-50', iconColor: 'text-cyan-600', hoverRing: 'hover:ring-cyan-400/50' },
+                                { key: 'SICK', icon: 'sick', label: t('sick'), gradient: 'from-red-400 to-red-500', ring: 'ring-red-400/30', iconBg: 'bg-red-50', iconColor: 'text-red-500', hoverRing: 'hover:ring-red-400/50' },
+                                { key: 'HOLIDAY', icon: 'beach_access', label: t('holiday'), gradient: 'from-amber-400 to-orange-400', ring: 'ring-amber-400/30', iconBg: 'bg-amber-50', iconColor: 'text-amber-500', hoverRing: 'hover:ring-amber-400/50' },
+                            ].map((s) => {
+                                const isActive = pendingStatus === s.key;
+                                return (
+                                    <button
+                                        key={s.key}
+                                        onClick={() => setPendingStatus(s.key)}
+                                        className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden cursor-pointer w-full focus:outline-none ${isActive
+                                            ? `border-transparent ring-4 ${s.ring} shadow-lg scale-105`
+                                            : `border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-60 hover:opacity-100 hover:scale-[1.02] hover:shadow-md hover:border-transparent hover:ring-2 ${s.hoverRing}`
+                                            }`}>
+                                        {isActive && <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-100`}></div>}
+                                        <div className="relative z-10 flex flex-col items-center text-center">
+                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 text-2xl shadow-inner transition-colors ${isActive ? 'bg-white/20 text-white' : `${s.iconBg} ${s.iconColor}`}`}>
+                                                <span className="material-icons">{s.icon}</span>
                                             </div>
-                                        ))}
-                                        {unplanned > 0 && (
-                                            <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 ml-auto bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-md">
-                                                <span className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-600"></span>
-                                                {t('to_plan')}: {unplanned}
+                                            <span className={`block text-sm font-bold mb-0.5 transition-colors ${isActive ? 'text-white' : 'text-slate-600 dark:text-white'}`}>{s.label}</span>
+                                        </div>
+                                        {isActive && (
+                                            <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white text-green-500 flex items-center justify-center shadow-md z-10">
+                                                <span className="material-icons text-sm font-bold">check</span>
                                             </div>
                                         )}
-                                    </div>
-                                </>
-                            );
-                        })()}
-                    </div>
-                    <div className="bg-white dark:bg-surface-dark p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center justify-center hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/30 text-rose-500 flex items-center justify-center mb-3">
-                            <span className="material-icons">group</span>
+                                    </button>
+                                );
+                            })}
                         </div>
-                        <p className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{dashboardStats?.teamPresencePercentage ?? 0}%</p>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('team_presence')}</p>
-                    </div>
-                </div>
+                    </section>
 
-                <section>
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                            <span className="w-2 h-6 bg-cyan-400 rounded-full block"></span>
-                            {t('weekly_plan')}
-                        </h3>
-                        <Link to="/planning" className="text-sm bg-white dark:bg-slate-800 text-blue-600 font-semibold py-2 px-4 rounded-full shadow-sm hover:shadow border border-slate-100 dark:border-slate-700 transition-all">{t('edit_schedule')}</Link>
-                    </div>
-                    <div className="grid grid-cols-5 gap-4">
-                        {weeklyDates.map((dayObj) => {
-                            const isToday = dayObj.isToday;
-                            const isPast = dayObj.isPast;
-                            const statusDetails = getStatusDetails(dayObj.status);
-
-                            if (isToday) {
-                                return (
-                                    <div key={dayObj.dateIso} className="bg-white dark:bg-surface-dark rounded-3xl p-4 ring-4 ring-blue-100 dark:ring-blue-900 shadow-lg relative transform scale-105 z-10">
-                                        <span className="absolute top-3 right-3 flex h-3 w-3">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                                        </span>
-                                        <span className="text-xs font-bold text-blue-600 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
-                                        <div className="flex flex-col items-center py-2">
-                                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${statusDetails.gradient} text-white flex items-center justify-center mb-3 shadow-lg ${statusDetails.shadowColor}`}>
-                                                <span className="material-icons text-2xl">{statusDetails.icon}</span>
-                                            </div>
-                                            <span className="text-base font-bold text-slate-800 dark:text-white text-center">{statusDetails.label}</span>
-                                        </div>
+                    <div className="grid grid-cols-3 gap-6 mb-10">
+                        <div className="col-span-2 bg-white dark:bg-surface-dark p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow flex flex-col justify-center">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center">
+                                        <span className="material-icons text-xl">calendar_month</span>
                                     </div>
-                                );
-                            }
-
-                            if (isPast) {
-                                return (
-                                    <div key={dayObj.dateIso} className="bg-slate-100/50 dark:bg-slate-800/30 rounded-3xl p-4 border border-transparent opacity-60 grayscale">
-                                        <span className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
-                                        <div className="flex flex-col items-center py-2">
-                                            <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center mb-3">
-                                                <span className="material-icons text-xl">{statusDetails.icon}</span>
-                                            </div>
-                                            <span className="text-sm font-semibold text-slate-600 dark:text-slate-400 text-center">{statusDetails.label}</span>
-                                        </div>
-                                    </div>
-                                );
-                            }
-
-                            return (
-                                <div key={dayObj.dateIso} className="bg-white dark:bg-surface-dark rounded-3xl p-4 border border-slate-100 dark:border-slate-800 hover:border-blue-200 transition-all cursor-pointer group hover:shadow-soft">
-                                    <span className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
-                                    <div className="flex flex-col items-center py-2">
-                                        <div className={`w-12 h-12 rounded-2xl ${statusDetails.bgColor} ${statusDetails.textColor} ${statusDetails.groupHoverBg} group-hover:text-white transition-all flex items-center justify-center mb-3`}>
-                                            <span className="material-icons text-xl">{statusDetails.icon}</span>
-                                        </div>
-                                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 text-center">{statusDetails.label}</span>
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">{t('monthly_plan')}</h3>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                            {t('planned_days')} <span className="font-bold text-slate-700 dark:text-slate-300">{(dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)}</span> {t('of_working_days', { total: dashboardStats?.totalWorkingDays ?? 20 })}
+                                        </p>
                                     </div>
                                 </div>
-                            );
-                        })}
+                                <div className="text-right">
+                                    <span className="text-2xl font-bold text-slate-800 dark:text-white">
+                                        {Math.round((((dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)) / (dashboardStats?.totalWorkingDays || 20)) * 100)}%
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Computed Progress Array */}
+                            {(() => {
+                                const totalDays = dashboardStats?.totalWorkingDays || 20;
+                                const plannedStats = [
+                                    { id: 'office', count: dashboardStats?.officeDays ?? 0, label: t('office'), color: 'bg-indigo-600' },
+                                    { id: 'remote', count: dashboardStats?.remoteDays ?? 0, label: t('remote'), color: 'bg-sky-400' },
+                                    { id: 'holiday', count: dashboardStats?.holidayDays ?? 0, label: t('holidays_leaves'), color: 'bg-amber-400' },
+                                    { id: 'sick', count: dashboardStats?.sickDays ?? 0, label: t('sick'), color: 'bg-red-400' },
+                                ].filter(s => s.count > 0).sort((a, b) => b.count - a.count); // Sort descending
+
+                                const totalPlanned = plannedStats.reduce((sum, s) => sum + s.count, 0);
+                                const unplanned = Math.max(0, totalDays - totalPlanned);
+
+                                let currentLeft = 0;
+
+                                return (
+                                    <>
+                                        {/* Progress Bar */}
+                                        <div className="relative w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4 shadow-inner">
+                                            {plannedStats.map(stat => {
+                                                const widthPct = (stat.count / totalDays) * 100;
+                                                const style = { left: `${currentLeft}%`, width: `${widthPct}%` };
+                                                currentLeft += widthPct;
+                                                return (
+                                                    <div
+                                                        key={stat.id}
+                                                        className={`absolute top-0 h-full ${stat.color} transition-all duration-1000 ease-out`}
+                                                        style={style}
+                                                    ></div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Legend */}
+                                        <div className="flex items-center flex-wrap gap-4 text-xs font-semibold">
+                                            {plannedStats.map(stat => (
+                                                <div key={stat.id} className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-md">
+                                                    <span className={`w-2 h-2 rounded-full ${stat.color}`}></span>
+                                                    {stat.label}: {stat.count}
+                                                </div>
+                                            ))}
+                                            {unplanned > 0 && (
+                                                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 ml-auto bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-md">
+                                                    <span className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-600"></span>
+                                                    {t('to_plan')}: {unplanned}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                );
+                            })()}
+                        </div>
+                        <div className="bg-white dark:bg-surface-dark p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center justify-center hover:shadow-md transition-shadow">
+                            <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/30 text-rose-500 flex items-center justify-center mb-3">
+                                <span className="material-icons">group</span>
+                            </div>
+                            <p className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{dashboardStats?.teamPresencePercentage ?? 0}%</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('team_presence')}</p>
+                        </div>
                     </div>
-                </section>
-            </main>
+
+                    <section>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <span className="w-2 h-6 bg-cyan-400 rounded-full block"></span>
+                                {t('weekly_plan')}
+                            </h3>
+                            <Link to="/planning" className="text-sm bg-white dark:bg-slate-800 text-blue-600 font-semibold py-2 px-4 rounded-full shadow-sm hover:shadow border border-slate-100 dark:border-slate-700 transition-all">{t('edit_schedule')}</Link>
+                        </div>
+                        <div className="grid grid-cols-5 gap-4">
+                            {weeklyDates.map((dayObj) => {
+                                const isToday = dayObj.isToday;
+                                const isPast = dayObj.isPast;
+                                const statusDetails = getStatusDetails(dayObj.status);
+
+                                if (isToday) {
+                                    return (
+                                        <div key={dayObj.dateIso} className="bg-white dark:bg-surface-dark rounded-3xl p-4 ring-4 ring-blue-100 dark:ring-blue-900 shadow-lg relative transform scale-105 z-10">
+                                            <span className="absolute top-3 right-3 flex h-3 w-3">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                                            </span>
+                                            <span className="text-xs font-bold text-blue-600 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
+                                            <div className="flex flex-col items-center py-2">
+                                                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${statusDetails.gradient} text-white flex items-center justify-center mb-3 shadow-lg ${statusDetails.shadowColor}`}>
+                                                    <span className="material-icons text-2xl">{statusDetails.icon}</span>
+                                                </div>
+                                                <span className="text-base font-bold text-slate-800 dark:text-white text-center">{statusDetails.label}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                if (isPast) {
+                                    return (
+                                        <div key={dayObj.dateIso} className="bg-slate-100/50 dark:bg-slate-800/30 rounded-3xl p-4 border border-transparent opacity-60 grayscale">
+                                            <span className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
+                                            <div className="flex flex-col items-center py-2">
+                                                <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center mb-3">
+                                                    <span className="material-icons text-xl">{statusDetails.icon}</span>
+                                                </div>
+                                                <span className="text-sm font-semibold text-slate-600 dark:text-slate-400 text-center">{statusDetails.label}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div key={dayObj.dateIso} className="bg-white dark:bg-surface-dark rounded-3xl p-4 border border-slate-100 dark:border-slate-800 hover:border-blue-200 transition-all cursor-pointer group hover:shadow-soft">
+                                        <span className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
+                                        <div className="flex flex-col items-center py-2">
+                                            <div className={`w-12 h-12 rounded-2xl ${statusDetails.bgColor} ${statusDetails.textColor} ${statusDetails.groupHoverBg} group-hover:text-white transition-all flex items-center justify-center mb-3`}>
+                                                <span className="material-icons text-xl">{statusDetails.icon}</span>
+                                            </div>
+                                            <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 text-center">{statusDetails.label}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                </main>
+
+                <Footer />
+            </div>
 
             {/* Sidebar Right */}
             <aside className="w-80 bg-surface-light/90 dark:bg-surface-dark/95 backdrop-blur-md border-l border-blue-100 dark:border-slate-800 h-[calc(100vh-2rem)] fixed right-0 top-0 overflow-hidden z-10 flex flex-col my-4 mr-4 rounded-l-3xl shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">

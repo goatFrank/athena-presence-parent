@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
 import Sidebar from './Sidebar';
+import Footer from './Footer';
 
 // ── Types ──────────────────────────────────────────────────────────
 interface AttendanceRecord {
@@ -589,11 +590,7 @@ const Planning: React.FC = () => {
                 </main >
 
                 {/* ── Footer ── */}
-                < footer className="mt-10 border-t border-indigo-100 bg-white/50 backdrop-blur-sm py-8" >
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <p className="text-slate-400 text-sm font-medium">© 2026 Athena Systems. Crafted with 💙 for the team.</p>
-                    </div>
-                </footer >
+                <Footer />
             </div >
         </div >
     );
