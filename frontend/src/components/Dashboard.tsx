@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
+import { attendanceApi } from '../api/clients';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
@@ -23,15 +24,10 @@ const Dashboard: React.FC = () => {
 
     const fetchDashboardStats = async () => {
         try {
-            const token = (await supabase.auth.getSession()).data.session?.access_token;
-            const statsResponse = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/stats/dashboard`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const statsResponse = await attendanceApi.get('/api/v1/attendance/stats/dashboard');
 
-            if (statsResponse.ok) {
-                const statsData = await statsResponse.json();
+            if (statsResponse.status === 200) {
+                const statsData = statsResponse.data;
                 setDashboardStats(statsData.payload);
             }
         } catch (err) {
@@ -98,18 +94,14 @@ const Dashboard: React.FC = () => {
                 const endDateIso = weekDates[4].toISOString().split('T')[0];
 
                 // Fetch my attendance for the week from the backend API
-                const token = (await supabase.auth.getSession()).data.session?.access_token;
-
                 let myWeeklyAttendances = [];
                 try {
-                    const response = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/me/range?startDate=${startDateIso}&endDate=${endDateIso}`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
+                    const response = await attendanceApi.get('/api/v1/attendance/me/range', {
+                        params: { startDate: startDateIso, endDate: endDateIso }
                     });
 
-                    if (response.ok) {
-                        const resData = await response.json();
+                    if (response.status === 200) {
+                        const resData = response.data;
                         myWeeklyAttendances = resData.payload || [];
                     } else {
                         console.error("Failed to fetch weekly attendance from backend:", response.status);
@@ -120,11 +112,9 @@ const Dashboard: React.FC = () => {
 
                 // Fetch today's planned status
                 try {
-                    const todayRes = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/me/today`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (todayRes.ok) {
-                        const todayData = await todayRes.json();
+                    const todayRes = await attendanceApi.get('/api/v1/attendance/me/today');
+                    if (todayRes.status === 200) {
+                        const todayData = todayRes.data;
                         if (todayData.payload && todayData.payload.status) {
                             setTodayStatus(todayData.payload.status);
                             setPendingStatus(todayData.payload.status);
@@ -187,7 +177,6 @@ const Dashboard: React.FC = () => {
                 const today = new Date().toISOString().split('T')[0];
                 let attendances: any[] = [];
                 try {
-                    const token = (await supabase.auth.getSession()).data.session?.access_token;
                     let endpoint = `/api/v1/attendance/team-overview?date=${today}`;
 
                     if (myTenantId !== null && myDeptId !== null) {
@@ -196,12 +185,10 @@ const Dashboard: React.FC = () => {
                         endpoint = `/api/v1/attendance/tenant/${myTenantId}?date=${today}`;
                     }
 
-                    const res = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}${endpoint}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
+                    const res = await attendanceApi.get(endpoint);
 
-                    if (res.ok) {
-                        const td = await res.json();
+                    if (res.status === 200) {
+                        const td = res.data;
                         attendances = td.payload || [];
                     } else {
                         setDebugInfo((prev: string) => prev + `\nAPI Fetch Failed for team overview: ${res.status}`);
@@ -265,21 +252,12 @@ const Dashboard: React.FC = () => {
         );
 
         try {
-            const token = (await supabase.auth.getSession()).data.session?.access_token;
-
-            await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    userId: currentUserId,
-                    workDate: todayIso,
-                    status: pendingStatus,
-                    tenantId: userTenantId,
-                    departmentId: userDeptId
-                })
+            await attendanceApi.post('/api/v1/attendance', {
+                userId: currentUserId,
+                workDate: todayIso,
+                status: pendingStatus,
+                tenantId: userTenantId,
+                departmentId: userDeptId
             });
 
             setTodayStatus(pendingStatus);

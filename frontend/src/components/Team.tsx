@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import { supabase } from '../api/supabase';
+import { attendanceApi } from '../api/clients';
 import Footer from './Footer';
 
 interface Colleague {
@@ -55,17 +56,14 @@ const Team: React.FC = () => {
             try {
                 // Get auth token to call backend
                 const sessionResponse = await supabase.auth.getSession();
-                const token = sessionResponse.data.session?.access_token;
+                if (!sessionResponse.data.session?.access_token) return;
 
-                if (!token) return;
-
-                const apiUrl = `${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/team-overview`;
-                const searchParams = new URLSearchParams();
+                const params: any = {};
                 if (filter && filter !== 'all') {
-                    searchParams.append('filter', filter);
+                    params.filter = filter;
                 }
                 if (searchQuery) {
-                    searchParams.append('search', searchQuery);
+                    params.search = searchQuery;
                 }
 
                 // Format date as YYYY-MM-DD for the backend
@@ -73,18 +71,12 @@ const Team: React.FC = () => {
                 const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
                 const day = String(selectedDate.getDate()).padStart(2, '0');
                 const isoDate = `${year}-${month}-${day}`;
-                searchParams.append('date', isoDate);
+                params.date = isoDate;
 
-                const endpoint = `${apiUrl}?${searchParams.toString()}`;
+                const response = await attendanceApi.get('/api/v1/attendance/team-overview', { params });
 
-                const response = await fetch(endpoint, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const resData = await response.json();
+                if (response.status === 200) {
+                    const resData = response.data;
 
                     // The backend now returns a properly formatted list of TeamColleagueDTO
                     if (resData.payload) {
@@ -105,11 +97,12 @@ const Team: React.FC = () => {
                         });
                         setColleagues(mappedColleagues);
                     }
-                } else {
-                    console.error("Failed to fetch team overview from backend API:", response.status);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Error fetching team data:", err);
+                if (err.response) {
+                    console.error("Failed to fetch team overview from backend API:", err.response.status);
+                }
             } finally {
                 setIsLoading(false);
             }

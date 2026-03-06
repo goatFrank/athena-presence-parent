@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../api/supabase';
+import { attendanceApi } from '../api/clients';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
@@ -88,55 +89,44 @@ const Profile: React.FC = () => {
         setUploadError(null);
 
         try {
-            const token = (await supabase.auth.getSession()).data.session?.access_token;
             const formData = new FormData();
             formData.append('file', avatarFile);
 
-            const response = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/profiles/me/avatar`, {
-                method: 'POST',
+            const response = await attendanceApi.post('/api/v1/profiles/me/avatar', formData, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
+                    'Content-Type': 'multipart/form-data'
+                }
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            if (response.status === 200 || response.status === 201) {
+                const data = response.data;
                 const newAvatarUrl = `${import.meta.env.VITE_ATTENDANCE_API_URL}${data.payload}`;
                 setProfile(prev => prev ? { ...prev, avatarUrl: newAvatarUrl } : null);
                 setIsAvatarModalOpen(false);
                 setAvatarFile(null);
                 setAvatarPreview(null);
-            } else {
+            }
+        } catch (error: any) {
+            console.error('Error uploading avatar:', error);
+            const response = error.response;
+            if (response) {
                 let errorMessage = t('upload_failed_generic', 'Caricamento fallito. Impossibile aggiornare l\'avatar.');
-                try {
-                    const textData = await response.text();
-                    try {
-                        const errorData = JSON.parse(textData);
-                        if (errorData.message) {
-                            errorMessage = errorData.message;
-                        }
-                    } catch (parseError) {
-                        console.warn('Could not parse error response as JSON:', parseError);
-                        if (response.status === 413) {
-                            errorMessage = t('error_file_too_large', 'L\'immagine è troppo grande. Il limite massimo è 4MB.');
-                        } else if (response.status === 400) {
-                            errorMessage = t('error_bad_request', 'Il formato del file non è corretto o l\'immagine è corrotta.');
-                        } else if (response.status === 401 || response.status === 403) {
-                            errorMessage = t('error_unauthorized', 'Sessione scaduta o non sei autorizzato. Prova ad effettuare nuovamente il login.');
-                        } else if (response.status >= 500) {
-                            errorMessage = t('error_server', 'Si è verificato un errore sul server. Riprova più tardi.');
-                        }
-                    }
-                } catch (textError) {
-                    console.warn('Failed to read response text:', textError);
-                    // Fallback to generic message
+                const errorData = response.data;
+                if (errorData && errorData.message) {
+                    errorMessage = errorData.message;
+                } else if (response.status === 413) {
+                    errorMessage = t('error_file_too_large', 'L\'immagine è troppo grande. Il limite massimo è 4MB.');
+                } else if (response.status === 400) {
+                    errorMessage = t('error_bad_request', 'Il formato del file non è corretto o l\'immagine è corrotta.');
+                } else if (response.status === 401 || response.status === 403) {
+                    errorMessage = t('error_unauthorized', 'Sessione scaduta o non sei autorizzato. Prova ad effettuare nuovamente il login.');
+                } else if (response.status >= 500) {
+                    errorMessage = t('error_server', 'Si è verificato un errore sul server. Riprova più tardi.');
                 }
                 setUploadError(errorMessage);
+            } else {
+                setUploadError(t('error_connection', 'Errore di connessione. Verifica di essere connesso a internet e riprova.'));
             }
-        } catch (error) {
-            console.error('Error uploading avatar:', error);
-            setUploadError(t('error_connection', 'Errore di connessione. Verifica di essere connesso a internet e riprova.'));
         } finally {
             setIsUploading(false);
         }
@@ -189,15 +179,10 @@ const Profile: React.FC = () => {
                 }
 
                 // Fetch Work Statistics from backend
-                const token = (await supabase.auth.getSession()).data.session?.access_token;
-                const statsRes = await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/stats/dashboard`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const statsRes = await attendanceApi.get('/api/v1/attendance/stats/dashboard');
 
-                if (statsRes.ok) {
-                    const statsData = await statsRes.json();
+                if (statsRes.status === 200) {
+                    const statsData = statsRes.data;
                     setStats(statsData.payload);
                 }
 

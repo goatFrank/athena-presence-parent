@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
+import { attendanceApi } from '../api/clients';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
@@ -204,14 +205,11 @@ const Planning: React.FC = () => {
         const endDate = grid[grid.length - 1].dateIso;
 
         try {
-            const token = (await supabase.auth.getSession()).data.session?.access_token;
-            const response = await fetch(
-                `${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance/me/range?startDate=${startDate}&endDate=${endDate}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            if (response.ok) {
-                const json = await response.json();
-                const records: AttendanceRecord[] = (json.payload || []).map((r: any) => ({
+            const response = await attendanceApi.get(`/api/v1/attendance/me/range`, {
+                params: { startDate, endDate }
+            });
+            if (response.status === 200) {
+                const records: AttendanceRecord[] = (response.data.payload || []).map((r: any) => ({
                     id: r.id,
                     workDate: r.workDate,
                     status: r.status
@@ -269,26 +267,18 @@ const Planning: React.FC = () => {
     const handleSelectStatus = async (dateIso: string, status: StatusType) => {
         setSelectedDay(null);
         try {
-            const token = (await supabase.auth.getSession()).data.session?.access_token;
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
             // Map frontend status to backend WorkMode enum
             const backendStatus = status === 'IN_OFFICE' ? 'OFFICE' : status;
 
-            await fetch(`${import.meta.env.VITE_ATTENDANCE_API_URL}/api/v1/attendance`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    userId: user.id,
-                    workDate: dateIso,
-                    status: backendStatus,
-                    tenantId: userTenantId,
-                    departmentId: userDeptId
-                })
+            await attendanceApi.post('/api/v1/attendance', {
+                userId: user.id,
+                workDate: dateIso,
+                status: backendStatus,
+                tenantId: userTenantId,
+                departmentId: userDeptId
             });
 
             // Refresh
@@ -305,11 +295,7 @@ const Planning: React.FC = () => {
         if (!dayInfo?.attendanceId) return;
 
         try {
-            const token = (await supabase.auth.getSession()).data.session?.access_token;
-            await fetch(`http://localhost:8081/api/v1/attendance/${dayInfo.attendanceId}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await attendanceApi.delete(`/api/v1/attendance/${dayInfo.attendanceId}`);
             buildCalendar();
         } catch (err) {
             console.error('Error deleting attendance:', err);
