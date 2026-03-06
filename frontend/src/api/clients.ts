@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { supabase } from './supabase';
+
 // Istanza per Auth Service (8082)
 export const authApi = axios.create({
     baseURL: import.meta.env.VITE_AUTH_API_URL,
@@ -12,8 +14,8 @@ export const attendanceApi = axios.create({
 
 // INTERCEPTOR: Inserisce automaticamente il token JWT in ogni chiamata alle presenze
 attendanceApi.interceptors.request.use(async (config) => {
-    // Recuperiamo la sessione persistente di Supabase
-    const session = JSON.parse(localStorage.getItem('sb-wrmtllklfwohgbvkigio-auth-token') || '{}');
+    // Recuperiamo la sessione in modo sicuro tramite SDK Supabase
+    const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
 
     if (token) {
