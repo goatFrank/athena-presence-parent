@@ -319,15 +319,18 @@ const Team: React.FC = () => {
                                     <div className="flex flex-col items-center text-center pb-5 border-b border-slate-100 dark:border-slate-700 relative">
 
                                         <div className="relative mb-4">
-                                            {colleague.avatar_url ? (
-                                                <div className="w-24 h-24 rounded-full bg-cover bg-center ring-4 ring-slate-50 dark:ring-slate-700/50" style={{ backgroundImage: `url(${colleague.avatar_url})` }}></div>
-                                            ) : (
-                                                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center ring-4 ring-slate-50 dark:ring-slate-700/50">
-                                                    <span className="text-3xl font-bold text-indigo-600 dark:text-indigo-300">
-                                                        {colleague.full_name.charAt(0).toUpperCase()}
-                                                    </span>
-                                                </div>
-                                            )}
+                                            <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-700 ring-4 ring-slate-50 dark:ring-slate-700/50 overflow-hidden">
+                                                <img
+                                                    src={colleague.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(colleague.full_name || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`}
+                                                    alt={colleague.full_name}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.onerror = null;
+                                                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(colleague.full_name || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`;
+                                                    }}
+                                                />
+                                            </div>
                                             <div className={`absolute bottom-1 right-1 size-5 border-2 border-white dark:border-slate-800 rounded-full 
                                                 ${colleague.work_status === 'office' ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : colleague.work_status === 'remote' ? 'bg-sky-400' : 'bg-red-500'}`}></div>
                                         </div>
