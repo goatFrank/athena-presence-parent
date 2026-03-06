@@ -204,14 +204,20 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         @Override
         @Transactional
-        public ResponseDTO<Attendance> updateAttendance(Long id, AttendanceDTO dto) {
+        public ResponseDTO<Attendance> updateAttendance(Long id, AttendanceDTO dto, UUID authenticatedUserId) {
                 Attendance attendance = repository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Attendance record not found with id: " + id));
+                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.NOT_FOUND,
+                                                "Attendance record not found with id: " + id));
 
-                // Update
-                attendance.setUserId(dto.getUserId());
-                attendance.setTenantId(dto.getTenantId());
-                attendance.setDepartmentId(dto.getDepartmentId());
+                // Verification: ensure the authenticated user owns this record
+                if (!attendance.getUserId().equals(authenticatedUserId)) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.FORBIDDEN,
+                                        "Unauthorized: You can only update your own attendance records.");
+                }
+
+                // Update only allowed fields. Do NOT overwrite userId, tenantId, departmentId
                 attendance.setWorkDate(dto.getWorkDate());
                 attendance.setStatus(dto.getStatus());
                 attendance.setNote(dto.getNote());

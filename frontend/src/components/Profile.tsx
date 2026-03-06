@@ -429,12 +429,15 @@ const Profile: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600">
+                                        <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 cursor-not-allowed opacity-80 group">
                                             <div>
-                                                <p className="font-semibold text-slate-800 dark:text-slate-200">Abilitato agli straordinari</p>
-                                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Indicatore di permesso per gli straordinari previsti.</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-slate-500 transition-colors">Abilitato agli straordinari</p>
+                                                    <span className="material-icons text-[15px] text-slate-400">lock</span>
+                                                </div>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Permesso gestito dall'amministrazione.</p>
                                             </div>
-                                            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile?.allowOvertime ? 'bg-green-500' : 'bg-slate-200 dark:bg-slate-600 cursor-not-allowed opacity-70'}`}>
+                                            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile?.allowOvertime ? 'bg-green-500/70' : 'bg-slate-200/70 dark:bg-slate-600/70'}`}>
                                                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${profile?.allowOvertime ? 'translate-x-6' : 'translate-x-1'}`} />
                                             </div>
                                         </div>
