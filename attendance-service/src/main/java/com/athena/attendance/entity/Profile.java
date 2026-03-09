@@ -37,6 +37,9 @@ public class Profile {
     @Column(name = "role_description")
     private String roleDescription;
 
+    @Column(name = "location_id")
+    private Long locationId;
+
     @Column(name = "profile_cellphone")
     private String profileCellphone;
 }

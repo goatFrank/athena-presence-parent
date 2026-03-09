@@ -4,6 +4,7 @@ import com.athena.attendance.entity.Department;
 import com.athena.attendance.entity.Profile;
 import com.athena.attendance.entity.Tenant;
 import com.athena.attendance.repository.DepartmentRepository;
+import com.athena.attendance.repository.LocationRepository;
 import com.athena.attendance.repository.ProfileRepository;
 import com.athena.attendance.repository.TenantRepository;
 import com.athena.attendance.service.ProfileService;
@@ -21,6 +22,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
     private final TenantRepository tenantRepository;
     private final DepartmentRepository departmentRepository;
+    private final LocationRepository locationRepository;
 
     @Override
     public ProfileDTO getProfile(UUID userId) {
@@ -42,6 +44,13 @@ public class ProfileServiceImpl implements ProfileService {
                     .orElse("Unknown Department");
         }
 
+        String locationName = "Unknown Location";
+        if (profile.getLocationId() != null) {
+            locationName = locationRepository.findById(profile.getLocationId())
+                    .map(com.athena.attendance.entity.Location::getName)
+                    .orElse("Unknown Location");
+        }
+
         return ProfileDTO.builder()
                 .id(profile.getId())
                 .fullName(profile.getFullName())
@@ -50,6 +59,8 @@ public class ProfileServiceImpl implements ProfileService {
                 .departmentId(profile.getDepartmentId())
                 .tenantName(tenantName)
                 .departmentName(departmentName)
+                .locationId(profile.getLocationId())
+                .locationName(locationName)
                 .profileCellphone(profile.getProfileCellphone())
                 .build();
     }

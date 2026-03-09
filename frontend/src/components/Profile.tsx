@@ -147,6 +147,7 @@ const Profile: React.FC = () => {
             avatar_url,
             role_description,
             profile_cellphone,
+            locations ( name ),
             allow_overtime,
             departments ( name )
           `)
@@ -170,7 +171,7 @@ const Profile: React.FC = () => {
                         fullName: profileData.full_name || user.email?.split('@')[0] || 'User',
                         avatarUrl: finalAvatarUrl,
                         department: (profileData.departments as any)?.name || 'Senza dipartimento',
-                        officeLocation: 'Milan HQ',
+                        officeLocation: (profileData.locations as any)?.name || 'Senza sede assegnata',
                         roleDescription: profileData.role_description || 'Team Member',
                         phone: profileData.profile_cellphone || '',
                         allowOvertime: !!profileData.allow_overtime
