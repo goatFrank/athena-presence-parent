@@ -11,7 +11,6 @@ import com.athena.attendance.service.ProfileService;
 import com.athena.common.dto.ProfileDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -66,46 +65,19 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public String updateAvatar(UUID userId, MultipartFile file) {
+    public String updateAvatar(UUID userId, String avatarUrl) {
         Profile profile = profileRepository.findById(userId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Profile not found for user: " + userId));
 
-        if (file.isEmpty()) {
+        if (avatarUrl == null || avatarUrl.isBlank()) {
             throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "File is empty");
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Avatar URL is empty");
         }
 
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "File must be an image");
-        }
+        profile.setAvatarUrl(avatarUrl);
+        profileRepository.save(profile);
 
-        try {
-            java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads/avatars").toAbsolutePath().normalize();
-            if (!java.nio.file.Files.exists(uploadDir)) {
-                java.nio.file.Files.createDirectories(uploadDir);
-            }
-
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String newFilename = UUID.randomUUID() + extension;
-            java.nio.file.Path filePath = uploadDir.resolve(newFilename);
-
-            file.transferTo(filePath.toFile());
-
-            String avatarUrl = "/api/v1/profiles/avatars/" + newFilename;
-            profile.setAvatarUrl(avatarUrl);
-            profileRepository.save(profile);
-
-            return avatarUrl;
-        } catch (java.io.IOException e) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Error uploading file", e);
-        }
+        return avatarUrl;
     }
 }

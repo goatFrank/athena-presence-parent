@@ -83,25 +83,36 @@ const Profile: React.FC = () => {
     };
 
     const handleAvatarUpload = async () => {
-        if (!avatarFile) return;
+        if (!avatarFile || !profile) return;
 
         setIsUploading(true);
         setUploadError(null);
 
         try {
-            const formData = new FormData();
-            formData.append('file', avatarFile);
+            // 1. Upload file to Supabase Storage 'avatars' bucket
+            const fileExt = avatarFile.name.split('.').pop();
+            const fileName = `${profile.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const filePath = `${fileName}`;
 
-            const response = await attendanceApi.post('/api/v1/profiles/me/avatar', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, avatarFile, { upsert: true });
+
+            if (uploadError) {
+                console.error('Supabase storage upload error:', uploadError);
+                throw new Error(uploadError.message);
+            }
+
+            // 2. Get public URL of the uploaded image
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            // 3. Send the public URL string to the Python backend to update the database record
+            const response = await attendanceApi.post('/api/v1/profiles/me/avatar', { avatarUrl: publicUrl });
 
             if (response.status === 200 || response.status === 201) {
-                const data = response.data;
-                const newAvatarUrl = `${import.meta.env.VITE_ATTENDANCE_API_URL}${data.payload}`;
-                setProfile(prev => prev ? { ...prev, avatarUrl: newAvatarUrl } : null);
+                setProfile(prev => prev ? { ...prev, avatarUrl: publicUrl } : null);
                 setIsAvatarModalOpen(false);
                 setAvatarFile(null);
                 setAvatarPreview(null);
@@ -125,7 +136,7 @@ const Profile: React.FC = () => {
                 }
                 setUploadError(errorMessage);
             } else {
-                setUploadError(t('error_connection', 'Errore di connessione. Verifica di essere connesso a internet e riprova.'));
+                setUploadError(error.message || t('error_connection', 'Errore durante il caricamento. Controlla il bucket Supabase.'));
             }
         } finally {
             setIsUploading(false);
