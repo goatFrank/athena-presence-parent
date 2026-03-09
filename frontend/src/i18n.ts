@@ -56,9 +56,7 @@ const resources = {
             "in_office_status": "In Ufficio",
             "remote_status": "Da Remoto",
             "unavailable": "Non Disponibile",
-            "happening_now": "In Corso",
-            "team_lunch": "Pranzo di Squadra",
-            "main_lobby": "Ingresso Principale",
+
 
             // ── Common ──
             "save": "Salva",
@@ -213,9 +211,7 @@ const resources = {
             "in_office_status": "In Office",
             "remote_status": "Remote",
             "unavailable": "Unavailable",
-            "happening_now": "Happening Now",
-            "team_lunch": "Team Lunch",
-            "main_lobby": "Main Lobby",
+
 
             // ── Common ──
             "save": "Save",
