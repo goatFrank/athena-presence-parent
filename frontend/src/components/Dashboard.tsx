@@ -410,21 +410,21 @@ const Dashboard: React.FC = () => {
                         </section>
 
                         <div className="grid grid-cols-3 gap-6 mb-10">
-                            <div className="col-span-2 bg-white/5 backdrop-blur-xl p-6 rounded-3xl border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-center">
+                            <div className="col-span-2 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-center">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
                                             <span className="material-icons text-xl">calendar_month</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">{t('monthly_plan')}</h3>
-                                            <p className="text-xs text-white/50 font-medium">
-                                                {t('planned_days')} <span className="font-bold text-white/80">{(dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)}</span> {t('of_working_days', { total: dashboardStats?.totalWorkingDays ?? 20 })}
+                                            <h3 className="text-sm font-bold text-[#0e121b] dark:text-white uppercase tracking-wider">{t('monthly_plan')}</h3>
+                                            <p className="text-xs text-[#4e6797] dark:text-slate-400 font-medium">
+                                                {t('planned_days')} <span className="font-bold text-[#0e121b] dark:text-white">{(dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)}</span> {t('of_working_days', { total: dashboardStats?.totalWorkingDays ?? 20 })}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-2xl font-bold text-white">
+                                        <span className="text-2xl font-bold text-[#0e121b] dark:text-white">
                                             {Math.round((((dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)) / (dashboardStats?.totalWorkingDays || 20)) * 100)}%
                                         </span>
                                     </div>
@@ -448,7 +448,7 @@ const Dashboard: React.FC = () => {
                                     return (
                                         <>
                                             {/* Progress Bar */}
-                                            <div className="relative w-full h-3 bg-white/10 rounded-full overflow-hidden mb-4">
+                                            <div className="relative w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
                                                 {plannedStats.map(stat => {
                                                     const widthPct = (stat.count / totalDays) * 100;
                                                     const style = { left: `${currentLeft}%`, width: `${widthPct}%` };
@@ -466,14 +466,14 @@ const Dashboard: React.FC = () => {
                                             {/* Legend */}
                                             <div className="flex items-center flex-wrap gap-4 text-xs font-semibold">
                                                 {plannedStats.map(stat => (
-                                                    <div key={stat.id} className="flex items-center gap-1.5 text-white/70 bg-white/5 px-2 py-1 rounded-md">
+                                                    <div key={stat.id} className="flex items-center gap-1.5 text-[#4e6797] dark:text-slate-300 bg-slate-50 dark:bg-slate-700 px-2 py-1 rounded-md">
                                                         <span className={`w-2 h-2 rounded-full ${stat.color}`}></span>
                                                         {stat.label}: {stat.count}
                                                     </div>
                                                 ))}
                                                 {unplanned > 0 && (
-                                                    <div className="flex items-center gap-1.5 text-white/40 ml-auto bg-white/5 px-2 py-1 rounded-md">
-                                                        <span className="w-2 h-2 rounded-full bg-white/20"></span>
+                                                    <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 ml-auto bg-slate-50 dark:bg-slate-700 px-2 py-1 rounded-md">
+                                                        <span className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-600"></span>
                                                         {t('to_plan')}: {unplanned}
                                                     </div>
                                                 )}
@@ -482,12 +482,12 @@ const Dashboard: React.FC = () => {
                                     );
                                 })()}
                             </div>
-                            <div className="bg-white/5 backdrop-blur-xl p-6 rounded-3xl border border-white/10 flex flex-col items-center text-center justify-center hover:bg-white/10 transition-all">
+                            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col items-center text-center justify-center">
                                 <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
                                     <span className="material-icons">group</span>
                                 </div>
-                                <p className="text-3xl font-bold text-white mb-1">{dashboardStats?.teamPresencePercentage ?? 0}%</p>
-                                <p className="text-xs font-bold text-white/40 uppercase tracking-wider">{t('team_presence')}</p>
+                                <p className="text-3xl font-bold text-[#0e121b] dark:text-white mb-1">{dashboardStats?.teamPresencePercentage ?? 0}%</p>
+                                <p className="text-xs font-bold text-[#4e6797] dark:text-slate-400 uppercase tracking-wider">{t('team_presence')}</p>
                             </div>
                         </div>
 

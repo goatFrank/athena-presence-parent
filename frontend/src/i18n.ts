@@ -13,6 +13,12 @@ const resources = {
             "profile": "Profilo",
             "logout": "Esci",
 
+            // ── Office Map Page ──
+            "office_map_subtitle": "Trova la strada per la nostra sede principale",
+            "search_nearby_landmarks": "Cerca punti di interesse vicini...",
+            "main_headquarters": "Sede Principale",
+            "get_directions": "Ottieni Indicazioni",
+
             // ── Dashboard: Greeting ──
             "good_morning": "Buongiorno",
             "beautiful_day_m": "È un bellissimo {{day}}. Pronto a collaborare?",
@@ -167,6 +173,12 @@ const resources = {
             "analytics": "Analytics",
             "profile": "Profile",
             "logout": "Logout",
+
+            // ── Office Map Page ──
+            "office_map_subtitle": "Find your way to our main headquarters",
+            "search_nearby_landmarks": "Search nearby landmarks...",
+            "main_headquarters": "Main Headquarters",
+            "get_directions": "Get Directions",
 
             // ── Dashboard: Greeting ──
             "good_morning": "Good Morning",

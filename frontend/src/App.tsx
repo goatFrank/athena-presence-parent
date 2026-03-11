@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import Planning from './components/Planning';
 import Team from './components/Team';
 import Profile from './components/Profile';
+import OfficeMap from './components/OfficeMap';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -29,6 +30,11 @@ function App() {
         <Route path="/profile" element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        } />
+        <Route path="/office-map" element={
+          <ProtectedRoute>
+            <OfficeMap />
           </ProtectedRoute>
         } />
         {/* Default redirect to login */}
