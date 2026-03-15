@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase, setRememberMe as setRememberMePref } from '../api/supabase';
@@ -13,6 +13,16 @@ const Login: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkExistingSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                navigate('/dashboard', { replace: true });
+            }
+        };
+        checkExistingSession();
+    }, [navigate]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

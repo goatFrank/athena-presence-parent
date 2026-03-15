@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import CardSwap, { Card } from './CardSwap';
 import { 
   Building2, 
   Users, 
@@ -12,7 +13,6 @@ import {
   X
 } from 'lucide-react';
 
-import heroImg from '../assets/illustrations/hero.svg';
 import dashboardImg from '../assets/illustrations/dashboard.svg';
 import businessDecisionImg from '../assets/illustrations/businessDecision.svg';
 import workingRemotelyImg from '../assets/illustrations/workingRemotely.svg';
@@ -180,60 +180,52 @@ export default function LandingPage() {
               {/* Background abstract shapes */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-indigo-100/40 via-purple-50/40 to-transparent rounded-full blur-3xl -z-10"></div>
 
-              <div className="relative w-full max-w-xl group perspective-1000">
-                {/* Main Dashboard floating card */}
-                <div className="relative bg-white p-2 rounded-2xl shadow-2xl border border-slate-200/60 transform transition-all duration-700 hover:rotate-y-[-5deg] hover:rotate-x-[5deg] hover:scale-[1.02]">
+              <div className="relative w-full h-[400px] lg:h-[500px] flex items-center justify-center perspective-1000">
+                <CardSwap
+                  width={340}
+                  height={380}
+                  cardDistance={35}
+                  verticalDistance={40}
+                  delay={4000}
+                  pauseOnHover={true}
+                >
+                  <Card>
+                    <div className="flex flex-col h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-8 rounded-xl shadow-inner">
+                      <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
+                        <CalendarDays className="w-7 h-7 text-white" />
+                      </div>
+                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Pianifica in libertà</h3>
+                      <p className="text-indigo-100 leading-relaxed">
+                        Organizza i tuoi giorni in sede e in remoto con un click. Il team saprà sempre dove trovarti, migliorando la collaborazione.
+                      </p>
+                    </div>
+                  </Card>
                   
-                  {/* Fake Browser/App Header */}
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-slate-200"></div>
-                      <div className="w-3 h-3 rounded-full bg-slate-200"></div>
-                      <div className="w-3 h-3 rounded-full bg-slate-200"></div>
+                  <Card>
+                    <div className="flex flex-col h-full w-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-8 rounded-xl shadow-inner">
+                      <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
+                        <UserCheck className="w-7 h-7 text-white" />
+                      </div>
+                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Approvazioni Fast</h3>
+                      <p className="text-emerald-50 leading-relaxed">
+                        I manager approvano le richieste di smart working direttamente dalla dashboard. Zero email, massima efficienza.
+                      </p>
                     </div>
-                    <div className="mx-auto w-1/2 h-2 rounded-full bg-slate-200/50"></div>
-                  </div>
+                  </Card>
 
-                  {/* App Content Area with SVG */}
-                  <div className="bg-slate-50/50 p-8 rounded-b-xl flex justify-center items-center aspect-[4/3] overflow-hidden relative">
-                    <img 
-                      src={heroImg} 
-                      alt="Athena Dashboard Environment" 
-                      className="w-full max-w-md h-auto drop-shadow-xl relative z-10 transition-transform duration-700 group-hover:scale-105" 
-                    />
-                    
-                    {/* Decorative internal blobs */}
-                    <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-200/30 rounded-full blur-2xl"></div>
-                    <div className="absolute -top-10 -left-10 w-40 h-40 bg-purple-200/30 rounded-full blur-2xl"></div>
-                  </div>
-                </div>
-
-                {/* Floating Metric Card 1 */}
-                <div className="absolute -left-12 bottom-12 bg-white px-5 py-4 rounded-xl shadow-xl border border-slate-100 transform -rotate-6 hover:rotate-0 transition-all duration-300 hidden md:block group-hover:-translate-y-2 group-hover:-translate-x-2">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                      <TrendingUp className="w-5 h-5"/>
+                  <Card>
+                    <div className="flex flex-col h-full w-full bg-slate-800 text-white p-8 rounded-xl shadow-inner relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
+                        <MapPin className="w-7 h-7 text-indigo-300" />
+                      </div>
+                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Mappa Sede Integrata</h3>
+                      <p className="text-slate-300 leading-relaxed relative z-10">
+                        Trova subito la tua postazione o verifica chi è fisicamente presente in ufficio con la mappa interattiva 3D.
+                      </p>
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium tracking-wide uppercase">Operatività</p>
-                      <p className="text-lg font-bold text-slate-800">98% in sede</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating Metric Card 2 */}
-                <div className="absolute -right-8 top-16 bg-white px-5 py-4 rounded-xl shadow-xl border border-slate-100 transform rotate-3 hover:rotate-0 transition-all duration-300 hidden md:block group-hover:-translate-y-2 group-hover:translate-x-2">
-                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                      <UserCheck className="w-5 h-5"/>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium tracking-wide uppercase">Approvazioni</p>
-                      <p className="text-lg font-bold text-slate-800">12 Smart</p>
-                    </div>
-                  </div>
-                </div>
-
+                  </Card>
+                </CardSwap>
               </div>
             </div>
           </div>

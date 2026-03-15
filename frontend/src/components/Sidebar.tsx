@@ -43,8 +43,8 @@ const Sidebar: React.FC = () => {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        // The App.tsx router or auth listener should handle redirecting to login
-        window.location.href = '/login';
+        // Redirect to the landing page after logout
+        globalThis.location.href = '/';
     };
 
     return (

@@ -423,7 +423,7 @@ const Dashboard: React.FC = () => {
                                     </div>
                                     <div className="text-right">
                                         <span className="text-2xl font-bold text-[#0e121b] dark:text-white">
-                                            {Math.round((((dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)) / (dashboardStats?.totalWorkingDays || 20)) * 100)}%
+                                            {Math.min(Math.round((((dashboardStats?.officeDays ?? 0) + (dashboardStats?.remoteDays ?? 0) + (dashboardStats?.sickDays ?? 0) + (dashboardStats?.holidayDays ?? 0)) / (dashboardStats?.totalWorkingDays || 20)) * 100), 100)}%
                                         </span>
                                     </div>
                                 </div>
@@ -448,7 +448,8 @@ const Dashboard: React.FC = () => {
                                             {/* Progress Bar */}
                                             <div className="relative w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
                                                 {plannedStats.map(stat => {
-                                                    const widthPct = (stat.count / totalDays) * 100;
+                                                    // Cap at 100 to avoid overflow rendering
+                                                    const widthPct = Math.min((stat.count / totalDays) * 100, 100 - currentLeft);
                                                     const style = { left: `${currentLeft}%`, width: `${widthPct}%` };
                                                     currentLeft += widthPct;
                                                     return (
