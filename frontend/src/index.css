@@ -16,3 +16,12 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* Prevent image and illustration dragging across all the application */
+img, svg {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-select: none;
+}

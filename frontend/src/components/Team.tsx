@@ -4,12 +4,13 @@ import Sidebar from './Sidebar';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import Footer from './Footer';
+import emptyStateIllustration from '../assets/illustrations/empty.svg';
 
 interface Colleague {
     id: string;
     full_name: string;
     avatar_url: string;
-    work_status: 'office' | 'remote' | 'leave';
+    work_status: 'office' | 'remote' | 'leave' | 'unmarked';
     location_details: string;
     role_description: string;
 }
@@ -17,7 +18,7 @@ interface Colleague {
 const Team: React.FC = () => {
     const { t, i18n } = useTranslation();
     const [colleagues, setColleagues] = useState<Colleague[]>([]);
-    const [filter, setFilter] = useState<'all' | 'office' | 'remote' | 'leave'>('all');
+    const [filter, setFilter] = useState<'all' | 'office' | 'remote' | 'leave' | 'unmarked'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -84,14 +85,15 @@ const Team: React.FC = () => {
                             id: c.id,
                             full_name: c.fullName || 'Utente',
                             avatar_url: c.avatarUrl || '',
-                            work_status: c.workStatus || 'remote',
+                            work_status: c.workStatus || 'unmarked',
                             location_details: c.locationDetails || '',
                             role_description: c.roleDescription || ''
                         })).sort((a: any, b: any) => {
                             const statusWeight = (status: string) => {
                                 if (status === 'office') return 1;
                                 if (status === 'remote') return 2;
-                                return 3; // leave/absent
+                                if (status === 'leave') return 3; // leave/absent
+                                return 4; // unmarked
                             };
                             return statusWeight(a.work_status) - statusWeight(b.work_status);
                         });
@@ -128,7 +130,7 @@ const Team: React.FC = () => {
     const filteredColleagues = colleagues;
 
     // Use a separate state for total counts so they don't break when filtered
-    const [counts, setCounts] = useState({ office: 0, remote: 0, leave: 0, total: 1 });
+    const [counts, setCounts] = useState({ office: 0, remote: 0, leave: 0, unmarked: 0, total: 1 });
 
     useEffect(() => {
         // Only update total counts when showing 'all' and no search string,
@@ -138,6 +140,7 @@ const Team: React.FC = () => {
                 office: colleagues.filter(c => c.work_status === 'office').length,
                 remote: colleagues.filter(c => c.work_status === 'remote').length,
                 leave: colleagues.filter(c => c.work_status === 'leave').length,
+                unmarked: colleagues.filter(c => c.work_status === 'unmarked').length,
                 total: colleagues.length || 1
             });
         }
@@ -146,13 +149,19 @@ const Team: React.FC = () => {
     const inOfficeCount = counts.office;
     const remoteCount = counts.remote;
     const leaveCount = counts.leave;
+    const unmarkedCount = counts.unmarked;
     const totalCount = counts.total;
 
     const inOfficePct = Math.round((inOfficeCount / totalCount) * 100);
     const remotePct = Math.round((remoteCount / totalCount) * 100);
     const leavePct = Math.round((leaveCount / totalCount) * 100);
+    const unmarkedPct = Math.round((unmarkedCount / totalCount) * 100);
 
-    const dynamicGradient = `conic-gradient(#8b5cf6 0% ${inOfficePct}%, #38bdf8 ${inOfficePct}% ${inOfficePct + remotePct}%, #ef4444 ${inOfficePct + remotePct}% 100%)`;
+    const dynamicGradient = `conic-gradient(#8b5cf6 0% ${inOfficePct}%, #38bdf8 ${inOfficePct}% ${inOfficePct + remotePct}%, #ef4444 ${inOfficePct + remotePct}% ${inOfficePct + remotePct + leavePct}%, #e2e8f0 ${inOfficePct + remotePct + leavePct}% 100%)`;
+
+    // Helper syntax for Weekend
+    const isWeekend = selectedDate.getDay() === 0 || selectedDate.getDay() === 6;
+    const isWeekendEmpty = isWeekend && unmarkedCount === colleagues.length;
 
     return (
         <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
@@ -208,7 +217,7 @@ const Team: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-6 sm:gap-12">
+                            <div className="flex flex-wrap gap-6 sm:gap-8 lg:gap-12">
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"></div>
@@ -241,13 +250,24 @@ const Team: React.FC = () => {
                                         <span className="text-sm text-red-500 font-medium ml-1">{leavePct}%</span>
                                     </div>
                                 </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-600"></div>
+                                        <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{i18n.language === 'it' ? 'Non Inserita' : 'Unmarked'}</span>
+                                    </div>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-3xl font-bold text-[#0e121b] dark:text-white">{unmarkedCount}</span>
+                                        <span className="text-sm text-slate-500 font-medium ml-1">{unmarkedPct}%</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div className="shrink-0 relative z-10 hidden sm:flex pr-4">
-                            <div className="w-32 h-32 rounded-full relative flex items-center justify-center transition-transform duration-500 hover:scale-105 shadow-xl shadow-purple-500/10" style={{ background: dynamicGradient }}>
+                            <div className="w-32 h-32 rounded-full relative flex items-center justify-center transition-transform duration-500 hover:scale-105 shadow-xl shadow-purple-500/10" style={isWeekendEmpty ? {background: '#e2e8f0'} : { background: dynamicGradient }}>
                                 <div className="w-24 h-24 rounded-full bg-white dark:bg-slate-800 flex flex-col items-center justify-center shadow-inner">
-                                    <span className="text-3xl font-black text-[#0e121b] dark:text-white">{colleagues.length}</span>
+                                    <span className="text-3xl font-black text-[#0e121b] dark:text-white">{isWeekendEmpty ? 0 : colleagues.length}</span>
                                     <span className="text-[10px] text-[#4e6797] font-bold uppercase tracking-widest mt-0.5">{t('totals')}</span>
                                 </div>
                             </div>
@@ -289,6 +309,11 @@ const Team: React.FC = () => {
                                 className={`whitespace-nowrap flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all text-sm active:scale-95 border ${filter === 'leave' ? 'bg-gradient-to-r from-red-400 to-red-500 text-white shadow-md shadow-red-500/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-red-500 border-slate-200 dark:border-slate-700 hover:border-red-500/30'}`}>
                                 {t('absent')} <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'leave' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{leaveCount}</span>
                             </button>
+                            <button
+                                onClick={() => setFilter('unmarked')}
+                                className={`whitespace-nowrap flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all text-sm active:scale-95 border ${filter === 'unmarked' ? 'bg-slate-200 text-slate-700 shadow-md shadow-slate-200/20 border-transparent dark:bg-slate-700 dark:text-white' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-500/30'}`}>
+                                {i18n.language === 'it' ? 'Non inserita' : 'Unmarked'} <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'unmarked' ? 'bg-black/10 dark:bg-white/20 text-current' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{unmarkedCount}</span>
+                            </button>
                         </div>
                     </div>
 
@@ -298,16 +323,50 @@ const Team: React.FC = () => {
                             <div className="col-span-full py-12 flex justify-center items-center">
                                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
                             </div>
+                        ) : isWeekendEmpty ? (
+                            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-white/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+                                <div className="h-48 w-48 mb-6 relative flex justify-center items-center">
+                                    <img 
+                                        src={emptyStateIllustration} 
+                                        alt="Weekend Illustration" 
+                                        className="h-full w-auto object-contain drop-shadow-lg opacity-90 transition-transform duration-500 hover:scale-105"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.onerror = null;
+                                            target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect width="200" height="150" fill="rgba(0,0,0,0.05)" rx="16"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#64748b">empty.svg (weekend)</text></svg>';
+                                        }}
+                                    />
+                                </div>
+                                <h3 className="text-xl font-bold text-[#0e121b] dark:text-white text-center">
+                                    {i18n.language === 'it' ? "È il weekend!" : "It's the weekend!"}
+                                </h3>
+                                <p className="text-base text-[#4e6797] mt-2 text-center max-w-sm">
+                                    {i18n.language === 'it' 
+                                        ? "Nessuna presenza registrata per oggi. Il team si sta riposando." 
+                                        : "No attendances recorded for today. The team is resting."}
+                                </p>
+                            </div>
                         ) : filteredColleagues.length === 0 ? (
                             <div className="col-span-full py-16 flex flex-col items-center justify-center bg-white/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
-                                <span className="material-symbols-outlined text-4xl text-slate-400 mb-3">group_off</span>
+                                <div className="h-40 w-40 mb-5 relative flex justify-center items-center">
+                                    <img 
+                                        src={emptyStateIllustration} 
+                                        alt="Empty Illustration" 
+                                        className="h-full w-auto object-contain drop-shadow-md opacity-75 grayscale sepia-0 transition-all duration-500 hover:grayscale-0 hover:scale-105"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.onerror = null;
+                                            target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" fill="rgba(0,0,0,0.05)" rx="16"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">empty.svg</text></svg>';
+                                        }}
+                                    />
+                                </div>
                                 <h3 className="text-lg font-bold text-[#0e121b] dark:text-white">{t('no_colleague_found')}</h3>
                                 <p className="text-sm text-[#4e6797] mt-1">{t('try_change_filters')}</p>
                             </div>
                         ) : (
                             filteredColleagues.map(colleague => (
                                 <div key={colleague.id} className={`group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-transparent 
-                                    ${colleague.work_status === 'office' ? 'hover:border-purple-500/20' : colleague.work_status === 'remote' ? 'hover:border-sky-500/20' : 'hover:border-red-500/20 opacity-80 hover:opacity-100'}`}>
+                                    ${colleague.work_status === 'office' ? 'hover:border-purple-500/20' : colleague.work_status === 'remote' ? 'hover:border-sky-500/20' : colleague.work_status === 'leave' ? 'hover:border-red-500/20 opacity-80 hover:opacity-100' : 'hover:border-slate-300 dark:hover:border-slate-600'}`}>
 
                                     <div className="flex flex-col items-center text-center pb-5 border-b border-slate-100 dark:border-slate-700 relative">
 
@@ -325,7 +384,7 @@ const Team: React.FC = () => {
                                                 />
                                             </div>
                                             <div className={`absolute bottom-1 right-1 size-5 border-2 border-white dark:border-slate-800 rounded-full 
-                                                ${colleague.work_status === 'office' ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : colleague.work_status === 'remote' ? 'bg-sky-400' : 'bg-red-500'}`}></div>
+                                                ${colleague.work_status === 'office' ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : colleague.work_status === 'remote' ? 'bg-sky-400' : colleague.work_status === 'leave' ? 'bg-red-500' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                         </div>
                                         <h3 className="text-lg font-bold text-[#0e121b] dark:text-white line-clamp-1 w-full" title={colleague.full_name}>{colleague.full_name}</h3>
 
@@ -352,6 +411,12 @@ const Team: React.FC = () => {
                                                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-400 to-red-500 text-white text-xs font-bold shadow-sm shadow-red-500/20">
                                                     <span className="material-symbols-outlined text-[14px]">event_busy</span>
                                                     {t('absent')}
+                                                </span>
+                                            )}
+                                            {colleague.work_status === 'unmarked' && (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600 shadow-sm">
+                                                    <span className="material-symbols-outlined text-[14px]">help_center</span>
+                                                    {i18n.language === 'it' ? 'Non inserita' : 'Not marked'}
                                                 </span>
                                             )}
                                         </div>

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-spring/web": "^10.0.3",
     "@stomp/stompjs": "^7.3.0",
     "@supabase/supabase-js": "^2.97.0",
     "axios": "^1.13.5",

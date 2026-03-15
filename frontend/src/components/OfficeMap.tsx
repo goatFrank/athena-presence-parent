@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import workingRemotelyIllustration from '../assets/illustrations/workingRemotely.svg';
 
 const OfficeMap: React.FC = () => {
     const { t } = useTranslation();
@@ -13,16 +14,30 @@ const OfficeMap: React.FC = () => {
                 <div className="flex-1 flex flex-col ml-80 mr-8 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <main className="max-w-5xl mx-auto w-full px-4 md:px-10 py-10 flex-1">
                         {/* Title and Breadcrumbs */}
-                        <div className="mb-8 mt-4">
-                            <h1 className="text-[#0e121b] dark:text-white text-3xl md:text-4xl font-bold leading-tight flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-                                    <span className="material-symbols-outlined text-[24px]">map</span>
-                                </div>
-                                {t('office_map', 'Athena Office Location')}
-                            </h1>
-                            <p className="text-[#4e6797] dark:text-slate-400 mt-2 font-medium">
-                                {t('office_map_subtitle', 'Find your way to our main headquarters')}
-                            </p>
+                        <div className="mb-8 mt-4 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div>
+                                <h1 className="text-[#0e121b] dark:text-white text-3xl md:text-4xl font-bold leading-tight flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                                        <span className="material-symbols-outlined text-[24px]">map</span>
+                                    </div>
+                                    {t('office_map', 'Athena Office Location')}
+                                </h1>
+                                <p className="text-[#4e6797] dark:text-slate-400 mt-2 font-medium">
+                                    {t('office_map_subtitle', 'Find your way to our main headquarters')}
+                                </p>
+                            </div>
+                            <div className="hidden md:flex flex-shrink-0">
+                                <img 
+                                    src={workingRemotelyIllustration} 
+                                    alt="Remote Working Illustration" 
+                                    className="h-24 w-auto object-contain drop-shadow-md hover:-translate-y-1 transition-transform duration-300"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.onerror = null;
+                                        target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="rgba(0,0,0,0.05)" rx="16"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">map.svg</text></svg>';
+                                    }}
+                                />
+                            </div>
                         </div>
                         
                         {/* Interactive Google Map Section */}

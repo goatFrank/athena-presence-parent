@@ -5,6 +5,7 @@ import Planning from './components/Planning';
 import Team from './components/Team';
 import Profile from './components/Profile';
 import OfficeMap from './components/OfficeMap';
+import LandingPage from './components/LandingPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -37,9 +38,11 @@ function App() {
             <OfficeMap />
           </ProtectedRoute>
         } />
-        {/* Default redirect to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Default redirect to landing or login */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

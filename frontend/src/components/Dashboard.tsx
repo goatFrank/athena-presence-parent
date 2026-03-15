@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
+import welcomeIllustration from '../assets/illustrations/welcome.svg';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
@@ -213,9 +214,10 @@ const Dashboard: React.FC = () => {
                             const isOffice = rawStatus.includes('office') || rawStatus.includes('sede') || rawStatus === 'in_office';
                             const isSickOrHoliday = rawStatus.includes('sick') || rawStatus.includes('holiday') || rawStatus.includes('malattia') || rawStatus.includes('ferie') || rawStatus.includes('leave') || rawStatus.includes('absent');
 
-                            let workStatus = 'remote';
+                            let workStatus = 'unmarked';
                             if (isOffice) workStatus = 'office';
                             else if (isSickOrHoliday) workStatus = 'absent';
+                            else if (rawStatus.includes('remote') || rawStatus.includes('smart')) workStatus = 'remote';
 
                             return {
                                 id: p.id,
@@ -334,21 +336,17 @@ const Dashboard: React.FC = () => {
                                     )}
                                 </div>
 
-                                <div className="hidden lg:block pr-8">
-                                    <svg className="drop-shadow-lg" fill="none" height="140" viewBox="0 0 200 140" width="200" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="160" cy="40" fill="#FDE047" fillOpacity="0.8" r="30"></circle>
-                                        <path d="M40 140V80C40 74.4772 44.4772 70 50 70H150C155.523 70 160 74.4772 160 80V140H40Z" fill="url(#paint0_linear)"></path>
-                                        <rect fill="white" fillOpacity="0.9" height="40" rx="4" width="90" x="55" y="90"></rect>
-                                        <rect fill="#E2E8F0" height="2" rx="1" width="70" x="65" y="100"></rect>
-                                        <rect fill="#E2E8F0" height="2" rx="1" width="50" x="65" y="108"></rect>
-                                        <path d="M20 140H60V110C60 104.477 55.523 100 50 100H30C24.4772 100 20 104.477 20 110V140Z" fill="#CBD5E1"></path>
-                                        <defs>
-                                            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear" x1="100" x2="100" y1="70" y2="140">
-                                                <stop stopColor="#60A5FA"></stop>
-                                                <stop offset="1" stopColor="#3B82F6"></stop>
-                                            </linearGradient>
-                                        </defs>
-                                    </svg>
+                                <div className="hidden lg:block pr-8 relative h-[140px] w-[200px] flex items-center justify-center">
+                                    <img 
+                                        src={welcomeIllustration} 
+                                        alt="Welcome Illustration" 
+                                        className="h-full w-auto object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500 ease-out"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.onerror = null;
+                                            target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"><rect width="200" height="140" fill="rgba(255,255,255,0.2)" rx="16"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="white">welcome.svg</text></svg>';
+                                        }}
+                                    />
                                 </div>
                             </div>
                         </header>
@@ -585,6 +583,12 @@ const Dashboard: React.FC = () => {
                             >
                                 {t('remote')}
                             </button>
+                            <button
+                                onClick={() => setColleagueFilter('unmarked' as any)}
+                                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${colleagueFilter === ('unmarked' as any) ? 'text-slate-700 dark:text-white bg-white dark:bg-slate-600 shadow-sm' : 'text-[#4e6797] dark:text-slate-400 bg-transparent hover:bg-slate-200/50 dark:hover:bg-slate-600/50 hover:text-[#0e121b] dark:hover:text-white'}`}
+                            >
+                                {i18n.language === 'it' ? 'Mancante' : 'Missing'}
+                            </button>
                         </div>
                     </div>
 
@@ -593,21 +597,22 @@ const Dashboard: React.FC = () => {
                             <div className="text-xs break-all text-red-500 bg-red-100 dark:bg-red-900/30 p-2 rounded-lg mb-2">DEBUG: {debugInfo}</div>
                         )}
                         {colleagues
-                            .filter(c => colleagueFilter === 'all' || (c.work_status === 'office' && colleagueFilter === 'office') || (c.work_status === 'remote' && colleagueFilter === 'remote'))
+                            .filter(c => colleagueFilter === 'all' || (c.work_status === 'office' && colleagueFilter === 'office') || (c.work_status === 'remote' && colleagueFilter === 'remote') || (c.work_status === 'unmarked' && colleagueFilter === ('unmarked' as any)))
                             .map(colleague => {
                                 const isAbsent = colleague.work_status === 'leave' || colleague.work_status === 'absent';
+                                const isUnmarked = colleague.work_status === 'unmarked';
                                 return (
-                                    <div key={colleague.id} className={`flex items-center gap-3 group cursor-pointer p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-600 hover:shadow-sm ${colleague.work_status === 'remote' ? 'opacity-90' : isAbsent ? 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0' : ''}`}>
+                                    <div key={colleague.id} className={`flex items-center gap-3 group cursor-pointer p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-600 hover:shadow-sm ${colleague.work_status === 'remote' ? 'opacity-90' : isAbsent ? 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0' : isUnmarked ? 'opacity-60' : ''}`}>
                                         <div className="relative">
                                             <img alt={`${colleague.full_name} avatar`} className={`w-11 h-11 rounded-2xl object-cover ${colleague.work_status === 'office' ? 'ring-2 ring-white dark:ring-slate-700' : ''}`} src={colleague.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(colleague.full_name)}&background=random`} />
-                                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full flex items-center justify-center ${colleague.work_status === 'office' ? 'bg-green-500' : colleague.work_status === 'remote' ? 'bg-amber-400' : 'bg-slate-400'}`}>
+                                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full flex items-center justify-center ${colleague.work_status === 'office' ? 'bg-green-500' : colleague.work_status === 'remote' ? 'bg-amber-400' : isUnmarked ? 'bg-slate-300' : 'bg-slate-400'}`}>
                                                 {colleague.work_status === 'office' && <div className="w-1.5 h-1.5 bg-white rounded-full opacity-50"></div>}
                                             </div>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={`text-sm font-bold truncate ${isAbsent ? 'text-slate-400' : 'text-[#0e121b] dark:text-white'}`}>{colleague.full_name}</p>
+                                            <p className={`text-sm font-bold truncate ${isAbsent || isUnmarked ? 'text-slate-400' : 'text-[#0e121b] dark:text-white'}`}>{colleague.full_name}</p>
                                             <p className={`text-xs truncate font-medium ${colleague.work_status === 'office' ? 'text-blue-500' : colleague.work_status === 'remote' ? 'text-amber-500' : 'text-slate-400'}`}>
-                                                {colleague.work_status === 'office' ? t('in_office_status') : colleague.work_status === 'remote' ? t('remote_status') : t('unavailable')} • {colleague.location_details}
+                                                {colleague.work_status === 'office' ? t('in_office_status') : colleague.work_status === 'remote' ? t('remote_status') : isUnmarked ? (i18n.language === 'it' ? 'Non inserita' : 'Not marked') : t('unavailable')} • {colleague.location_details}
                                             </p>
                                         </div>
                                     </div>

@@ -5,6 +5,7 @@ import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import planningIllustration from '../assets/illustrations/planning.svg';
 
 // ── Types ──────────────────────────────────────────────────────────
 interface AttendanceRecord {
@@ -475,8 +476,17 @@ const Planning: React.FC = () => {
                             <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
                             <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
                             <div className="relative z-10 flex flex-col items-center">
-                                <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 ring-4 ring-white/30">
-                                    <span className="material-icons text-5xl text-indigo-500">face_5</span>
+                                <div className="w-24 h-24 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 ring-4 ring-white/30 overflow-hidden relative p-2">
+                                    <img 
+                                        src={planningIllustration} 
+                                        alt="Planning Illustration" 
+                                        className="w-full h-full object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.onerror = null;
+                                            target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="rgba(0,0,0,0.05)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">plan</text></svg>';
+                                        }}
+                                    />
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 transform rotate-1 hover:rotate-0 transition-transform duration-500">
                                     <p className="font-bold text-lg">{t('hello')}, {userName || 'User'}!</p>

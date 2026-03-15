@@ -313,8 +313,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         .orElse(null);
 
                         String rawStatus = att != null && att.getStatus() != null ? att.getStatus().name().toLowerCase()
-                                        : "remote";
-                        String workStatus = "remote";
+                                        : "unmarked";
+                        String workStatus = "unmarked";
 
                         if (rawStatus.contains("office") || rawStatus.contains("sede")
                                         || rawStatus.equals("in_office")) {
@@ -323,15 +323,18 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         || rawStatus.contains("malattia") || rawStatus.contains("sick")
                                         || rawStatus.contains("holiday")) {
                                 workStatus = "leave";
+                        } else if (rawStatus.contains("remote") || rawStatus.contains("smart")) {
+                                workStatus = "remote";
                         }
 
                         String locationDetails = att != null && att.getNote() != null && !att.getNote().isBlank()
                                         ? att.getNote()
-                                        : (workStatus.equals("leave") ? "Non disponibile" : "Disponibile");
+                                        : (workStatus.equals("leave") ? "Non disponibile" : (workStatus.equals("unmarked") ? "Non Inserita" : "Disponibile"));
+                        
                         if (locationDetails.isBlank() || locationDetails.equals("Disponibile")
-                                        || locationDetails.equals("Non disponibile")) {
+                                        || locationDetails.equals("Non disponibile") || locationDetails.equals("Non Inserita")) {
                                 locationDetails = workStatus.equals("office") ? "In Sede"
-                                                : (workStatus.equals("leave") ? "Ritarda" : "Smart Working");
+                                                : (workStatus.equals("leave") ? "Ritarda" : (workStatus.equals("unmarked") ? "Non Inserita" : "Smart Working"));
 
                                 if (workStatus.equals("leave")) {
                                         locationDetails = "Non disponibile";
