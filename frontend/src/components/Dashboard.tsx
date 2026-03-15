@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
-import welcomeIllustration from '../assets/illustrations/welcome.svg';
+import startingWorkIllustration from '../assets/illustrations/startingWork.svg';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
@@ -338,13 +338,13 @@ const Dashboard: React.FC = () => {
 
                                 <div className="hidden lg:block pr-8 relative h-[140px] w-[200px] flex items-center justify-center">
                                     <img 
-                                        src={welcomeIllustration} 
+                                        src={startingWorkIllustration} 
                                         alt="Welcome Illustration" 
                                         className="h-full w-auto object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500 ease-out"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.onerror = null;
-                                            target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"><rect width="200" height="140" fill="rgba(255,255,255,0.2)" rx="16"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="white">welcome.svg</text></svg>';
+                                            target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"><rect width="200" height="140" fill="rgba(255,255,255,0.2)" rx="16"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="white">startingWork.svg</text></svg>';
                                         }}
                                     />
                                 </div>

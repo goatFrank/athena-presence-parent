@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
-import workingRemotelyIllustration from '../assets/illustrations/workingRemotely.svg';
+import mapIllustration from '../assets/illustrations/map.svg';
 
 const OfficeMap: React.FC = () => {
     const { t } = useTranslation();
@@ -28,7 +28,7 @@ const OfficeMap: React.FC = () => {
                             </div>
                             <div className="hidden md:flex flex-shrink-0">
                                 <img 
-                                    src={workingRemotelyIllustration} 
+                                    src={mapIllustration} 
                                     alt="Remote Working Illustration" 
                                     className="h-24 w-auto object-contain drop-shadow-md hover:-translate-y-1 transition-transform duration-300"
                                     onError={(e) => {

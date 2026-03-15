@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import Footer from './Footer';
-import emptyStateIllustration from '../assets/illustrations/empty.svg';
+import barbequeIllustration from '../assets/illustrations/barbeque.svg';
 
 interface Colleague {
     id: string;
@@ -327,7 +327,7 @@ const Team: React.FC = () => {
                             <div className="col-span-full py-16 flex flex-col items-center justify-center bg-white/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
                                 <div className="h-48 w-48 mb-6 relative flex justify-center items-center">
                                     <img 
-                                        src={emptyStateIllustration} 
+                                        src={barbequeIllustration} 
                                         alt="Weekend Illustration" 
                                         className="h-full w-auto object-contain drop-shadow-lg opacity-90 transition-transform duration-500 hover:scale-105"
                                         onError={(e) => {
@@ -350,13 +350,13 @@ const Team: React.FC = () => {
                             <div className="col-span-full py-16 flex flex-col items-center justify-center bg-white/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
                                 <div className="h-40 w-40 mb-5 relative flex justify-center items-center">
                                     <img 
-                                        src={emptyStateIllustration} 
+                                        src={barbequeIllustration} 
                                         alt="Empty Illustration" 
                                         className="h-full w-auto object-contain drop-shadow-md opacity-75 grayscale sepia-0 transition-all duration-500 hover:grayscale-0 hover:scale-105"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.onerror = null;
-                                            target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" fill="rgba(0,0,0,0.05)" rx="16"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">empty.svg</text></svg>';
+                                            target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" fill="rgba(0,0,0,0.05)" rx="16"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">barbeque</text></svg>';
                                         }}
                                     />
                                 </div>

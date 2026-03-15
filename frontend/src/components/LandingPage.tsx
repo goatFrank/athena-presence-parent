@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Building2, 
@@ -20,12 +20,41 @@ import workingRemotelyImg from '../assets/illustrations/workingRemotely.svg';
 export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [lineHeight, setLineHeight] = useState(0);
+  const flowSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+
+      if (flowSectionRef.current) {
+        const rect = flowSectionRef.current.getBoundingClientRect();
+        // The element is completely above the viewport
+        if (rect.bottom < 0) {
+            setLineHeight(100);
+        } else if (rect.top > window.innerHeight) {
+            // The element is completely below the viewport
+            setLineHeight(0);
+        } else {
+            // The element is in the viewport
+            // Start filling when the top of the section hits the middle of the screen
+            const startPoint = window.innerHeight / 2;
+            const scrollDistance = startPoint - rect.top;
+            const totalDistance = rect.height;
+            
+            if (scrollDistance < 0) {
+                setLineHeight(0);
+            } else {
+                let percentage = (scrollDistance / totalDistance) * 100;
+                // Add a small buffer so it completes slightly before the section ends
+                percentage = Math.min(100, Math.max(0, percentage * 1.2)); 
+                setLineHeight(percentage);
+            }
+        }
+      }
     };
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initialization
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -238,9 +267,15 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="space-y-24 relative mt-16">
-            {/* Linea di connessione verticale dietro gli step - visibile solo Desktop */}
-            <div className="absolute left-[50%] top-0 bottom-0 w-0.5 bg-gradient-to-b from-indigo-100 via-purple-100 to-slate-50 hidden lg:block -translate-x-1/2"></div>
+          <div ref={flowSectionRef} className="space-y-24 relative mt-16">
+            {/* Struttura della linea verticale - visibile solo Desktop */}
+            <div className="absolute left-[50%] top-6 bottom-6 w-1 bg-slate-100 hidden lg:block -translate-x-1/2 rounded-full overflow-hidden">
+                {/* Linea colorata animata */}
+                <div 
+                  className="w-full bg-gradient-to-b from-indigo-500 via-purple-500 to-emerald-400 transition-all duration-300 ease-out rounded-full"
+                  style={{ height: `${lineHeight}%` }}
+                ></div>
+            </div>
             
             {/* Step 1: Admin */}
             {/* 
