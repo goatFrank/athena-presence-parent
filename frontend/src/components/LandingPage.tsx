@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import CardSwap, { Card } from './CardSwap';
 import ElectricBorder from './ElectricBorder';
 import SplitText from './SplitText';
+import CurvedLoop from './CurvedLoop';
 import { 
   Building2, 
   Users, 
@@ -233,15 +234,15 @@ export default function LandingPage() {
       {/* --- LOW-OPACITY LOGOs / TRUST SECTION --- */}
       <section className="border-y border-slate-200/60 bg-white py-10 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium text-slate-500 mb-6 uppercase tracking-widest">Scelto dai team più innovativi</p>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-            {/* Sostituisci con veri loghi vettoriali di aziende */}
-            <div className="text-xl font-bold tracking-tighter">Acme Corp</div>
-            <div className="text-xl font-bold tracking-tighter italic">Globex</div>
-            <div className="text-xl font-bold tracking-tighter uppercase">Soylent</div>
-            <div className="text-xl font-bold tracking-tighter">Initech</div>
-          </div>
+          <p className="text-sm font-medium text-slate-500 mb-2 uppercase tracking-widest">Scelto dai team più innovativi</p>
         </div>
+        <CurvedLoop 
+          marqueeText="Acme Corp ✦ Globex ✦ Soylent ✦ Initech ✦ Umbrella Corp ✦ Wayne Enterprises ✦"
+          speed={1.5}
+          curveAmount={150}
+          direction="left"
+          interactive
+        />
       </section>
 
       {/* --- COME FUNZIONA (Gerarchia / Flow) --- */}
