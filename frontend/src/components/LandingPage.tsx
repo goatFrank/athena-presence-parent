@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import CardSwap, { Card } from './CardSwap';
+import ElectricBorder from './ElectricBorder';
+import SplitText from './SplitText';
 import { 
   Building2, 
   Users, 
@@ -16,6 +18,7 @@ import {
 import dashboardImg from '../assets/illustrations/dashboard.svg';
 import businessDecisionImg from '../assets/illustrations/businessDecision.svg';
 import workingRemotelyImg from '../assets/illustrations/workingRemotely.svg';
+import athenaLogo from '../assets/icons/athena.ico';
 
 export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -81,9 +84,7 @@ export default function LandingPage() {
           <div className="flex justify-between items-center">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-200">
-                A
-              </div>
+              <img src={athenaLogo} alt="Athena" className="w-8 h-8" />
               <span className="font-bold text-xl tracking-tight text-slate-900">Athena</span>
             </div>
 
@@ -145,18 +146,15 @@ export default function LandingPage() {
                 Il Futuro dell'Hybrid Work
               </div>
               
-              <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 leading-[1.1]">
-                {/* 
-                  ========================================
-                  REACT BITS: TEXT ANIMATION
-                  ========================================
-                  Qui inserisci <SplitText> o <BlurText> da React Bits!
-                  Il testo "Sincronizza il tuo team" entra parola per parola.
-                */}
-                Sincronizza il tuo team,<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-                  ovunque si trovi.
-                </span>
+              <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 leading-[1.2] relative text-left">
+                <SplitText
+                  text="Sincronizza il tuo team, ovunque si trovi."
+                  className="block"
+                  delay={40}
+                  duration={1}
+                  ease="power4.out"
+                  textAlign="left"
+                />
               </h1>
               
               <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-xl">
@@ -190,37 +188,37 @@ export default function LandingPage() {
                   pauseOnHover={true}
                 >
                   <Card>
-                    <div className="flex flex-col h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-8 rounded-xl shadow-inner">
-                      <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
-                        <CalendarDays className="w-7 h-7 text-white" />
+                    <div className="flex flex-col h-full w-full bg-white text-slate-900 p-8 rounded-[24px] group">
+                      <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 transition-colors group-hover:bg-indigo-600">
+                        <CalendarDays className="w-7 h-7 text-indigo-600 transition-colors group-hover:text-white" />
                       </div>
                       <h3 className="text-2xl font-bold mb-3 tracking-tight">Pianifica in libertà</h3>
-                      <p className="text-indigo-100 leading-relaxed">
+                      <p className="text-slate-600 leading-relaxed">
                         Organizza i tuoi giorni in sede e in remoto con un click. Il team saprà sempre dove trovarti, migliorando la collaborazione.
                       </p>
                     </div>
                   </Card>
                   
                   <Card>
-                    <div className="flex flex-col h-full w-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-8 rounded-xl shadow-inner">
-                      <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
-                        <UserCheck className="w-7 h-7 text-white" />
+                    <div className="flex flex-col h-full w-full bg-white text-slate-900 p-8 rounded-[24px] group">
+                      <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 transition-colors group-hover:bg-emerald-600">
+                        <UserCheck className="w-7 h-7 text-emerald-600 transition-colors group-hover:text-white" />
                       </div>
                       <h3 className="text-2xl font-bold mb-3 tracking-tight">Approvazioni Fast</h3>
-                      <p className="text-emerald-50 leading-relaxed">
+                      <p className="text-slate-600 leading-relaxed">
                         I manager approvano le richieste di smart working direttamente dalla dashboard. Zero email, massima efficienza.
                       </p>
                     </div>
                   </Card>
 
                   <Card>
-                    <div className="flex flex-col h-full w-full bg-slate-800 text-white p-8 rounded-xl shadow-inner relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
-                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
-                        <MapPin className="w-7 h-7 text-indigo-300" />
+                    <div className="flex flex-col h-full w-full bg-white text-slate-900 p-8 rounded-[24px] group relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-slate-100/50 rounded-full blur-2xl pointer-events-none transition-opacity group-hover:opacity-0"></div>
+                      <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6 transition-colors group-hover:bg-slate-800">
+                        <MapPin className="w-7 h-7 text-slate-700 transition-colors group-hover:text-white" />
                       </div>
                       <h3 className="text-2xl font-bold mb-3 tracking-tight">Mappa Sede Integrata</h3>
-                      <p className="text-slate-300 leading-relaxed relative z-10">
+                      <p className="text-slate-600 leading-relaxed relative z-10">
                         Trova subito la tua postazione o verifica chi è fisicamente presente in ufficio con la mappa interattiva 3D.
                       </p>
                     </div>
@@ -284,9 +282,9 @@ export default function LandingPage() {
                 </div>
                 <h4 className="text-2xl font-bold text-slate-900 mb-4">1. Amministratore</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  Registra l'azienda, configura le policy per lo smart working, 
+                  L'amministratore (colui che acquista il servizio per la propria azienda) configura le policy per lo smart working, 
                   imposta la capienza delle sedi e invita i dipendenti.
-                  L'admin ha la visione macro su tutta l'organizzazione.
+                  Ha la visione macro su tutta l'organizzazione.
                 </p>
               </div>
               <div className="order-1 lg:order-2 lg:pl-16 flex justify-start">
@@ -309,7 +307,7 @@ export default function LandingPage() {
                 </div>
                 <h4 className="text-2xl font-bold text-slate-900 mb-3">2. Manager</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  Riceve la delega dall'amministratore per gestire team specifici.
+                  Il manager (capo reparto) riceve la delega dall'amministratore per gestire team specifici.
                   Approva le richieste di smart working, monitora la presenza
                   del proprio gruppo e garantisce la copertura in ufficio.
                 </p>
@@ -332,9 +330,9 @@ export default function LandingPage() {
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 mb-6 relative z-10 lg:ml-auto shadow-sm ring-1 ring-emerald-100/50">
                   <UserCheck className="w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-slate-900 mb-3">3. Dipendente</h4>
+                <h4 className="text-2xl font-bold text-slate-900 mb-3">3. Employee</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  Pianifica la propria settimana in due clic, segnalando i giorni 
+                  I dipendenti della propria azienda pianificano la propria settimana in due clic, segnalando i giorni 
                   da casa o prenotando la scrivania in ufficio. Interfaccia pulita e mobile-first.
                 </p>
               </div>
@@ -384,16 +382,26 @@ export default function LandingPage() {
               { icon: MapPin, title: "Mappa Interattiva 2D", desc: "Visualizza i planimetri degli uffici reali per sapere non solo chi è in sede, ma a quale scrivania lavora." },
               { icon: TrendingUp, title: "Analytics Real-Time", desc: "Dati ed esportazioni custom per HR per misurare trend di occupazione e abbattere costi inutili sulle location." },
             ].map((feature) => (
-              <div key={feature.title} className="bg-white rounded-[2rem] p-10 border border-slate-200 hover:border-indigo-300 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all duration-300 group cursor-default relative overflow-hidden">
-                {/* Glow di background interno per le feature card */}
-                <div className="absolute top-0 right-0 p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-bl from-indigo-50 to-transparent w-full h-full pointer-events-none rounded-tr-[2rem]"></div>
+              <ElectricBorder
+                key={feature.title}
+                color="#4f46e5"
+                speed={0.5}
+                chaos={0.15}
+                thickness={2}
+                style={{ borderRadius: 32 }}
+                className="h-full"
+              >
+                <div className="bg-white rounded-[2rem] p-10 border border-slate-200 hover:border-indigo-300 transition-all duration-300 group cursor-default relative overflow-hidden h-full">
+                  {/* Glow di background interno per le feature card */}
+                  <div className="absolute top-0 right-0 p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-bl from-indigo-50 to-transparent w-full h-full pointer-events-none rounded-tr-[2rem]"></div>
 
-                <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-700 mb-8 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100 group-hover:border-indigo-500 group-hover:scale-110">
-                  <feature.icon className="w-8 h-8" />
+                  <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-700 mb-8 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100 group-hover:border-indigo-500 group-hover:scale-110">
+                    <feature.icon className="w-8 h-8" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-slate-900 mb-4 relative z-10">{feature.title}</h4>
+                  <p className="text-slate-600 text-lg leading-relaxed relative z-10">{feature.desc}</p>
                 </div>
-                <h4 className="text-2xl font-bold text-slate-900 mb-4 relative z-10">{feature.title}</h4>
-                <p className="text-slate-600 text-lg leading-relaxed relative z-10">{feature.desc}</p>
-              </div>
+              </ElectricBorder>
             ))}
           </div>
         </div>
@@ -435,7 +443,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-6 opacity-90">
-                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">A</div>
+                <img src={athenaLogo} alt="Athena" className="w-8 h-8" />
                 <span className="font-bold text-2xl tracking-tight text-white">Athena</span>
               </div>
               <p className="text-slate-400 max-w-sm mb-8 leading-relaxed text-sm">

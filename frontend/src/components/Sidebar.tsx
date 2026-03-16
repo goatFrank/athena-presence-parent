@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../api/supabase';
+import athenaLogo from '../assets/icons/athena.ico';
 
 const Sidebar: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -51,9 +52,7 @@ const Sidebar: React.FC = () => {
         <aside className="font-display w-72 bg-surface-light/90 dark:bg-surface-dark/95 backdrop-blur-md border-r border-blue-100 dark:border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] rounded-r-3xl my-4 ml-4 h-[calc(100vh-2rem)]">
             <div className="p-8 pb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                        <span className="material-symbols-outlined text-[24px]">auto_awesome</span>
-                    </div>
+                    <img src={athenaLogo} alt="Athena" className="w-10 h-10 rounded-2xl shadow-lg" />
                     <span className="font-bold text-2xl tracking-tight text-slate-800 dark:text-white">Athena</span>
                 </div>
                 {/* Language Switcher */}
