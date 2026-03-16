@@ -6,6 +6,8 @@ import Team from './components/Team';
 import Profile from './components/Profile';
 import OfficeMap from './components/OfficeMap';
 import LandingPage from './components/LandingPage';
+import Register from './components/Register';
+import SuperadminTenants from './components/SuperadminTenants';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -13,6 +15,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
@@ -36,6 +39,11 @@ function App() {
         <Route path="/office-map" element={
           <ProtectedRoute>
             <OfficeMap />
+          </ProtectedRoute>
+        } />
+        <Route path="/superadmin/tenants" element={
+          <ProtectedRoute>
+            <SuperadminTenants />
           </ProtectedRoute>
         } />
         {/* Landing Page */}

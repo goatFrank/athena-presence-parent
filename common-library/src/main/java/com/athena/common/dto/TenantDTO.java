@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class TenantDTO {
     private Long id;
     private String name;
+    private String status;
 }
 

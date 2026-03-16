@@ -47,7 +47,10 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Object> body = Map.of(
                 "email", signupRequest.getEmail(),
                 "password", signupRequest.getPassword(),
-                "data", Map.of("full_name", signupRequest.getFullName())
+                "data", Map.of(
+                        "full_name", signupRequest.getFullName(),
+                        "company_name", signupRequest.getCompanyName()
+                )
         );
 
         return restClient.post()

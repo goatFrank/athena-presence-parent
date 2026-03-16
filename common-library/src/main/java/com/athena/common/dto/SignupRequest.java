@@ -23,4 +23,7 @@ public class SignupRequest {
     @NotBlank
     @Schema(example = "Mario Rossi")
     private String fullName;
+    @NotBlank
+    @Schema(example = "Athena Inc.")
+    private String companyName;
 }

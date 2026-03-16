@@ -8,9 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,13 +20,33 @@ public class TenantController {
 
     private final TenantService tenantService;
 
-    @GetMapping
-    @Operation(summary = "Recupera la lista di tutti i tenant")
-    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getAllTenants() {
-        List<TenantDTO> tenants = tenantService.getAllTenants();
+    @GetMapping("/pending")
+    @Operation(summary = "Recupera la lista dei tenant in attesa di approvazione")
+    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getPendingTenants() {
+        List<TenantDTO> tenants = tenantService.getPendingTenants();
         return ResponseEntity.ok(ResponseDTO.<List<TenantDTO>>builder()
-                .message("Tenants retrieved successfully")
+                .message("Pending tenants retrieved successfully")
                 .payload(tenants)
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
+    @PutMapping("/{id}/approve")
+    @Operation(summary = "Approva un tenant")
+    public ResponseEntity<ResponseDTO<Void>> approveTenant(@PathVariable Long id) {
+        tenantService.updateTenantStatus(id, "ACTIVE");
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("Tenant approved successfully")
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
+    @PutMapping("/{id}/reject")
+    @Operation(summary = "Rifiuta un tenant")
+    public ResponseEntity<ResponseDTO<Void>> rejectTenant(@PathVariable Long id) {
+        tenantService.updateTenantStatus(id, "REJECTED");
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("Tenant rejected successfully")
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }

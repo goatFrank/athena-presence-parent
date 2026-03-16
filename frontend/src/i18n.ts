@@ -160,7 +160,35 @@ const resources = {
             "privacy": "Privacy",
             "terms": "Termini",
             "help": "Aiuto",
-            "login_error_unexpected": "Si è verificato un errore imprevisto durante l'accesso."
+            "login_error_unexpected": "Si è verificato un errore imprevisto durante l'accesso.",
+
+            // ── Register Page ──
+            "create_account": "Crea Account Aziendale",
+            "full_name": "Nome Completo",
+            "company_name": "Nome dell'Azienda",
+            "confirm_password": "Conferma Password",
+            "already_have_account": "Hai già un account?",
+            "sign_up": "Crea il tuo Workspace",
+            "signing_up": "Creazione del Workspace...",
+            "register_error_unexpected": "Si è verificato un errore imprevisto durante la registrazione.",
+            "register_success": "Workspace creato con successo! Verificando la sessione...",
+            "registration_closed": "La registrazione è chiusa. Contatta l'amministratore.",
+            "passwords_dont_match": "Le password non coincidono",
+            "registration_pending": "Registrazione in attesa",
+            "registration_pending_desc": "La tua registrazione è stata completata con successo. Il tuo account è ora in attesa di approvazione da parte di un amministratore. Riceverai un'email una volta approvato.",
+            "tenant_pending_approval": "Il tuo account aziendale è in attesa di approvazione. Contatta il superadmin per maggiori informazioni.",
+            "company_already_registered": "Un'azienda con questo nome è già registrata. Per favore usa un nome diverso.",
+            "enter_details_register": "Registra la tua azienda e inizia a gestire il tuo team.",
+            "magic_link": "Invia link di accesso",
+            "magic_link_sent": "Ti abbiamo inviato un link di accesso via email!",
+            "magic_link_error": "Errore durante l'invio del link.",
+            "continue_with_magic_link": "Oppure ricevi un link via email",
+            "tenant_approvals": "Approvazioni Aziende",
+            "no_pending_tenants": "Nessuna azienda in attesa di approvazione.",
+            "approve": "Approva",
+            "reject": "Rifiuta",
+            "company_name_label": "Nome Azienda",
+            "status_label": "Stato"
         }
     },
     en: {
@@ -321,7 +349,35 @@ const resources = {
             "privacy": "Privacy",
             "terms": "Terms",
             "help": "Help",
-            "login_error_unexpected": "An unexpected error occurred during login."
+            "login_error_unexpected": "An unexpected error occurred during login.",
+
+            // ── Register Page ──
+            "create_account": "Create Company Account",
+            "full_name": "Full Name",
+            "company_name": "Company Name",
+            "confirm_password": "Confirm Password",
+            "already_have_account": "Already have an account?",
+            "sign_up": "Create your Workspace",
+            "signing_up": "Creating Workspace...",
+            "register_error_unexpected": "An unexpected error occurred during registration.",
+            "register_success": "Workspace created successfully! Verifying session...",
+            "registration_closed": "Registration is closed. Please contact the administrator.",
+            "passwords_dont_match": "Passwords don't match",
+            "registration_pending": "Registration Pending",
+            "registration_pending_desc": "Your registration has been submitted successfully. Your account is now pending approval by an administrator. You will receive an email once approved.",
+            "tenant_pending_approval": "Your company account is pending approval. Please contact the superadmin for more information.",
+            "company_already_registered": "A company with this name is already registered. Please use a different name.",
+            "enter_details_register": "Register your company and start managing your team.",
+            "magic_link": "Send Magic Link",
+            "magic_link_sent": "We've sent a magic link to your email!",
+            "magic_link_error": "Error sending magic link.",
+            "continue_with_magic_link": "Or get a link via email",
+            "tenant_approvals": "Tenant Approvals",
+            "no_pending_tenants": "No tenants pending approval.",
+            "approve": "Approve",
+            "reject": "Reject",
+            "company_name_label": "Company Name",
+            "status_label": "Status"
         }
     }
 };

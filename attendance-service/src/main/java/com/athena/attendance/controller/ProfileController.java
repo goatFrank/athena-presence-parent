@@ -49,5 +49,17 @@ public class ProfileController {
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
+
+    @org.springframework.web.bind.annotation.PostMapping("/setup")
+    @Operation(summary = "Inizializza il profilo e il tenant dell'utente")
+    public ResponseEntity<ResponseDTO<Void>> setupProfile(
+            @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.SignupRequest request,
+            @org.springframework.web.bind.annotation.RequestParam UUID userId) {
+        profileService.createProfile(userId, request.getFullName(), request.getCompanyName());
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("Profile and Tenant setup successfully")
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
 }
 

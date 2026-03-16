@@ -22,4 +22,5 @@ public class ProfileDTO {
     private Long locationId;
     private String locationName; // Added for convenience
     private String profileCellphone;
+    private String tenantStatus;
 }

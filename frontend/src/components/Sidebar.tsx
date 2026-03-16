@@ -9,6 +9,7 @@ const Sidebar: React.FC = () => {
     const location = useLocation();
     const [userName, setUserName] = useState<string>('');
     const [userRole, setUserRole] = useState<string>('');
+    const [isSuperadmin, setIsSuperadmin] = useState<boolean>(false);
     const [userAvatar, setUserAvatar] = useState<string>('');
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -18,15 +19,23 @@ const Sidebar: React.FC = () => {
             if (user) {
                 const { data: meData, error: meError } = await supabase
                     .from('profiles')
-                    .select('full_name, role_description, avatar_url')
+                    .select('full_name, role_description, avatar_url, role_id, roles:role_id ( name )')
                     .eq('id', user.id);
 
                 if (!meError && meData && meData.length > 0) {
-                    if (meData[0].full_name) setUserName(meData[0].full_name);
-                    if (meData[0].role_description) setUserRole(meData[0].role_description);
-                    if (meData[0].avatar_url) {
-                        const rawAvatar = meData[0].avatar_url;
-                        setUserAvatar(rawAvatar.startsWith('http') ? rawAvatar : `${import.meta.env.VITE_ATTENDANCE_API_URL}${rawAvatar}`);
+                    const profile = meData[0];
+                    if (profile.full_name) setUserName(profile.full_name);
+                    if (profile.role_description) setUserRole(profile.role_description);
+                    
+                    // Check if superadmin
+                    // @ts-ignore - Supabase types can be tricky with joins
+                    if (profile.roles?.name === 'SUPERADMIN') {
+                        setIsSuperadmin(true);
+                    }
+                    
+                    if (profile.avatar_url) {
+                        const avatar = profile.avatar_url;
+                        setUserAvatar(avatar.startsWith('http') ? avatar : `${import.meta.env.VITE_ATTENDANCE_API_URL}${avatar}`);
                     }
                 } else {
                     const fallbackName = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'User');
@@ -66,21 +75,27 @@ const Sidebar: React.FC = () => {
 
             <nav className="flex-1 px-6 space-y-3 mt-6">
                 <Link to="/dashboard" className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/dashboard' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
-                    <span className={`material-icons text-[22px] transition-colors ${location.pathname !== '/dashboard' ? 'group-hover:text-blue-500' : ''}`}>dashboard</span>
+                    <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/dashboard' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>dashboard</span>
                     {t('dashboard_title')}
                 </Link>
                 <Link to="/planning" className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/planning' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
-                    <span className={`material-icons text-[22px] transition-colors ${location.pathname !== '/planning' ? 'group-hover:text-blue-500' : ''}`}>calendar_month</span>
+                    <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/planning' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>calendar_month</span>
                     {t('my_schedule')}
                 </Link>
                 <Link to="/team" className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/team' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
-                    <span className={`material-icons text-[22px] transition-colors ${location.pathname !== '/team' ? 'group-hover:text-blue-500' : ''}`}>groups</span>
+                    <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/team' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>groups</span>
                     {t('team')}
                 </Link>
                 <Link to="/office-map" className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/office-map' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
-                    <span className={`material-icons text-[22px] transition-colors ${location.pathname !== '/office-map' ? 'group-hover:text-blue-500' : ''}`}>map</span>
+                    <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/office-map' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>map</span>
                     {t('office_map')}
                 </Link>
+                {isSuperadmin && (
+                    <Link to="/superadmin/tenants" className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/superadmin/tenants' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
+                        <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/superadmin/tenants' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>admin_panel_settings</span>
+                        {t('tenant_approvals')}
+                    </Link>
+                )}
                 <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#analytics">
                     <span className="material-icons text-[22px] group-hover:text-blue-500 transition-colors">bar_chart</span>
                     {t('analytics')}

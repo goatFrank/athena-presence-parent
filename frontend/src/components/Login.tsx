@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase, setRememberMe as setRememberMePref } from '../api/supabase';
+import { attendanceApi } from '../api/clients';
 
 const Login: React.FC = () => {
     const { t } = useTranslation();
@@ -10,6 +11,7 @@ const Login: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [magicLinkSent, setMagicLinkSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
     const navigate = useNavigate();
@@ -17,14 +19,32 @@ const Login: React.FC = () => {
     useEffect(() => {
         const checkExistingSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                navigate('/dashboard', { replace: true });
+            if (session && session.user) {
+                try {
+                    const profileResponse = await attendanceApi.get('/api/v1/profiles/me');
+                    const profileData = profileResponse.data.payload;
+                    
+                    if (profileData && profileData.tenantStatus === 'ACTIVE') {
+                        navigate('/dashboard', { replace: true });
+                    } else if (profileData) {
+                        await supabase.auth.signOut();
+                        if (profileData.tenantStatus === 'PENDING') {
+                            setError(t('tenant_pending_approval'));
+                        } else if (profileData.tenantStatus === 'REJECTED') {
+                            setError(t('tenant_rejected_approval', 'Il tuo account aziendale è stato rifiutato.'));
+                        }
+                    }
+                } catch (e: any) {
+                    console.error('Error checking status for existing session:', e);
+                    // If error fetching profile, stay on login page and consider signing out
+                    await supabase.auth.signOut();
+                }
             }
         };
         checkExistingSession();
-    }, [navigate]);
+    }, [navigate, t]);
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
         setLoading(true);
@@ -40,10 +60,60 @@ const Login: React.FC = () => {
             if (signInError) {
                 setError(signInError.message);
             } else {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    try {
+                        const profileResponse = await attendanceApi.get(`/api/v1/profiles/${user.id}`);
+                        const profileData = profileResponse.data;
+                        
+                        if (profileData.tenantStatus === 'PENDING') {
+                            setError(t('tenant_pending_approval'));
+                            await supabase.auth.signOut();
+                            setLoading(false);
+                            return;
+                        } else if (profileData.tenantStatus === 'REJECTED') {
+                            setError(t('tenant_rejected_approval', 'Il tuo account aziendale è stato rifiutato.'));
+                            await supabase.auth.signOut();
+                            setLoading(false);
+                            return;
+                        }
+                    } catch (e: any) {
+                        console.error('Error fetching profile during login:', e);
+                    }
+                }
                 navigate('/dashboard');
             }
-        } catch {
-            setError(t('login_error_unexpected'));
+        } catch (e: any) {
+            setError(`${t('login_error_unexpected')}: ${e.message || 'Unknown error'}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMagicLink = async () => {
+        if (!email) {
+            setError(t('email_required', 'Email is required for Magic Link'));
+            return;
+        }
+        setError(null);
+        setLoading(true);
+        setMagicLinkSent(false);
+
+        try {
+            const { error: otpError } = await supabase.auth.signInWithOtp({
+                email,
+                options: {
+                    emailRedirectTo: globalThis.location.origin + '/dashboard',
+                },
+            });
+
+            if (otpError) {
+                setError(otpError.message);
+            } else {
+                setMagicLinkSent(true);
+            }
+        } catch (e: any) {
+            setError(t('magic_link_error') + (e.message ? ": " + e.message : ""));
         } finally {
             setLoading(false);
         }
@@ -146,6 +216,13 @@ const Login: React.FC = () => {
                             </div>
                         )}
 
+                        {magicLinkSent && (
+                            <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm flex items-start gap-2">
+                                <span className="material-icons text-green-500 text-lg">check_circle_outline</span>
+                                <span>{t('magic_link_sent')}</span>
+                            </div>
+                        )}
+
                         <form onSubmit={handleLogin} className="space-y-5">
                             <div className="space-y-1.5">
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500" htmlFor="email">
@@ -215,9 +292,9 @@ const Login: React.FC = () => {
                                     />
                                     <label className="ml-2 block text-sm text-slate-600" htmlFor="remember-me">{t('remember_me')}</label>
                                 </div>
-                                <a className="text-sm font-semibold text-primary hover:text-blue-700 transition-colors" href="#">
+                                <button type="button" className="text-sm font-semibold text-primary hover:text-blue-700 transition-colors bg-transparent border-none p-0 cursor-pointer">
                                     {t('forgot_password')}
-                                </a>
+                                </button>
                             </div>
 
                             <button
@@ -244,17 +321,22 @@ const Login: React.FC = () => {
                                 <div className="w-full border-t border-slate-100"></div>
                             </div>
                             <div className="relative flex justify-center text-xs uppercase tracking-wide">
-                                <span className="px-4 bg-white text-slate-400 font-medium">{t('or_continue_with')}</span>
+                                <span className="px-4 bg-white text-slate-400 font-medium">{t('continue_with_magic_link')}</span>
                             </div>
                         </div>
 
-                        <button className="w-full flex justify-center items-center py-3.5 px-4 border border-slate-200 rounded-2xl bg-white text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 transition-all duration-200 group" type="button" disabled={loading}>
-                            <img alt="SSO" className="w-5 h-5 mr-3 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVS2CBsKogNkmvrqwDY2CZRQXv65uWoaE8lQLi_YS6pWgPFzM574z3jUDhwwUbKa3ukke8pNgXzHdiLMwkotakFO4yolmn-AQMN5DK2huCB089LGBQIzVRuuEV9Cjzo6hTCxJnEmGUSg40Vu3baWxttEVMU2aFa09iBafuu_ABNtcHM5T2GkP-VhSF1uc80BIT-ntDox-L6_knFBgPPMRvg-dT9jzA85pACYM6Co8x69ITTHBVSKUuGTxBLbWd6OX7nntKtMFlgu0" />
-                            {t('sso')}
+                        <button
+                            onClick={handleMagicLink}
+                            disabled={loading || !email}
+                            className={`w-full flex justify-center items-center py-3.5 px-4 border border-slate-200 rounded-2xl bg-white text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 transition-all duration-200 group ${(!email || loading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                            type="button"
+                        >
+                            <span className="material-icons mr-3 text-blue-500 opacity-80 group-hover:opacity-100 transition-opacity">auto_fix_high</span>
+                            {loading ? t('signing_in') : t('magic_link')}
                         </button>
 
-                        <p className="mt-8 text-center text-xs text-slate-400">
-                            {t('no_account')} <a className="text-primary font-semibold hover:underline" href="#">{t('contact_hr')}</a>
+                        <p className="mt-8 text-center text-sm text-slate-500">
+                            {t('no_account')} <Link className="text-primary font-semibold hover:underline" to="/register">{t('sign_up', 'Sign Up')}</Link>
                         </p>
                     </div>
                 </div>
@@ -262,11 +344,11 @@ const Login: React.FC = () => {
 
             <div className="mt-8 text-center pb-8">
                 <div className="flex justify-center space-x-6 text-xs text-slate-400 font-medium">
-                    <a className="hover:text-slate-600 transition-colors" href="#">{t('privacy')}</a>
+                    <button type="button" className="hover:text-slate-600 transition-colors bg-transparent border-none p-0 cursor-pointer">{t('privacy')}</button>
                     <span className="text-slate-300">•</span>
-                    <a className="hover:text-slate-600 transition-colors" href="#">{t('terms')}</a>
+                    <button type="button" className="hover:text-slate-600 transition-colors bg-transparent border-none p-0 cursor-pointer">{t('terms')}</button>
                     <span className="text-slate-300">•</span>
-                    <a className="hover:text-slate-600 transition-colors" href="#">{t('help')}</a>
+                    <button type="button" className="hover:text-slate-600 transition-colors bg-transparent border-none p-0 cursor-pointer">{t('help')}</button>
                 </div>
                 <p className="mt-4 text-[10px] text-slate-400 opacity-60">
                     © 2024 Athena Inc. Internal System.
