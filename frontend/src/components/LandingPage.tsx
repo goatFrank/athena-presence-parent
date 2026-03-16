@@ -4,13 +4,14 @@ import CardSwap, { Card } from './CardSwap';
 import ElectricBorder from './ElectricBorder';
 import SplitText from './SplitText';
 import CurvedLoop from './CurvedLoop';
-import { 
-  Building2, 
-  Users, 
-  UserCheck, 
-  CalendarDays, 
-  MapPin, 
-  TrendingUp, 
+import TrueFocus from './TrueFocus';
+import {
+  Building2,
+  Users,
+  UserCheck,
+  CalendarDays,
+  MapPin,
+  TrendingUp,
   ArrowRight,
   Menu,
   X
@@ -35,25 +36,25 @@ export default function LandingPage() {
         const rect = flowSectionRef.current.getBoundingClientRect();
         // The element is completely above the viewport
         if (rect.bottom < 0) {
-            setLineHeight(100);
+          setLineHeight(100);
         } else if (rect.top > window.innerHeight) {
-            // The element is completely below the viewport
-            setLineHeight(0);
+          // The element is completely below the viewport
+          setLineHeight(0);
         } else {
-            // The element is in the viewport
-            // Start filling when the top of the section hits the middle of the screen
-            const startPoint = window.innerHeight / 2;
-            const scrollDistance = startPoint - rect.top;
-            const totalDistance = rect.height;
-            
-            if (scrollDistance < 0) {
-                setLineHeight(0);
-            } else {
-                let percentage = (scrollDistance / totalDistance) * 100;
-                // Add a small buffer so it completes slightly before the section ends
-                percentage = Math.min(100, Math.max(0, percentage * 1.2)); 
-                setLineHeight(percentage);
-            }
+          // The element is in the viewport
+          // Start filling when the top of the section hits the middle of the screen
+          const startPoint = window.innerHeight / 2;
+          const scrollDistance = startPoint - rect.top;
+          const totalDistance = rect.height;
+
+          if (scrollDistance < 0) {
+            setLineHeight(0);
+          } else {
+            let percentage = (scrollDistance / totalDistance) * 100;
+            // Add a small buffer so it completes slightly before the section ends
+            percentage = Math.min(100, Math.max(0, percentage * 1.2));
+            setLineHeight(percentage);
+          }
         }
       }
     };
@@ -64,7 +65,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden relative">
-      
+
       {/* 
         ========================================
         REACT BITS: BACKGROUND (Opzionale)
@@ -76,10 +77,9 @@ export default function LandingPage() {
       */}
 
       {/* --- NAVBAR --- */}
-      <nav 
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-white/70 backdrop-blur-lg shadow-sm border-b border-slate-200/50 py-3' : 'bg-transparent py-5'
-        }`}
+      <nav
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white/70 backdrop-blur-lg shadow-sm border-b border-slate-200/50 py-3' : 'bg-transparent py-5'
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -108,8 +108,8 @@ export default function LandingPage() {
                 In futuro sostituisci questo div/Link con <StarBorder> o 
                 simili <ShinyButton> per l'high impact design.
               */}
-              <Link 
-                to="/register" 
+              <Link
+                to="/register"
                 className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg hover:shadow-indigo-200 active:scale-95 flex items-center gap-2"
               >
                 Inizia gratis
@@ -118,7 +118,7 @@ export default function LandingPage() {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <button 
+            <button
               className="md:hidden p-2 text-slate-600"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -136,7 +136,7 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-            
+
             {/* Hero Left Content */}
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold tracking-wide uppercase mb-6">
@@ -146,7 +146,7 @@ export default function LandingPage() {
                 </span>
                 Il Futuro dell'Hybrid Work
               </div>
-              
+
               <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 leading-[1.2] relative text-left">
                 <SplitText
                   text="Sincronizza il tuo team, ovunque si trovi."
@@ -157,11 +157,11 @@ export default function LandingPage() {
                   textAlign="left"
                 />
               </h1>
-              
+
               <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-xl">
                 La piattaforma B2B per gestire in modo intelligente presenze in ufficio e smart working. Dai più potere ai manager, flessibilità ai dipendenti e controllo all'azienda.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/register" className="bg-slate-900 text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-slate-800 transition-all shadow-xl hover:shadow-2xl hover:shadow-slate-300 flex items-center justify-center gap-2 group">
                   Registra la tua Azienda
@@ -175,7 +175,7 @@ export default function LandingPage() {
 
             {/* Hero Right - Dashboard Preview & Illustration */}
             <div className="relative lg:h-[600px] flex items-center justify-center mt-12 lg:mt-0">
-              
+
               {/* Background abstract shapes */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-indigo-100/40 via-purple-50/40 to-transparent rounded-full blur-3xl -z-10"></div>
 
@@ -199,7 +199,7 @@ export default function LandingPage() {
                       </p>
                     </div>
                   </Card>
-                  
+
                   <Card>
                     <div className="flex flex-col h-full w-full bg-white text-slate-900 p-8 rounded-[24px] group">
                       <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 transition-colors group-hover:bg-emerald-600">
@@ -236,7 +236,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-slate-500 mb-2 uppercase tracking-widest">Scelto dai team più innovativi</p>
         </div>
-        <CurvedLoop 
+        <CurvedLoop
           marqueeText="Acme Corp ✦ Globex ✦ Soylent ✦ Initech ✦ Umbrella Corp ✦ Wayne Enterprises ✦"
           speed={1.5}
           curveAmount={150}
@@ -248,12 +248,24 @@ export default function LandingPage() {
       {/* --- COME FUNZIONA (Gerarchia / Flow) --- */}
       <section id="how-it-works" className="py-24 bg-white overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-3">Flusso Operativo</h2>
-            <h3 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Tre livelli, un'unica dashboard</h3>
+            <h3 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">
+              <TrueFocus
+                sentence="Tre livelli,|un'unica dashboard"
+                separator="|"
+                manualMode={false}
+                blurAmount={4}
+                borderColor="#4f46e5"
+                glowColor="rgba(79, 70, 229, 0.4)"
+                animationDuration={1}
+                pauseBetweenAnimations={2}
+                className="text-3xl md:text-5xl font-bold text-slate-900"
+              />
+            </h3>
             <p className="text-lg text-slate-600 leading-relaxed">
-              Abbiamo progettato un sistema gerarchico che rispetta la struttura reale della tua azienda, 
+              Abbiamo progettato un sistema gerarchico che rispetta la struttura reale della tua azienda,
               delegando la complessità e semplificando le decisioni.
             </p>
           </div>
@@ -261,13 +273,13 @@ export default function LandingPage() {
           <div ref={flowSectionRef} className="space-y-24 relative mt-16">
             {/* Struttura della linea verticale - visibile solo Desktop */}
             <div className="absolute left-[50%] top-6 bottom-6 w-1 bg-slate-100 hidden lg:block -translate-x-1/2 rounded-full overflow-hidden">
-                {/* Linea colorata animata */}
-                <div 
-                  className="w-full bg-gradient-to-b from-indigo-500 via-purple-500 to-emerald-400 transition-all duration-300 ease-out rounded-full"
-                  style={{ height: `${lineHeight}%` }}
-                ></div>
+              {/* Linea colorata animata */}
+              <div
+                className="w-full bg-gradient-to-b from-indigo-500 via-purple-500 to-emerald-400 transition-all duration-300 ease-out rounded-full"
+                style={{ height: `${lineHeight}%` }}
+              ></div>
             </div>
-            
+
             {/* Step 1: Admin */}
             {/* 
               ========================================
@@ -283,7 +295,7 @@ export default function LandingPage() {
                 </div>
                 <h4 className="text-2xl font-bold text-slate-900 mb-4">1. Amministratore</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  L'amministratore (colui che acquista il servizio per la propria azienda) configura le policy per lo smart working, 
+                  L'amministratore (colui che acquista il servizio per la propria azienda) configura le policy per lo smart working,
                   imposta la capienza delle sedi e invita i dipendenti.
                   Ha la visione macro su tutta l'organizzazione.
                 </p>
@@ -291,10 +303,10 @@ export default function LandingPage() {
               <div className="order-1 lg:order-2 lg:pl-16 flex justify-start">
                 {/* Admin Setup Illustration */}
                 <div className="w-full max-w-md aspect-[4/3] bg-slate-50 rounded-[2rem] border border-slate-200 flex flex-col items-center justify-center p-8 shadow-xl shadow-slate-200/50 transition-transform group-hover:scale-105 duration-500">
-                  <img 
-                    src={dashboardImg} 
-                    alt="Dashboard Setup" 
-                    className="w-full h-auto max-h-48 drop-shadow-md" 
+                  <img
+                    src={dashboardImg}
+                    alt="Dashboard Setup"
+                    className="w-full h-auto max-h-48 drop-shadow-md"
                   />
                 </div>
               </div>
@@ -316,10 +328,10 @@ export default function LandingPage() {
               <div className="order-1 lg:order-1 flex justify-end lg:pr-16">
                 {/* Manager / Team Approval Illustration */}
                 <div className="w-full max-w-md aspect-[4/3] bg-slate-50 rounded-[2rem] border border-slate-200 flex flex-col items-center justify-center p-8 shadow-xl shadow-slate-200/50 transition-transform group-hover:scale-105 duration-500">
-                  <img 
-                    src={businessDecisionImg} 
-                    alt="Manager making decisions" 
-                    className="w-full h-auto max-h-48 drop-shadow-md" 
+                  <img
+                    src={businessDecisionImg}
+                    alt="Manager making decisions"
+                    className="w-full h-auto max-h-48 drop-shadow-md"
                   />
                 </div>
               </div>
@@ -333,17 +345,17 @@ export default function LandingPage() {
                 </div>
                 <h4 className="text-2xl font-bold text-slate-900 mb-3">3. Employee</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  I dipendenti della propria azienda pianificano la propria settimana in due clic, segnalando i giorni 
+                  I dipendenti della propria azienda pianificano la propria settimana in due clic, segnalando i giorni
                   da casa o prenotando la scrivania in ufficio. Interfaccia pulita e mobile-first.
                 </p>
               </div>
               <div className="order-1 lg:order-2 lg:pl-16 flex justify-start">
-                 {/* Employee Smart Working Illustration */}
-                 <div className="w-full max-w-md aspect-[4/3] bg-slate-50 rounded-[2rem] border border-slate-200 flex flex-col items-center justify-center p-8 shadow-xl shadow-slate-200/50 transition-transform group-hover:scale-105 duration-500">
-                  <img 
-                    src={workingRemotelyImg} 
-                    alt="Employee working remotely" 
-                    className="w-full h-auto max-h-48 drop-shadow-md" 
+                {/* Employee Smart Working Illustration */}
+                <div className="w-full max-w-md aspect-[4/3] bg-slate-50 rounded-[2rem] border border-slate-200 flex flex-col items-center justify-center p-8 shadow-xl shadow-slate-200/50 transition-transform group-hover:scale-105 duration-500">
+                  <img
+                    src={workingRemotelyImg}
+                    alt="Employee working remotely"
+                    className="w-full h-auto max-h-48 drop-shadow-md"
                   />
                 </div>
               </div>
@@ -356,21 +368,21 @@ export default function LandingPage() {
       {/* --- FEATURES SECTION --- */}
       <section id="features" className="py-32 bg-slate-50 relative border-t border-slate-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
             <div className="max-w-2xl">
               <h2 className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-4">Vantaggi Principali</h2>
-              <h3 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">Ottimizza gli spazi, <br/>massimizza la produttività</h3>
+              <h3 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">Ottimizza gli spazi, <br />massimizza la produttività</h3>
             </div>
             <div>
-               <Link to="/features" className="inline-flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 bg-indigo-50 px-5 py-2.5 rounded-full hover:bg-indigo-100 transition-colors">
-                  Scopri tutte le features <ArrowRight className="w-4 h-4" />
-               </Link>
+              <Link to="/features" className="inline-flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 bg-indigo-50 px-5 py-2.5 rounded-full hover:bg-indigo-100 transition-colors">
+                Scopri tutte le features <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-             {/* 
+            {/* 
                 ========================================
                 REACT BITS: SPOTLIGHT / TILT CARDS
                 ========================================
@@ -428,12 +440,12 @@ export default function LandingPage() {
             Unisciti alle aziende all'avanguardia che hanno già semplificato la gestione dei loro team ibridi. Provalo gratis senza carta di credito.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-             <Link to="/register" className="bg-indigo-500 text-white px-10 py-5 rounded-full text-lg font-bold hover:bg-indigo-400 transition-all shadow-xl hover:shadow-2xl hover:shadow-indigo-500/30 hover:-translate-y-1">
-                Registra la tua Azienda
-             </Link>
-             <Link to="/contact" className="bg-transparent text-white border border-white/20 px-10 py-5 rounded-full text-lg font-bold hover:bg-white/10 transition-all">
-                Contatta le Vendite
-             </Link>
+            <Link to="/register" className="bg-indigo-500 text-white px-10 py-5 rounded-full text-lg font-bold hover:bg-indigo-400 transition-all shadow-xl hover:shadow-2xl hover:shadow-indigo-500/30 hover:-translate-y-1">
+              Registra la tua Azienda
+            </Link>
+            <Link to="/contact" className="bg-transparent text-white border border-white/20 px-10 py-5 rounded-full text-lg font-bold hover:bg-white/10 transition-all">
+              Contatta le Vendite
+            </Link>
           </div>
         </div>
       </section>
@@ -448,19 +460,19 @@ export default function LandingPage() {
                 <span className="font-bold text-2xl tracking-tight text-white">Athena</span>
               </div>
               <p className="text-slate-400 max-w-sm mb-8 leading-relaxed text-sm">
-                Software B2B premium per gestire presenze e workweek ibride. Massima trasparenza per l'azienda, 
+                Software B2B premium per gestire presenze e workweek ibride. Massima trasparenza per l'azienda,
                 fluidità e benessere per chi lavora.
               </p>
-              
+
               {/* Form Newsletter veloce */}
               <form className="flex gap-2 max-w-xs group" onSubmit={(e) => e.preventDefault()}>
                 <input type="email" placeholder="Iscriviti alla newsletter" className="bg-slate-800/50 border border-slate-700 text-white text-sm rounded-lg px-4 py-2 w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all" />
                 <button type="submit" className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-500 transition-colors group-hover:scale-105 active:scale-95">
-                  <ArrowRight className="w-5 h-5"/>
+                  <ArrowRight className="w-5 h-5" />
                 </button>
               </form>
             </div>
-            
+
             <div className="md:col-span-1">
               <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-xs">Prodotto</h4>
               <ul className="space-y-4 text-sm text-slate-400 font-medium">
