@@ -20,6 +20,17 @@ public class TenantController {
 
     private final TenantService tenantService;
 
+    @GetMapping("/all")
+    @Operation(summary = "Recupera la lista di tutti i tenant")
+    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getAllTenants() {
+        List<TenantDTO> tenants = tenantService.getAllTenants();
+        return ResponseEntity.ok(ResponseDTO.<List<TenantDTO>>builder()
+                .message("All tenants retrieved successfully")
+                .payload(tenants)
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
     @GetMapping("/pending")
     @Operation(summary = "Recupera la lista dei tenant in attesa di approvazione")
     public ResponseEntity<ResponseDTO<List<TenantDTO>>> getPendingTenants() {
@@ -47,6 +58,18 @@ public class TenantController {
         tenantService.updateTenantStatus(id, "REJECTED");
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
                 .message("Tenant rejected successfully")
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
+    @PutMapping("/{id}/status")
+    @Operation(summary = "Aggiorna lo stato di un tenant")
+    public ResponseEntity<ResponseDTO<Void>> updateTenantStatus(
+            @PathVariable Long id, 
+            @RequestParam String status) {
+        tenantService.updateTenantStatus(id, status);
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("Tenant status updated successfully to " + status)
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }

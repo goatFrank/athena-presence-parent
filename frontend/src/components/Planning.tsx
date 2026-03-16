@@ -408,13 +408,33 @@ const Planning: React.FC = () => {
         >
             <Sidebar />
 
-            <div className="flex-1 ml-80 overflow-y-auto h-screen scroll-smooth">
+            <div className="flex-1 ml-0 md:ml-80 overflow-y-auto h-screen scroll-smooth">
                 {/* ── Main Content ── */}
                 <main className="font-calendar antialiased max-w-7xl mx-auto w-full px-8 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10"
                     onClick={(e) => e.stopPropagation()}>
 
-                    {/* ── Calendar Area (8 cols) ── */}
-                    <div className="lg:col-span-8 space-y-8">
+                    {/* Block 1: Greeting Card (First on mobile, top of col-4 on lg) */}
+                    <div className="order-1 lg:order-2 lg:col-span-4 self-start">
+                        <div className="bg-indigo-600 rounded-3xl shadow-xl overflow-hidden relative min-h-[220px] flex items-center justify-center text-center p-6 text-white">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 to-indigo-500 opacity-90"></div>
+                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
+                            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <div className="w-24 h-24 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 ring-4 ring-white/30 overflow-hidden relative p-2">
+                                    <span className="material-symbols-outlined text-[3.5rem] text-indigo-500 drop-shadow-sm">face_5</span>
+                                </div>
+                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                                    <p className="font-bold text-lg">{t('hello')}, {userName || 'User'}!</p>
+                                    <p className="text-indigo-100 text-sm">
+                                        {t('plan_your_month')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Block 2: Calendar Area (Second on mobile, first block on lg) */}
+                    <div className="order-2 lg:order-1 lg:col-span-8 lg:row-span-2 space-y-8">
                         {/* Month Header */}
                         <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-soft-glow border border-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
@@ -467,25 +487,8 @@ const Planning: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* ── Sidebar (4 cols) ── */}
-                    <div className="lg:col-span-4 space-y-6">
-                        {/* Greeting Card */}
-                        <div className="bg-indigo-600 rounded-3xl shadow-xl overflow-hidden relative min-h-[220px] flex items-center justify-center text-center p-6 text-white">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 to-indigo-500 opacity-90"></div>
-                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
-                            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
-                            <div className="relative z-10 flex flex-col items-center">
-                                <div className="w-24 h-24 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 ring-4 ring-white/30 overflow-hidden relative p-2">
-                                    <span className="material-symbols-outlined text-[3.5rem] text-indigo-500 drop-shadow-sm">face_5</span>
-                                </div>
-                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                                    <p className="font-bold text-lg">{t('hello')}, {userName || 'User'}!</p>
-                                    <p className="text-indigo-100 text-sm">
-                                        {t('plan_your_month')}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                    {/* Block 3: Rest of Sidebar (Third on mobile, below greeting on lg) */}
+                    <div className="order-3 lg:order-3 lg:col-span-4 space-y-6">
 
                         {/* Monthly Pulse */}
                         <div className="bg-white rounded-3xl shadow-soft-glow border border-indigo-50 p-6 relative overflow-hidden">

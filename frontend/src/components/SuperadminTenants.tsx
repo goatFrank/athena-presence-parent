@@ -49,7 +49,7 @@ const SuperadminTenants: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#f0f4f8] dark:bg-slate-900 flex">
             <Sidebar />
-            <main className="flex-1 ml-72 p-8 pt-12">
+            <main className="flex-1 ml-0 md:ml-80 mr-0 md:mr-4 md:my-4 p-8 pt-12 md:rounded-3xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-soft overflow-y-auto h-screen md:h-[calc(100vh-2rem)]">
                 <div className="max-w-5xl mx-auto">
                     <header className="mb-10 flex items-center justify-between">
                         <div>
@@ -94,8 +94,8 @@ const SuperadminTenants: React.FC = () => {
                     )}
 
                     {!loading && !error && tenants.length > 0 && (
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-800 overflow-hidden">
-                            <table className="w-full text-left">
+                        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-800 overflow-x-auto">
+                            <table className="w-full text-left min-w-[600px]">
                                 <thead className="bg-slate-50/50 dark:bg-slate-700/20 border-b border-slate-100 dark:border-slate-800">
                                     <tr>
                                         <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">{t('company_name_label')}</th>

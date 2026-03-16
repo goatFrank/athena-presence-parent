@@ -297,7 +297,7 @@ const Dashboard: React.FC = () => {
         return (
             <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
                 <Sidebar />
-                <div className="flex-1 flex flex-col ml-80 mr-80 items-center justify-center h-screen">
+                <div className="flex-1 flex flex-col ml-0 md:ml-80 lg:mr-80 items-center justify-center h-screen">
                     <div className="flex flex-col items-center justify-center">
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
                         <p className="text-sm font-medium text-[#4e6797] dark:text-slate-400">
@@ -305,7 +305,7 @@ const Dashboard: React.FC = () => {
                         </p>
                     </div>
                 </div>
-                <aside className="w-80 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 h-[calc(100vh-2rem)] fixed right-0 top-0 overflow-hidden z-10 flex flex-col my-4 mr-4 rounded-l-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] items-center justify-center">
+                <aside className="hidden lg:flex w-80 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 h-[calc(100vh-2rem)] fixed right-0 top-0 overflow-hidden z-20 flex-col my-4 mr-4 rounded-l-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-300 dark:border-slate-600"></div>
                 </aside>
             </div>
@@ -318,7 +318,7 @@ const Dashboard: React.FC = () => {
                 <Sidebar />
 
                 {/* Main Content wrapper */}
-                <div className="flex-1 flex flex-col ml-80 mr-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div className="flex-1 flex flex-col ml-0 md:ml-80 lg:mr-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <main className="flex-1 p-10 flex flex-col">
                         <header className="mb-10 relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] min-h-[220px]">
                             <div className="relative z-10 p-10 flex items-center justify-between w-full h-full">
@@ -556,7 +556,7 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 {/* Sidebar Right */}
-                <aside className="w-80 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 h-[calc(100vh-2rem)] fixed right-0 top-0 overflow-hidden z-10 flex flex-col my-4 mr-4 rounded-l-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+                <aside className="hidden lg:flex w-80 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 h-[calc(100vh-2rem)] fixed right-0 top-0 overflow-hidden z-10 flex-col my-4 mr-4 rounded-l-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
                     <div className="p-6 pb-2">
                         <h3 className="text-lg font-bold text-[#0e121b] dark:text-white mb-4 flex items-center gap-2">
                             {t('whos_in')}

@@ -8,6 +8,7 @@ import OfficeMap from './components/OfficeMap';
 import LandingPage from './components/LandingPage';
 import Register from './components/Register';
 import SuperadminTenants from './components/SuperadminTenants';
+import SuperadminManageTenants from './components/SuperadminManageTenants';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -44,6 +45,11 @@ function App() {
         <Route path="/superadmin/tenants" element={
           <ProtectedRoute>
             <SuperadminTenants />
+          </ProtectedRoute>
+        } />
+        <Route path="/superadmin/manage-tenants" element={
+          <ProtectedRoute>
+            <SuperadminManageTenants />
           </ProtectedRoute>
         } />
         {/* Landing Page */}
