@@ -49,22 +49,22 @@ const SuperadminTenants: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#f0f4f8] dark:bg-slate-900 flex">
             <Sidebar />
-            <main className="flex-1 ml-0 md:ml-80 mr-0 md:mr-4 md:my-4 p-8 pt-12 md:rounded-3xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-soft overflow-y-auto h-screen md:h-[calc(100vh-2rem)]">
+            <main className="flex-1 ml-0 md:ml-80 mr-0 md:mr-4 md:my-0 md:my-4 p-4 md:p-8 pt-8 md:pt-12 rounded-none md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/50 md:dark:bg-slate-800/50 md:backdrop-blur-sm shadow-soft overflow-y-auto h-screen md:h-[calc(100vh-2rem)]">
                 <div className="max-w-5xl mx-auto">
-                    <header className="mb-10 flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    <header className="mb-8 md:mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="px-1 md:px-0">
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">
                                 {t('tenant_approvals')}
                             </h1>
-                            <p className="text-slate-500 dark:text-slate-400">
+                            <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">
                                 {t('manage_tenant_requests', 'Gestisci le richieste di registrazione delle nuove aziende.')}
                             </p>
                         </div>
                         <button
                             onClick={fetchPendingTenants}
-                            className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 transition-colors"
+                            className="p-2.5 w-fit bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 transition-colors"
                         >
-                            <span className="material-icons">refresh</span>
+                            <span className="material-icons text-[20px]">refresh</span>
                         </button>
                     </header>
 

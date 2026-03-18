@@ -235,10 +235,10 @@ const Profile: React.FC = () => {
     if (isLoading) {
         return (
             <div className="bg-[#f8fafc] dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
-                <Sidebar />
-                <main className="flex-1 ml-72 p-6 md:p-8 lg:p-12 overflow-y-auto flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                </main>
+            <Sidebar />
+            <main className="flex-1 ml-0 md:ml-80 p-4 md:p-8 lg:p-12 overflow-y-auto flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </main>
             </div>
         );
     }
@@ -253,14 +253,14 @@ const Profile: React.FC = () => {
     return (
         <div className="bg-[#f8fafc] dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 min-h-screen flex w-full overflow-hidden font-display">
             <Sidebar />
-            <div className="flex-1 ml-72 flex flex-col h-screen overflow-y-auto overflow-x-hidden">
-                <main className="flex-1 p-6 md:p-8 lg:p-12">
+            <div className="flex-1 ml-0 md:ml-80 flex flex-col h-screen overflow-y-auto overflow-x-hidden">
+                <main className="flex-1 p-4 md:p-8 lg:p-12">
                     <div className="max-w-5xl mx-auto space-y-8">
 
                         {/* Header Area */}
                         <div className="flex flex-col items-center justify-center space-y-4">
                             <div className="relative group">
-                                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 p-1 cursor-pointer transition-transform hover:scale-105">
+                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 p-1 cursor-pointer transition-transform hover:scale-105">
                                     <img
                                         alt={profile?.fullName || 'User Profile'}
                                         className="w-full h-full object-cover rounded-full border-4 border-white dark:border-slate-800"
@@ -272,13 +272,13 @@ const Profile: React.FC = () => {
                                         }}
                                     />
                                 </div>
-                                <button onClick={() => setIsAvatarModalOpen(true)} className="absolute bottom-0 right-0 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-full p-2.5 shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-colors border border-slate-100 dark:border-slate-600 group-hover:scale-110 flex items-center justify-center">
-                                    <span className="material-icons text-[20px] leading-none">edit</span>
+                                <button onClick={() => setIsAvatarModalOpen(true)} className="absolute bottom-0 right-0 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-full p-2 md:p-2.5 shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-colors border border-slate-100 dark:border-slate-600 group-hover:scale-110 flex items-center justify-center">
+                                    <span className="material-icons text-[18px] md:text-[20px] leading-none">edit</span>
                                 </button>
                             </div>
-                            <div className="text-center">
-                                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">{profile?.fullName}</h1>
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                            <div className="text-center px-4">
+                                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1">{profile?.fullName}</h1>
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                                     {profile?.roleDescription}
                                 </span>
                             </div>
@@ -287,23 +287,23 @@ const Profile: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                             {/* Personal Information Form */}
-                            <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500">
-                                            <span className="material-icons">person</span>
+                            <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                                    <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+                                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500">
+                                            <span className="material-icons text-xl md:text-2xl">person</span>
                                         </div>
                                         {t('personal_information', 'Personal Information')}
                                     </h2>
                                     <button
                                         onClick={handleSaveProfile}
                                         disabled={isSaving}
-                                        className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 disabled:opacity-50 flex items-center gap-1.5"
+                                        className="text-xs md:text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                                     >
                                         {isSaving ? (
-                                            <><span className="animate-spin material-icons text-[16px]">autorenew</span> {t('saving', 'Salvataggio...')}</>
+                                            <><span className="animate-spin material-icons text-[14px] md:text-[16px]">autorenew</span> {t('saving', 'Salvataggio...')}</>
                                         ) : saveSuccess ? (
-                                            <><span className="material-icons text-[16px] text-green-500">check_circle</span> {t('saved', 'Salvato!')}</>
+                                            <><span className="material-icons text-[14px] md:text-[16px] text-green-500">check_circle</span> {t('saved', 'Salvato!')}</>
                                         ) : (
                                             t('save_changes', 'Save Changes')
                                         )}
@@ -353,16 +353,16 @@ const Profile: React.FC = () => {
                             <div className="space-y-8 flex flex-col">
 
                                 {/* Work Statistics - Dynamic SVG Chart */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700 flex-1">
-                                    <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3 mb-8">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500">
-                                            <span className="material-icons">pie_chart</span>
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700 flex-1">
+                                    <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3 mb-8">
+                                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500">
+                                            <span className="material-icons text-xl md:text-2xl">pie_chart</span>
                                         </div>
                                         {t('work_statistics', 'Work Statistics')}
                                     </h2>
 
-                                    <div className="flex items-center gap-8">
-                                        <div className="relative w-28 h-28 rounded-full border-[10px] border-slate-50 dark:border-slate-700/50 flex items-center justify-center drop-shadow-sm">
+                                    <div className="flex flex-col sm:flex-row items-center gap-6 md:gap-8">
+                                        <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full border-[8px] md:border-[10px] border-slate-50 dark:border-slate-700/50 flex items-center justify-center drop-shadow-sm shrink-0">
                                             {/* SVG Circular Progress Bar representing Remote/Office distribution */}
                                             <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                                                 {/* Background Track (Remote = Blue 500) */}
@@ -407,10 +407,10 @@ const Profile: React.FC = () => {
                                 </div>
 
                                 {/* Settings Area */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700">
-                                    <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3 mb-6">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500">
-                                            <span className="material-icons">settings</span>
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700">
+                                    <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3 mb-6">
+                                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500">
+                                            <span className="material-icons text-xl md:text-2xl">settings</span>
                                         </div>
                                         {t('settings', 'Settings')}
                                     </h2>
@@ -446,50 +446,50 @@ const Profile: React.FC = () => {
                         </div>
 
                         {/* Achievements Area */}
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700">
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3 mb-8">
-                                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500">
-                                    <span className="material-icons">military_tech</span>
+                        <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700">
+                            <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3 mb-8">
+                                <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-500">
+                                    <span className="material-icons text-xl md:text-2xl">military_tech</span>
                                 </div>
                                 {t('my_achievements', 'My Achievements')}
                             </h2>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                                <div className="flex flex-col items-center p-6 bg-gradient-to-b from-blue-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-3xl border border-blue-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group">
-                                    <div className="w-16 h-16 mb-5 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center relative overflow-hidden">
+                                <div className="flex flex-col items-center p-4 md:p-6 bg-gradient-to-b from-blue-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-2xl md:rounded-3xl border border-blue-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group">
+                                    <div className="w-14 h-14 md:w-16 md:h-16 mb-4 md:mb-5 rounded-xl md:rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center relative overflow-hidden">
                                         <div className="absolute inset-0 bg-blue-200 dark:bg-blue-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                                        <span className="material-icons text-3xl text-blue-600 dark:text-blue-400">home_work</span>
+                                        <span className="material-icons text-2xl md:text-3xl text-blue-600 dark:text-blue-400">home_work</span>
                                     </div>
-                                    <h3 className="font-bold text-slate-800 dark:text-white text-center">{t('remote_champion')}</h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('days_working_remotely', { count: stats?.remoteDays || 0 })}</p>
+                                    <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white text-center">{t('remote_champion')}</h3>
+                                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('days_working_remotely', { count: stats?.remoteDays || 0 })}</p>
                                 </div>
 
-                                <div className="flex flex-col items-center p-6 bg-gradient-to-b from-amber-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-3xl border border-amber-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group">
-                                    <div className="w-16 h-16 mb-5 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center relative overflow-hidden">
+                                <div className="flex flex-col items-center p-4 md:p-6 bg-gradient-to-b from-amber-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-2xl md:rounded-3xl border border-amber-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group">
+                                    <div className="w-14 h-14 md:w-16 md:h-16 mb-4 md:mb-5 rounded-xl md:rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center relative overflow-hidden">
                                         <div className="absolute inset-0 bg-amber-200 dark:bg-amber-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                                        <span className="material-icons text-3xl text-amber-600 dark:text-amber-400">domain</span>
+                                        <span className="material-icons text-2xl md:text-3xl text-amber-600 dark:text-amber-400">domain</span>
                                     </div>
-                                    <h3 className="font-bold text-slate-800 dark:text-white text-center">{t('office_regular')}</h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('days_in_office', { count: stats?.officeDays || 0 })}</p>
+                                    <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white text-center">{t('office_regular')}</h3>
+                                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('days_in_office', { count: stats?.officeDays || 0 })}</p>
                                 </div>
 
-                                <div className="flex flex-col items-center p-6 bg-gradient-to-b from-emerald-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-3xl border border-emerald-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group">
-                                    <div className="w-16 h-16 mb-5 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center relative overflow-hidden">
+                                <div className="flex flex-col items-center p-4 md:p-6 bg-gradient-to-b from-emerald-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-2xl md:rounded-3xl border border-emerald-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group">
+                                    <div className="w-14 h-14 md:w-16 md:h-16 mb-4 md:mb-5 rounded-xl md:rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center relative overflow-hidden">
                                         <div className="absolute inset-0 bg-emerald-200 dark:bg-emerald-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                                        <span className="material-icons text-3xl text-emerald-600 dark:text-emerald-400">event_available</span>
+                                        <span className="material-icons text-2xl md:text-3xl text-emerald-600 dark:text-emerald-400">event_available</span>
                                     </div>
-                                    <h3 className="font-bold text-slate-800 dark:text-white text-center">{t('always_updated')}</h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('logged_days', { count: stats?.totalWorkingDays || 0 })}</p>
+                                    <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white text-center">{t('always_updated')}</h3>
+                                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('logged_days', { count: stats?.totalWorkingDays || 0 })}</p>
                                 </div>
 
-                                <div className="flex flex-col items-center p-6 bg-gradient-to-b from-rose-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-3xl border border-rose-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group opacity-60 grayscale hover:grayscale-0">
-                                    <div className="w-16 h-16 mb-5 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center relative overflow-hidden">
+                                <div className="flex flex-col items-center p-4 md:p-6 bg-gradient-to-b from-rose-50/50 to-white dark:from-slate-700/50 dark:to-slate-800 rounded-2xl md:rounded-3xl border border-rose-100/50 dark:border-slate-700 hover:shadow-md hover:-translate-y-1 transition-all group opacity-60 grayscale hover:grayscale-0">
+                                    <div className="w-14 h-14 md:w-16 md:h-16 mb-4 md:mb-5 rounded-xl md:rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center relative overflow-hidden">
                                         <div className="absolute inset-0 bg-rose-200 dark:bg-rose-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                                        <span className="material-icons text-3xl text-rose-600 dark:text-rose-400">local_cafe</span>
+                                        <span className="material-icons text-2xl md:text-3xl text-rose-600 dark:text-rose-400">local_cafe</span>
                                     </div>
-                                    <h3 className="font-bold text-slate-800 dark:text-white text-center">{t('coffee_lover')}</h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('coming_soon')}</p>
+                                    <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white text-center">{t('coffee_lover')}</h3>
+                                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1.5 text-center font-medium">{t('coming_soon')}</p>
                                 </div>
 
                             </div>

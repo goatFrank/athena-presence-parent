@@ -319,16 +319,16 @@ const Dashboard: React.FC = () => {
 
                 {/* Main Content wrapper */}
                 <div className="flex-1 flex flex-col ml-0 md:ml-80 lg:mr-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    <main className="flex-1 p-10 flex flex-col">
-                        <header className="mb-10 relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] min-h-[220px]">
-                            <div className="relative z-10 p-10 flex items-center justify-between w-full h-full">
+                    <main className="flex-1 p-4 md:p-10 flex flex-col">
+                        <header className="mb-6 md:mb-10 relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] min-h-[180px] md:min-h-[220px]">
+                            <div className="relative z-10 p-6 md:p-10 flex items-center justify-between w-full h-full">
                                 <div className="max-w-lg">
                                     <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-white mb-3 border border-white/30 shadow-sm">
                                         <span className="material-symbols-outlined text-[16px]">wb_sunny</span>
                                         <span>{t('sunny_vibes')}</span>
                                     </div>
-                                    <h1 className="text-3xl font-bold text-white tracking-tight mb-2">{t('good_morning')}, {userName}!</h1>
-                                    <p className="text-white/90 text-lg leading-relaxed mb-2 font-medium">{t(greetingKey, { day: currentDayName })}</p>
+                                    <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-2">{t('good_morning')}, {userName}!</h1>
+                                    <p className="text-white/90 text-sm md:text-lg leading-relaxed mb-2 font-medium">{t(greetingKey, { day: currentDayName })}</p>
                                     {debugInfo && (
                                         <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg shadow-sm">
                                             <p className="text-xs text-red-700 dark:text-red-300 font-mono break-words">{debugInfo}</p>
@@ -351,9 +351,9 @@ const Dashboard: React.FC = () => {
                             </div>
                         </header>
 
-                        <section className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 p-8 mb-10 relative overflow-hidden">
+                        <section className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 p-5 md:p-8 mb-6 md:mb-10 relative overflow-hidden">
                             <div className="flex justify-between items-center mb-6 relative z-10">
-                                <h2 className="text-xl font-bold text-[#0e121b] dark:text-white flex items-center gap-2 m-0">
+                                <h2 className="text-lg md:text-xl font-bold text-[#0e121b] dark:text-white flex items-center gap-2 m-0">
                                     <span className="w-2 h-6 bg-blue-500 rounded-full block"></span>
                                     {t('where_are_you')}
                                 </h2>
@@ -385,7 +385,7 @@ const Dashboard: React.FC = () => {
                                         <button
                                             key={s.key}
                                             onClick={() => setPendingStatus(s.key)}
-                                            className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden cursor-pointer w-full focus:outline-none ${isActive
+                                            className={`flex flex-col items-center justify-center p-4 md:p-6 rounded-2xl md:rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden cursor-pointer w-full focus:outline-none ${isActive
                                                 ? `border-transparent ring-4 ${s.ring} shadow-lg scale-105`
                                                 : `border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-60 hover:opacity-100 hover:scale-[1.02] hover:shadow-md hover:border-transparent hover:ring-2 ${s.hoverRing}`
                                                 }`}>
@@ -407,8 +407,8 @@ const Dashboard: React.FC = () => {
                             </div>
                         </section>
 
-                        <div className="grid grid-cols-3 gap-6 mb-10">
-                            <div className="col-span-2 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-center">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 md:mb-10">
+                            <div className="md:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-center">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
@@ -481,12 +481,12 @@ const Dashboard: React.FC = () => {
                                     );
                                 })()}
                             </div>
-                            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col items-center text-center justify-center">
-                                <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
-                                    <span className="material-icons">group</span>
+                            <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col items-center text-center justify-center">
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
+                                    <span className="material-icons text-xl md:text-2xl">group</span>
                                 </div>
-                                <p className="text-3xl font-bold text-[#0e121b] dark:text-white mb-1">{dashboardStats?.teamPresencePercentage ?? 0}%</p>
-                                <p className="text-xs font-bold text-[#4e6797] dark:text-slate-400 uppercase tracking-wider">{t('team_presence')}</p>
+                                <p className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white mb-1">{dashboardStats?.teamPresencePercentage ?? 0}%</p>
+                                <p className="text-[10px] md:text-xs font-bold text-[#4e6797] dark:text-slate-400 uppercase tracking-wider">{t('team_presence')}</p>
                             </div>
                         </div>
 
@@ -496,9 +496,9 @@ const Dashboard: React.FC = () => {
                                     <span className="w-2 h-6 bg-cyan-400 rounded-full block"></span>
                                     {t('weekly_plan')}
                                 </h3>
-                                <Link to="/planning" className="text-sm bg-white dark:bg-slate-800 text-blue-600 font-semibold py-2 px-4 rounded-full shadow-sm hover:shadow border border-slate-100 dark:border-slate-700 transition-all">{t('edit_schedule')}</Link>
+                                <Link to="/planning" className="text-xs md:text-sm bg-white dark:bg-slate-800 text-blue-600 font-semibold py-2 px-4 rounded-full shadow-sm hover:shadow border border-slate-100 dark:border-slate-700 transition-all">{t('edit_schedule')}</Link>
                             </div>
-                            <div className="grid grid-cols-5 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                                 {weeklyDates.map((dayObj) => {
                                     const isToday = dayObj.isToday;
                                     const isPast = dayObj.isPast;
@@ -511,12 +511,12 @@ const Dashboard: React.FC = () => {
                                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                                     <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
                                                 </span>
-                                                <span className="text-xs font-bold text-blue-600 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
+                                                <span className="text-[10px] md:text-xs font-bold text-blue-600 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
                                                 <div className="flex flex-col items-center py-2">
-                                                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${statusDetails.gradient} text-white flex items-center justify-center mb-3 shadow-lg ${statusDetails.shadowColor}`}>
-                                                        <span className="material-icons text-2xl">{statusDetails.icon}</span>
+                                                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br ${statusDetails.gradient} text-white flex items-center justify-center mb-3 shadow-lg ${statusDetails.shadowColor}`}>
+                                                        <span className="material-icons text-xl md:text-2xl">{statusDetails.icon}</span>
                                                     </div>
-                                                    <span className="text-base font-bold text-[#0e121b] dark:text-white text-center">{statusDetails.label}</span>
+                                                    <span className="text-sm md:text-base font-bold text-[#0e121b] dark:text-white text-center">{statusDetails.label}</span>
                                                 </div>
                                             </div>
                                         );
@@ -525,7 +525,7 @@ const Dashboard: React.FC = () => {
                                     if (isPast) {
                                         return (
                                             <div key={dayObj.dateIso} className="bg-slate-100/50 dark:bg-slate-800/30 rounded-3xl p-4 border border-transparent opacity-60 grayscale">
-                                                <span className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
+                                                <span className="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
                                                 <div className="flex flex-col items-center py-2">
                                                     <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center mb-3">
                                                         <span className="material-icons text-xl">{statusDetails.icon}</span>
@@ -537,13 +537,13 @@ const Dashboard: React.FC = () => {
                                     }
 
                                     return (
-                                        <div key={dayObj.dateIso} className="bg-white dark:bg-slate-800 rounded-3xl p-4 border border-slate-100 dark:border-slate-700 hover:border-blue-200 transition-all cursor-pointer group hover:shadow-md">
-                                            <span className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
-                                            <div className="flex flex-col items-center py-2">
-                                                <div className={`w-12 h-12 rounded-2xl ${statusDetails.bgColor} ${statusDetails.textColor} ${statusDetails.groupHoverBg} group-hover:text-white transition-all flex items-center justify-center mb-3`}>
-                                                    <span className="material-icons text-xl">{statusDetails.icon}</span>
+                                        <div key={dayObj.dateIso} className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl p-3 md:p-4 border border-slate-100 dark:border-slate-700 hover:border-blue-200 transition-all cursor-pointer group hover:shadow-md">
+                                            <span className="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-2 md:mb-3 block text-center">{t(dayObj.name)} {dayObj.date.getDate()}</span>
+                                            <div className="flex flex-col items-center py-1 md:py-2">
+                                                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl ${statusDetails.bgColor} ${statusDetails.textColor} ${statusDetails.groupHoverBg} group-hover:text-white transition-all flex items-center justify-center mb-2 md:mb-3`}>
+                                                    <span className="material-icons text-lg md:text-xl">{statusDetails.icon}</span>
                                                 </div>
-                                                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 text-center">{statusDetails.label}</span>
+                                                <span className="text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-300 text-center">{statusDetails.label}</span>
                                             </div>
                                         </div>
                                     );

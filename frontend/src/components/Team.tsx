@@ -168,11 +168,11 @@ const Team: React.FC = () => {
             <Sidebar />
 
             <div className="flex-1 flex flex-col ml-0 md:ml-80 overflow-y-auto h-screen scroll-smooth">
-                <main className="flex-1 w-full max-w-[1440px] mx-auto p-6 lg:p-10 flex flex-col gap-8">
+                <main className="flex-1 w-full max-w-[1440px] mx-auto p-4 lg:p-10 flex flex-col gap-6 md:gap-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold text-[#0e121b] dark:text-white tracking-tight">{t('team_overview')}</h1>
-                            <p className="text-[#4e6797] dark:text-slate-400 mt-1">{t('manage_team')}</p>
+                        <div className="px-1 md:px-0">
+                            <h1 className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white tracking-tight">{t('team_overview')}</h1>
+                            <p className="text-sm md:text-base text-[#4e6797] dark:text-slate-400 mt-1">{t('manage_team')}</p>
                         </div>
                     </div>
 
@@ -368,10 +368,10 @@ const Team: React.FC = () => {
                                 <div key={colleague.id} className={`group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-transparent 
                                     ${colleague.work_status === 'office' ? 'hover:border-purple-500/20' : colleague.work_status === 'remote' ? 'hover:border-sky-500/20' : colleague.work_status === 'leave' ? 'hover:border-red-500/20 opacity-80 hover:opacity-100' : 'hover:border-slate-300 dark:hover:border-slate-600'}`}>
 
-                                    <div className="flex flex-col items-center text-center pb-5 border-b border-slate-100 dark:border-slate-700 relative">
+                                    <div className="flex flex-col items-center text-center pb-4 md:pb-5 border-b border-slate-100 dark:border-slate-700 relative">
 
-                                        <div className="relative mb-4">
-                                            <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-700 ring-4 ring-slate-50 dark:ring-slate-700/50 overflow-hidden">
+                                        <div className="relative mb-3 md:mb-4">
+                                            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-slate-100 dark:bg-slate-700 ring-4 ring-slate-50 dark:ring-slate-700/50 overflow-hidden">
                                                 <img
                                                     src={colleague.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(colleague.full_name || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`}
                                                     alt={colleague.full_name}
@@ -386,10 +386,10 @@ const Team: React.FC = () => {
                                             <div className={`absolute bottom-1 right-1 size-5 border-2 border-white dark:border-slate-800 rounded-full 
                                                 ${colleague.work_status === 'office' ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : colleague.work_status === 'remote' ? 'bg-sky-400' : colleague.work_status === 'leave' ? 'bg-red-500' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                         </div>
-                                        <h3 className="text-lg font-bold text-[#0e121b] dark:text-white line-clamp-1 w-full" title={colleague.full_name}>{colleague.full_name}</h3>
+                                        <h3 className="text-base md:text-lg font-bold text-[#0e121b] dark:text-white line-clamp-1 w-full" title={colleague.full_name}>{colleague.full_name}</h3>
 
                                         {colleague.role_description && (
-                                            <p className="text-sm font-medium text-[#4e6797] dark:text-slate-400 mt-1 line-clamp-1">
+                                            <p className="text-xs md:text-sm font-medium text-[#4e6797] dark:text-slate-400 mt-1 line-clamp-1">
                                                 {colleague.role_description}
                                             </p>
                                         )}

@@ -73,35 +73,35 @@ const SuperadminManageTenants: React.FC = () => {
     return (
         <div className="flex h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto p-4 md:p-8 ml-0 md:ml-80 mr-0 md:mr-4 md:my-4 rounded-3xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-soft">
+            <main className="flex-1 overflow-y-auto p-4 md:p-8 ml-0 md:ml-80 mr-0 md:mr-4 md:my-0 md:my-4 rounded-none md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/50 md:dark:bg-slate-800/50 md:backdrop-blur-sm shadow-soft">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                        <div className="px-1 md:px-0">
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">
                                 {t('manage_companies', 'Gestione Aziende')}
                             </h1>
-                            <p className="text-slate-500 dark:text-slate-400">
+                            <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">
                                 {t('manage_all_tenants_desc', 'Visualizza e gestisci lo stato di attivazione di tutte le aziende registrate.')}
                             </p>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="relative">
-                                <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            <div className="relative flex-1 md:flex-none">
+                                <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
                                 <input 
                                     type="text"
-                                    placeholder={t('search_tenants', 'Cerca aziende...')}
-                                    className="pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none w-64"
+                                    placeholder={t('search_tenants', 'Cerca...')}
+                                    className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none w-full md:w-64 text-sm md:text-base"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
                             <button 
                                 onClick={fetchAllTenants}
-                                className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 transition-colors"
+                                className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 transition-colors"
                                 title={t('refresh', 'Aggiorna')}
                             >
-                                <span className="material-icons">refresh</span>
+                                <span className="material-icons text-[20px]">refresh</span>
                             </button>
                         </div>
                     </div>
