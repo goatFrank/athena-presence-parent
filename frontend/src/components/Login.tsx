@@ -306,9 +306,9 @@ const Login: React.FC = () => {
                                     />
                                     <label className="ml-2 block text-sm text-slate-600" htmlFor="remember-me">{t('remember_me')}</label>
                                 </div>
-                                <button type="button" className="text-sm font-semibold text-primary hover:text-blue-700 transition-colors bg-transparent border-none p-0 cursor-pointer">
+                                <Link to="/reset-password" title={t('forgot_password')} className="text-sm font-semibold text-primary hover:text-blue-700 transition-colors bg-transparent border-none p-0 cursor-pointer">
                                     {t('forgot_password')}
-                                </button>
+                                </Link>
                             </div>
 
                             <button

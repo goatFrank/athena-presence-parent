@@ -7,6 +7,7 @@ import Profile from './components/Profile';
 import OfficeMap from './components/OfficeMap';
 import LandingPage from './components/LandingPage';
 import Register from './components/Register';
+import ResetPassword from './components/ResetPassword';
 import SuperadminTenants from './components/SuperadminTenants';
 import SuperadminManageTenants from './components/SuperadminManageTenants';
 import Departments from './components/Departments';
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
