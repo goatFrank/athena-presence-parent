@@ -168,6 +168,8 @@ const resources = {
             "company_name": "Nome dell'Azienda",
             "confirm_password": "Conferma Password",
             "already_have_account": "Hai già un account?",
+            "invited_to_join": "Sei stato invitato ad unirti a: {{tenantName}}",
+            "invalid_invite_token": "Il link di invito non è valido o è scaduto.",
             "sign_up": "Crea il tuo Workspace",
             "signing_up": "Creazione del Workspace...",
             "register_error_unexpected": "Si è verificato un errore imprevisto durante la registrazione.",
@@ -213,6 +215,8 @@ const resources = {
             "max_uses": "Utilizzi massimi",
             "assign_manager": "Assegna Manager (Opzionale)",
             "no_manager": "Nessun manager",
+            "assign_department": "Assegna Dipartimento (Opzionale)",
+            "no_department": "Nessun dipartimento",
             "generate_invite_link": "Genera Link Invito",
             "link_generated_success": "Link generato con successo!",
             "invite_link": "Link di invito",
@@ -221,7 +225,13 @@ const resources = {
             "confirm_delete": "Conferma eliminazione",
             "delete_employee_confirm": "Sei sicuro di voler eliminare il dipendente",
             "delete_warning": "Questa azione è irreversibile.",
-            "delete": "Elimina"
+            "delete": "Elimina",
+            
+            // ── Roles ──
+            "role_superadmin": "Superadmin",
+            "role_amministratore_tenant": "Amministratore",
+            "role_manager": "Manager",
+            "role_employee": "Dipendente"
         }
     },
     en: {
@@ -390,6 +400,8 @@ const resources = {
             "company_name": "Company Name",
             "confirm_password": "Confirm Password",
             "already_have_account": "Already have an account?",
+            "invited_to_join": "You have been invited to join: {{tenantName}}",
+            "invalid_invite_token": "The invite link is invalid or expired.",
             "sign_up": "Create your Workspace",
             "signing_up": "Creating Workspace...",
             "register_error_unexpected": "An unexpected error occurred during registration.",
@@ -435,6 +447,8 @@ const resources = {
             "max_uses": "Maximum Uses",
             "assign_manager": "Assign Manager (Optional)",
             "no_manager": "No manager",
+            "assign_department": "Assign Department (Optional)",
+            "no_department": "No department",
             "generate_invite_link": "Generate Invite Link",
             "link_generated_success": "Link generated successfully!",
             "invite_link": "Invite Link",
@@ -443,7 +457,13 @@ const resources = {
             "confirm_delete": "Confirm deletion",
             "delete_employee_confirm": "Are you sure you want to delete the employee",
             "delete_warning": "This action is irreversible.",
-            "delete": "Delete"
+            "delete": "Delete",
+            
+            // ── Roles ──
+            "role_superadmin": "Superadmin",
+            "role_amministratore_tenant": "Admin",
+            "role_manager": "Manager",
+            "role_employee": "Employee"
         }
     }
 };

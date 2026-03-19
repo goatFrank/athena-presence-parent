@@ -9,15 +9,22 @@ interface Profile {
     id: string;
     fullName: string;
     role: string | null;
+    roleId: number | null;
     tenantId: number | null;
     tenantName: string | null;
     departmentId: number | null;
     departmentName: string | null;
 }
 
+interface Department {
+    id: number;
+    name: string;
+}
+
 const Employees: React.FC = () => {
     const { t } = useTranslation();
     const [profiles, setProfiles] = useState<Profile[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSuperadmin, setIsSuperadmin] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -29,7 +36,8 @@ const Employees: React.FC = () => {
     const [inviteConfig, setInviteConfig] = useState({
         expiresInDays: 7,
         maxUses: 1,
-        managerId: ''
+        managerId: '',
+        departmentId: ''
     });
     const [generatedLink, setGeneratedLink] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -68,6 +76,12 @@ const Employees: React.FC = () => {
                     if (res.status === 200 && res.data.payload) {
                         setProfiles(res.data.payload);
                     }
+                    
+                    // Fetch departments
+                    const deptRes = await attendanceApi.get(`/api/v1/departments?tenantId=${currentTenantId}`);
+                    if (deptRes.status === 200 && deptRes.data.payload) {
+                        setDepartments(deptRes.data.payload);
+                    }
                 }
             } catch (err) {
                 console.error("Error fetching employees:", err);
@@ -101,7 +115,8 @@ const Employees: React.FC = () => {
             const res = await attendanceApi.post('/api/v1/invites/generate', {
                 expiresInDays: inviteConfig.expiresInDays,
                 maxUses: inviteConfig.maxUses,
-                managerId: inviteConfig.managerId || null
+                managerId: inviteConfig.managerId || null,
+                departmentId: inviteConfig.departmentId ? Number.parseInt(inviteConfig.departmentId) : null
             });
             if (res.status === 200 && res.data.payload) {
                 const token = res.data.payload.token;
@@ -212,9 +227,9 @@ const Employees: React.FC = () => {
                                         </div>
 
                                         {/* Role */}
-                                        <div className="md:block">
-                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                                                {p.role || 'N/A'}
+                                        <div className="md:block text-left">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-xs font-semibold text-slate-600 dark:text-slate-300 capitalize">
+                                                {p.role ? t(`role_${p.role.toLowerCase()}`, p.role) : 'N/A'}
                                             </span>
                                         </div>
 
@@ -313,11 +328,27 @@ const Employees: React.FC = () => {
                                     >
                                         <option value="">{t('no_manager', 'Nessun manager')}</option>
                                         {profiles
-                                            .filter(p => p.role?.toUpperCase().includes('MANAGER') || p.role?.toUpperCase().includes('GESTORE'))
+                                            .filter(p => p.roleId === 3) // Role 3 is MANAGER
                                             .map(p => (
                                                 <option key={p.id} value={p.id}>{p.fullName}</option>
                                             ))
                                         }
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        {t('assign_department', 'Assegna Dipartimento (Opzionale)')}
+                                    </label>
+                                    <select 
+                                        value={inviteConfig.departmentId}
+                                        onChange={(e) => setInviteConfig({...inviteConfig, departmentId: e.target.value})}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                                    >
+                                        <option value="">{t('no_department', 'Nessun dipartimento')}</option>
+                                        {departments.map(d => (
+                                            <option key={d.id} value={d.id}>{d.name}</option>
+                                        ))}
                                     </select>
                                 </div>
 

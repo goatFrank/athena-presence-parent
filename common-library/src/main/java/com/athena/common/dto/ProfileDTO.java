@@ -15,6 +15,7 @@ public class ProfileDTO {
     private UUID id;
     private String fullName;
     private String role;
+    private Long roleId;
     private Long tenantId;
     private Long departmentId;
     private String tenantName; // Added for convenience

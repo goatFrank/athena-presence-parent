@@ -14,6 +14,8 @@ public class InviteLinkDTO {
     private String tenantName;
     private UUID managerId;
     private String managerName;
+    private Long departmentId;
+    private String departmentName;
     private OffsetDateTime expiresAt;
     private Integer maxUses;
     private Integer usedCount;

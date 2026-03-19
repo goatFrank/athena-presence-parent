@@ -8,6 +8,7 @@ const Register: React.FC = () => {
     const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const [inviteToken, setInviteToken] = useState<string | null>(searchParams.get('token'));
+    const [inviteData, setInviteData] = useState<any | null>(null);
     const [tokenValid, setTokenValid] = useState<boolean | null>(null);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -37,16 +38,18 @@ const Register: React.FC = () => {
                     const response = await attendanceApi.get(`/api/v1/invites/validate/${inviteToken}`);
                     if (response.data.status === 'SUCCESS') {
                         setTokenValid(true);
+                        setInviteData(response.data.payload);
                         // If token is valid, we might want to pre-fill or hide company name
-                        // For now we just set it to a placeholder since backend will use token's tenant
-                        setCompanyName('Joining established organization...');
+                        setCompanyName(response.data.payload.tenantName || 'Joining established organization...');
                     } else {
                         setTokenValid(false);
-                        setError(t('invalid_invite_token', 'Il link di invito non è valido o è scaduto.'));
+                        setError(t('invalid_invite_token'));
                     }
-                } catch (err) {
+                } catch (err: any) {
+                    console.error('Token validation error:', err);
                     setTokenValid(false);
-                    setError(t('invalid_invite_token', 'Il link di invito non è valido o è scaduto.'));
+                    const serverMessage = err.response?.data?.message;
+                    setError(serverMessage || t('invalid_invite_token'));
                 }
             };
             validateToken();
@@ -210,7 +213,14 @@ const Register: React.FC = () => {
                         </div>
 
                         <h1 className="text-2xl font-bold text-slate-900 mb-2">{t('create_account')}</h1>
-                        <p className="text-slate-500 mb-6 text-sm">{t('enter_details_register')}</p>
+                        <p className="text-slate-500 mb-6 text-sm">
+                            {inviteData ? (
+                                <span className="text-blue-600 font-semibold flex items-center gap-1.5 animate-in slide-in-from-left-2 duration-500">
+                                    <span className="material-icons text-lg">domain</span>
+                                    {t('invited_to_join', { tenantName: inviteData.tenantName })}
+                                </span>
+                            ) : t('enter_details_register')}
+                        </p>
 
                         {error && (
                             <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-start gap-2">
@@ -222,17 +232,27 @@ const Register: React.FC = () => {
                         {success && (
                             <div className="mb-4 p-4 rounded-2xl bg-blue-50 border border-blue-100 text-blue-700 flex flex-col items-center text-center gap-3 animate-in fade-in zoom-in duration-500">
                                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <span className="material-icons text-blue-600 text-2xl">hourglass_empty</span>
+                                    <span className="material-icons text-blue-600 text-2xl">
+                                        {inviteToken ? 'check_circle' : 'hourglass_empty'}
+                                    </span>
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg mb-1">{t('registration_pending')}</h3>
-                                    <p className="text-sm opacity-90">{t('registration_pending_desc')}</p>
+                                    <h3 className="font-bold text-lg mb-1">
+                                        {inviteToken 
+                                            ? t('registration_complete', 'Registrazione completata!') 
+                                            : t('registration_pending', 'Registrazione in attesa')}
+                                    </h3>
+                                    <p className="text-sm opacity-90">
+                                        {inviteToken 
+                                            ? t('registration_complete_desc', 'Il tuo account è stato creato. Ora puoi effettuare il login.')
+                                            : t('registration_pending_desc', 'La tua richiesta è stata inviata. Un amministratore approverà la tua azienda a breve.')}
+                                    </p>
                                 </div>
                                 <button 
                                     onClick={() => navigate('/login')}
                                     className="mt-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
                                 >
-                                    {t('back_to_login', 'Torna al Login')}
+                                    {t('back_to_login', 'Vai al Login')}
                                 </button>
                             </div>
                         )}

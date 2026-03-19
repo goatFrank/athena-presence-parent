@@ -15,4 +15,5 @@ public class InviteLinkRequest {
     private Integer expiresInDays;
     private Integer maxUses;
     private UUID managerId;
+    private Long departmentId;
 }

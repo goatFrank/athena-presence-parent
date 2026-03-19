@@ -29,6 +29,9 @@ public class InviteLink {
 
     @Column(name = "manager_id")
     private UUID managerId;
+    
+    @Column(name = "department_id")
+    private Long departmentId;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;

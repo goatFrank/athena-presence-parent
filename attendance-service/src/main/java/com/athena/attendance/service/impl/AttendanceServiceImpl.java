@@ -50,7 +50,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 if (profile.getRole() == null) {
                         throw new org.springframework.web.server.ResponseStatusException(
                                         org.springframework.http.HttpStatus.FORBIDDEN,
-                                        "Una nuova persona che si registra non può inserire la presenza. Attendi l'approvazione per ricevere un ruolo.");
+                                        "Il tuo profilo non ha ancora un ruolo assegnato. Contatta l'amministratore.");
                 }
 
                 // Cerchiamo se esiste già un record per l'utente in quel giorno (Update)

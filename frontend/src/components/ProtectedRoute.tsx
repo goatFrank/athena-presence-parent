@@ -25,13 +25,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
             try {
                 const response = await attendanceApi.get('/api/v1/profiles/me');
                 const profile = response.data.payload;
+                const { tenantStatus, roleId } = profile;
                 
-                if (profile && profile.tenantStatus === 'ACTIVE') {
+                const isSuperAdmin = roleId === 1;
+                const isActive = tenantStatus === 'ACTIVE';
+                const isInvitedUser = roleId === 3 || roleId === 4;
+                const isPending = tenantStatus === 'PENDING';
+
+                if (isSuperAdmin || isActive || (isPending && isInvitedUser)) {
                     setIsApproved(true);
                 } else {
-                    console.warn('Tenant not active:', profile?.tenantStatus);
+                    console.warn('Access denied. Status:', tenantStatus, 'Role:', roleId);
                     setIsApproved(false);
-                    // Sign out if not approved to clear session or handle it as you prefer
                     await supabase.auth.signOut();
                 }
             } catch (error) {

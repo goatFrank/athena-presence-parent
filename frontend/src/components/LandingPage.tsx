@@ -343,7 +343,7 @@ export default function LandingPage() {
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 mb-6 relative z-10 lg:ml-auto shadow-sm ring-1 ring-emerald-100/50">
                   <UserCheck className="w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-slate-900 mb-3">3. Employee</h4>
+                <h4 className="text-2xl font-bold text-slate-900 mb-3">3. Dipendente</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
                   I dipendenti della propria azienda pianificano la propria settimana in due clic, segnalando i giorni
                   da casa o prenotando la scrivania in ufficio. Interfaccia pulita e mobile-first.

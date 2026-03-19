@@ -593,7 +593,7 @@ const Dashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-2 flex-1 overflow-y-auto px-4 pb-4">
+                    <div className="space-y-2 flex-1 overflow-y-auto scroll-smooth px-4 pb-4">
                         {debugInfo && (
                             <div className="text-xs break-all text-red-500 bg-red-100 dark:bg-red-900/30 p-2 rounded-lg mb-2">DEBUG: {debugInfo}</div>
                         )}

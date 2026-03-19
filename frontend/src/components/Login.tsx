@@ -65,14 +65,28 @@ const Login: React.FC = () => {
                     try {
                         const profileResponse = await attendanceApi.get('/api/v1/profiles/me');
                         const profileData = profileResponse.data.payload;
+                        const { tenantStatus, roleId } = profileData;
                         
-                        if (profileData.tenantStatus === 'PENDING') {
-                            setError(t('tenant_pending_approval'));
+                        // Access Logic:
+                        // 1. Superadmin (1) -> Always allow
+                        // 2. Active Tenant -> Always allow
+                        // 3. Pending Tenant -> Allow only if role is Manager (3) or Employee (4)
+                        
+                        const isSuperAdmin = roleId === 1;
+                        const isActive = tenantStatus === 'ACTIVE';
+                        const isInvitedUser = roleId === 3 || roleId === 4;
+                        const isPending = tenantStatus === 'PENDING';
+
+                        if (isSuperAdmin || isActive || (isPending && isInvitedUser)) {
+                            // Allowed
+                        } else if (tenantStatus === 'REJECTED') {
+                            setError(t('tenant_rejected_approval', 'Il tuo account aziendale è stato rifiutato.'));
                             await supabase.auth.signOut();
                             setLoading(false);
                             return;
-                        } else if (profileData.tenantStatus === 'REJECTED') {
-                            setError(t('tenant_rejected_approval', 'Il tuo account aziendale è stato rifiutato.'));
+                        } else {
+                            // Probably PENDING and role is Admin (2)
+                            setError(t('tenant_pending_approval'));
                             await supabase.auth.signOut();
                             setLoading(false);
                             return;

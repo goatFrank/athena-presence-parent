@@ -135,6 +135,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .id(profile.getId())
                 .fullName(profile.getFullName())
                 .role(profile.getRole() != null ? profile.getRole().getName() : null)
+                .roleId(profile.getRole() != null ? profile.getRole().getId() : null)
                 .tenantId(profile.getTenantId())
                 .departmentId(profile.getDepartmentId())
                 .tenantName(tenantName)
@@ -177,6 +178,7 @@ public class ProfileServiceImpl implements ProfileService {
 
             profile.setTenantId(invite.getTenantId());
             profile.setManagerId(invite.getManagerId());
+            profile.setDepartmentId(invite.getDepartmentId());
 
             // Assign EMPLOYEE role (ID 4)
             Role employeeRole = roleRepository.findById(4L)
@@ -200,8 +202,8 @@ public class ProfileServiceImpl implements ProfileService {
 
             profile.setTenantId(tenant.getId());
 
-            // Assign ADMIN_TENANT role (ID 3)
-            Role adminRole = roleRepository.findById(3L)
+            // Assign ADMIN_TENANT role (ID 2)
+            Role adminRole = roleRepository.findById(2L)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                             "Role AMMINISTRATORE_TENANT not found"));
             profile.setRole(adminRole);

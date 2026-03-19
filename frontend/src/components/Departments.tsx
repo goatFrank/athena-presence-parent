@@ -16,6 +16,7 @@ interface Profile {
     id: string;
     fullName: string;
     departmentId: number | null;
+    tenantId: number | null;
     role: string | null;
     tenantName: string | null;
 }
@@ -72,7 +73,7 @@ const Departments: React.FC = () => {
         try {
             const res = await attendanceApi.put(`/api/v1/departments/${renameDept.id}`, { name: renameValue.trim() });
             if (res.status === 200 && res.data.payload) {
-                setDepartments(prev => prev.map(d => d.id === renameDept.id ? { ...d, name: res.data.payload.name } : d));
+                setDepartments(prev => prev.map(d => d.id === renameDept.id ? { ...d, ...res.data.payload } : d));
                 setRenameDept(null);
             }
         } catch (err) {
@@ -286,9 +287,13 @@ const Departments: React.FC = () => {
                                                     <h3 className="text-lg font-bold text-[#0e121b] dark:text-white truncate">
                                                         {dept.name}
                                                     </h3>
-                                                    {isSuperadmin && (
+                                                    {(dept.tenantName || isSuperadmin) && (
                                                         <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                                                            {dept.tenantName || `Tenant #${dept.tenantId}`}
+                                                            {(() => {
+                                                                if (dept.tenantName && dept.tenantName !== 'Unknown Tenant') return dept.tenantName;
+                                                                const p = profiles.find(prof => prof.tenantId === dept.tenantId);
+                                                                return p?.tenantName || (isSuperadmin ? `Tenant #${dept.tenantId}` : '');
+                                                            })()}
                                                         </span>
                                                     )}
                                                 </div>
@@ -331,7 +336,7 @@ const Departments: React.FC = () => {
                                             </button>
 
                                             {isExpanded && members.length > 0 && (
-                                                <ul className="mt-3 space-y-2 max-h-64 overflow-y-auto pr-1">
+                                                <ul className="mt-3 space-y-2 max-h-64 overflow-y-auto scroll-smooth pr-1">
                                                     {members.map(m => (
                                                         <li
                                                             key={m.id}
@@ -449,7 +454,7 @@ const Departments: React.FC = () => {
                                 <span className="material-icons">close</span>
                             </button>
                         </div>
-                        <div className="p-2 overflow-y-auto flex-1">
+                        <div className="p-2 overflow-y-auto scroll-smooth flex-1">
                             {profiles.length === 0 ? (
                                 <p className="p-6 text-center text-slate-500">{t('no_users_found', 'Nessun utente trovato nel tenant.')}</p>
                             ) : (

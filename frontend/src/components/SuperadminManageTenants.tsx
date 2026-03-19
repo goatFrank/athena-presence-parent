@@ -73,7 +73,7 @@ const SuperadminManageTenants: React.FC = () => {
     return (
         <div className="flex h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto p-4 md:p-8 ml-0 md:ml-80 mr-0 md:mr-4 md:my-0 md:my-4 rounded-none md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/50 md:dark:bg-slate-800/50 md:backdrop-blur-sm shadow-soft">
+            <main className="flex-1 overflow-y-auto scroll-smooth p-4 md:p-8 ml-0 md:ml-80 mr-0 md:mr-4 md:my-0 md:my-4 rounded-none md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/50 md:dark:bg-slate-800/50 md:backdrop-blur-sm shadow-soft">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
