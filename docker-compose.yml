@@ -11,9 +11,9 @@ services:
       - SERVER_PORT=8081
       - SPRING_PROFILES_ACTIVE=dev
       # Environment variables can be fetched from your host system using ${ENV_VAR} syntax
-      - DB_URL=${SUPABASE_DB_URL:-jdbc:postgresql://host.docker.internal:5432/postgres}
-      - DB_USERNAME=${SUPABASE_DB_USERNAME:-postgres}
-      - DB_PASSWORD=${SUPABASE_DB_PASSWORD:-postgres}
+      - DB_URL=${SUPABASE_DB_URL}
+      - DB_USERNAME=${SUPABASE_DB_USERNAME}
+      - DB_PASSWORD=${SUPABASE_DB_PASSWORD}
       - JWT_ISSUER=${SUPABASE_JWT_ISSUER}
       - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
     restart: unless-stopped

@@ -11,12 +11,12 @@ fi
 
 # Variables required by docker-compose.yml.
 # IF NOT SET in your environment, these fallbacks (or empty strings) will be used.
-export SUPABASE_DB_URL="${SUPABASE_DB_URL:-jdbc:postgresql://host.docker.internal:5432/postgres}"
-export SUPABASE_DB_USERNAME="${SUPABASE_DB_USERNAME:-postgres}"
-export SUPABASE_DB_PASSWORD="${SUPABASE_DB_PASSWORD:-postgres}"
-export SUPABASE_JWT_ISSUER="${SUPABASE_JWT_ISSUER:-}"
-export SUPABASE_URL="${SUPABASE_URL:-}"
-export SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-}"
+export SUPABASE_DB_URL="${SUPABASE_DB_URL}"
+export SUPABASE_DB_USERNAME="${SUPABASE_DB_USERNAME}"
+export SUPABASE_DB_PASSWORD="${SUPABASE_DB_PASSWORD}"
+export SUPABASE_JWT_ISSUER="${SUPABASE_JWT_ISSUER}"
+export SUPABASE_URL="${SUPABASE_URL}"
+export SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY}"
 
 # Compose up
 docker-compose up --build -d
