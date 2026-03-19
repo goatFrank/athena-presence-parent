@@ -8,9 +8,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/tenants")
@@ -21,55 +24,65 @@ public class TenantController {
     private final TenantService tenantService;
 
     @GetMapping("/all")
-    @Operation(summary = "Recupera la lista di tutti i tenant")
-    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getAllTenants() {
-        List<TenantDTO> tenants = tenantService.getAllTenants();
+    @Operation(summary = "Recupera la lista di tutti i tenant (solo superadmin)")
+    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getAllTenants(@AuthenticationPrincipal Jwt jwt) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        List<TenantDTO> tenants = tenantService.getAllTenants(adminUserId);
         return ResponseEntity.ok(ResponseDTO.<List<TenantDTO>>builder()
-                .message("All tenants retrieved successfully")
+                .message("Lista tenant recuperata con successo")
                 .payload(tenants)
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
 
     @GetMapping("/pending")
-    @Operation(summary = "Recupera la lista dei tenant in attesa di approvazione")
-    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getPendingTenants() {
-        List<TenantDTO> tenants = tenantService.getPendingTenants();
+    @Operation(summary = "Recupera la lista dei tenant in attesa di approvazione (solo superadmin)")
+    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getPendingTenants(@AuthenticationPrincipal Jwt jwt) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        List<TenantDTO> tenants = tenantService.getPendingTenants(adminUserId);
         return ResponseEntity.ok(ResponseDTO.<List<TenantDTO>>builder()
-                .message("Pending tenants retrieved successfully")
+                .message("Lista tenant in attesa recuperata con successo")
                 .payload(tenants)
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
 
     @PutMapping("/{id}/approve")
-    @Operation(summary = "Approva un tenant")
-    public ResponseEntity<ResponseDTO<Void>> approveTenant(@PathVariable Long id) {
-        tenantService.updateTenantStatus(id, "ACTIVE");
+    @Operation(summary = "Approva un tenant (solo superadmin)")
+    public ResponseEntity<ResponseDTO<Void>> approveTenant(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long id) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        tenantService.updateTenantStatus(id, "ACTIVE", adminUserId);
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
-                .message("Tenant approved successfully")
+                .message("Tenant approvato con successo")
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
 
     @PutMapping("/{id}/reject")
-    @Operation(summary = "Rifiuta un tenant")
-    public ResponseEntity<ResponseDTO<Void>> rejectTenant(@PathVariable Long id) {
-        tenantService.updateTenantStatus(id, "REJECTED");
+    @Operation(summary = "Rifiuta un tenant (solo superadmin)")
+    public ResponseEntity<ResponseDTO<Void>> rejectTenant(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long id) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        tenantService.updateTenantStatus(id, "REJECTED", adminUserId);
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
-                .message("Tenant rejected successfully")
+                .message("Tenant rifiutato con successo")
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
 
     @PutMapping("/{id}/status")
-    @Operation(summary = "Aggiorna lo stato di un tenant")
+    @Operation(summary = "Aggiorna lo stato di un tenant (solo superadmin)")
     public ResponseEntity<ResponseDTO<Void>> updateTenantStatus(
-            @PathVariable Long id, 
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long id,
             @RequestParam String status) {
-        tenantService.updateTenantStatus(id, status);
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        tenantService.updateTenantStatus(id, status, adminUserId);
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
-                .message("Tenant status updated successfully to " + status)
+                .message("Stato del tenant aggiornato con successo a " + status)
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }

@@ -8,9 +8,12 @@ import com.athena.attendance.repository.TenantRepository;
 import com.athena.attendance.service.TenantService;
 import com.athena.common.dto.TenantDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,40 +25,58 @@ public class TenantServiceImpl implements TenantService {
     private final RoleRepository roleRepository;
 
     @Override
-    public List<TenantDTO> getAllTenants() {
+    public List<TenantDTO> getAllTenants(UUID adminUserId) {
+        verificaSuperAdmin(adminUserId);
         return tenantRepository.findAll().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<TenantDTO> getPendingTenants() {
+    public List<TenantDTO> getPendingTenants(UUID adminUserId) {
+        verificaSuperAdmin(adminUserId);
         return tenantRepository.findByStatus(TenantStatus.PENDING).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void updateTenantStatus(Long tenantId, String status) {
+    public void updateTenantStatus(Long tenantId, String status, UUID adminUserId) {
+        verificaSuperAdmin(adminUserId);
+
         Tenant tenant = tenantRepository.findById(tenantId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "Tenant not found: " + tenantId));
-        
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Tenant non trovato: " + tenantId));
+
         TenantStatus oldStatus = tenant.getStatus();
         TenantStatus newStatus = TenantStatus.valueOf(status.toUpperCase());
-        
+
         tenant.setStatus(newStatus);
         tenantRepository.save(tenant);
-        
+
         if (oldStatus == TenantStatus.PENDING && newStatus == TenantStatus.ACTIVE) {
             com.athena.attendance.entity.Role adminRole = roleRepository.findById(3L)
-                    .orElseThrow(() -> new RuntimeException("Role AMMINISTRATORE_TENANT not found"));
-            
+                    .orElseThrow(() -> new RuntimeException("Ruolo AMMINISTRATORE_TENANT non trovato"));
+
             List<com.athena.attendance.entity.Profile> profiles = profileRepository.findByTenantId(tenantId);
             for (com.athena.attendance.entity.Profile profile : profiles) {
                 profile.setRole(adminRole);
                 profileRepository.save(profile);
             }
+        }
+    }
+
+    // --- Helper privato ---
+
+    private void verificaSuperAdmin(UUID userId) {
+        com.athena.attendance.entity.Profile profile = profileRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Profilo non trovato"));
+
+        if (profile.getRole() == null || !profile.getRole().getId().equals(1L)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Accesso negato: solo i superadmin possono gestire i tenant");
         }
     }
 
