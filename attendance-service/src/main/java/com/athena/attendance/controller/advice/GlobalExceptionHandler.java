@@ -1,7 +1,6 @@
 package com.athena.attendance.controller.advice;
 
-import com.athena.common.dto.ResponseDTO;
-import com.athena.common.enums.ResponseStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -31,8 +31,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception exc) {
+        // Log the full exception for server-side debugging
+        log.error("Eccezione non gestita catturata: ", exc);
+
+        // Return a generic and safe message to the client
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Si è verificato un errore imprevisto: " + exc.getMessage()));
+                .body(Map.of("message", "Si è verificato un errore interno al server. Se il problema persiste, contatta il supporto."));
     }
 }
