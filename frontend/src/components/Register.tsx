@@ -89,7 +89,7 @@ const Register: React.FC = () => {
             if (data.user) {
                 // 2. Setup Profile and Tenant in our Database via Backend
                 try {
-                    await attendanceApi.post(`/api/v1/profiles/setup?userId=${data.user.id}`, {
+                    await attendanceApi.post(`/api/v1/profiles/setup`, {
                         email,
                         fullName,
                         companyName: inviteToken ? 'JOINING_BY_INVITE' : companyName,
