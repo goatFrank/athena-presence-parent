@@ -111,8 +111,20 @@ public class InviteLinkServiceImpl implements InviteLinkService {
     @Override
     @Transactional
     public void useToken(String token) {
-        InviteLink inviteLink = inviteLinkRepository.findByToken(token)
+        // Use Pessimistic Write Lock to prevent race conditions during usedCount increment
+        InviteLink inviteLink = inviteLinkRepository.findWithLockByToken(token)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Token non valido"));
+
+        // Re-validate inside the lock
+        if (!inviteLink.isActive()) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Token disattivato");
+        }
+        if (inviteLink.getExpiresAt() != null && inviteLink.getExpiresAt().isBefore(OffsetDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Token scaduto");
+        }
+        if (inviteLink.getMaxUses() != null && inviteLink.getUsedCount() >= inviteLink.getMaxUses()) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Token non più utilizzabile (limite raggiunto)");
+        }
 
         inviteLink.setUsedCount(inviteLink.getUsedCount() + 1);
         if (inviteLink.getMaxUses() != null && inviteLink.getUsedCount() >= inviteLink.getMaxUses()) {
