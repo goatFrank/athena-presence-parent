@@ -2,6 +2,8 @@ package com.athena.attendance.service.impl;
 
 import com.athena.attendance.entity.Tenant;
 import com.athena.attendance.entity.TenantStatus;
+import com.athena.attendance.repository.ProfileRepository;
+import com.athena.attendance.repository.RoleRepository;
 import com.athena.attendance.repository.TenantRepository;
 import com.athena.attendance.service.TenantService;
 import com.athena.common.dto.TenantDTO;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 public class TenantServiceImpl implements TenantService {
 
     private final TenantRepository tenantRepository;
+    private final ProfileRepository profileRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public List<TenantDTO> getAllTenants() {
@@ -37,8 +41,22 @@ public class TenantServiceImpl implements TenantService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Tenant not found: " + tenantId));
         
-        tenant.setStatus(TenantStatus.valueOf(status.toUpperCase()));
+        TenantStatus oldStatus = tenant.getStatus();
+        TenantStatus newStatus = TenantStatus.valueOf(status.toUpperCase());
+        
+        tenant.setStatus(newStatus);
         tenantRepository.save(tenant);
+        
+        if (oldStatus == TenantStatus.PENDING && newStatus == TenantStatus.ACTIVE) {
+            com.athena.attendance.entity.Role adminRole = roleRepository.findById(3L)
+                    .orElseThrow(() -> new RuntimeException("Role AMMINISTRATORE_TENANT not found"));
+            
+            List<com.athena.attendance.entity.Profile> profiles = profileRepository.findByTenantId(tenantId);
+            for (com.athena.attendance.entity.Profile profile : profiles) {
+                profile.setRole(adminRole);
+                profileRepository.save(profile);
+            }
+        }
     }
 
     private TenantDTO mapToDTO(Tenant tenant) {

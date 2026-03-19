@@ -55,9 +55,51 @@ public class ProfileController {
     public ResponseEntity<ResponseDTO<Void>> setupProfile(
             @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.SignupRequest request,
             @org.springframework.web.bind.annotation.RequestParam UUID userId) {
-        profileService.createProfile(userId, request.getFullName(), request.getCompanyName());
+        profileService.createProfile(userId, request);
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
                 .message("Profile and Tenant setup successfully")
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
+    @GetMapping("/tenant/{tenantId}")
+    @Operation(summary = "Recupera la lista dei profili di un tenant")
+    public ResponseEntity<ResponseDTO<java.util.List<ProfileDTO>>> getProfilesByTenant(
+            @AuthenticationPrincipal Jwt jwt, 
+            @org.springframework.web.bind.annotation.PathVariable Long tenantId) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        java.util.List<ProfileDTO> profiles = profileService.getProfilesByTenant(tenantId, adminUserId);
+        
+        return ResponseEntity.ok(ResponseDTO.<java.util.List<ProfileDTO>>builder()
+                .message("Profiles retrieved successfully")
+                .payload(profiles)
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
+    @GetMapping("/all")
+    @Operation(summary = "Recupera tutti i profili (solo superadmin)")
+    public ResponseEntity<ResponseDTO<java.util.List<ProfileDTO>>> getAllProfiles(@AuthenticationPrincipal Jwt jwt) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        java.util.List<ProfileDTO> profiles = profileService.getAllProfiles(adminUserId);
+
+        return ResponseEntity.ok(ResponseDTO.<java.util.List<ProfileDTO>>builder()
+                .message("All profiles retrieved successfully")
+                .payload(profiles)
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/{profileId}")
+    @Operation(summary = "Elimina un dipendente (solo admin/superadmin)")
+    public ResponseEntity<ResponseDTO<Void>> deleteProfile(
+            @AuthenticationPrincipal Jwt jwt,
+            @org.springframework.web.bind.annotation.PathVariable UUID profileId) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        profileService.deleteProfile(profileId, adminUserId);
+
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("Profile deleted successfully")
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }

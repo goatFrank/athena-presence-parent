@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 
 const Register: React.FC = () => {
     const { t } = useTranslation();
+    const [searchParams] = useSearchParams();
+    const [inviteToken, setInviteToken] = useState<string | null>(searchParams.get('token'));
+    const [tokenValid, setTokenValid] = useState<boolean | null>(null);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,7 +29,29 @@ const Register: React.FC = () => {
             }
         };
         checkExistingSession();
-    }, [navigate]);
+
+        // Validate token if present
+        if (inviteToken) {
+            const validateToken = async () => {
+                try {
+                    const response = await attendanceApi.get(`/api/v1/invites/validate/${inviteToken}`);
+                    if (response.data.status === 'SUCCESS') {
+                        setTokenValid(true);
+                        // If token is valid, we might want to pre-fill or hide company name
+                        // For now we just set it to a placeholder since backend will use token's tenant
+                        setCompanyName('Joining established organization...');
+                    } else {
+                        setTokenValid(false);
+                        setError(t('invalid_invite_token', 'Il link di invito non è valido o è scaduto.'));
+                    }
+                } catch (err) {
+                    setTokenValid(false);
+                    setError(t('invalid_invite_token', 'Il link di invito non è valido o è scaduto.'));
+                }
+            };
+            validateToken();
+        }
+    }, [inviteToken, navigate, t]);
 
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -64,8 +89,9 @@ const Register: React.FC = () => {
                     await attendanceApi.post(`/api/v1/profiles/setup?userId=${data.user.id}`, {
                         email,
                         fullName,
-                        companyName,
-                        password: '****' 
+                        companyName: inviteToken ? 'JOINING_BY_INVITE' : companyName,
+                        password: '****',
+                        inviteToken: inviteToken || undefined
                     });
 
                     // Explicitly sign out to prevent the auto-login session from persisting 
@@ -236,29 +262,31 @@ const Register: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500" htmlFor="companyName">
-                                    {t('company_name')}
-                                </label>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <span className="material-icons text-slate-400 text-xl group-focus-within:text-blue-500 transition-colors">business</span>
+                            {!inviteToken && (
+                                <div className="space-y-1.5">
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500" htmlFor="companyName">
+                                        {t('company_name')}
+                                    </label>
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <span className="material-icons text-slate-400 text-xl group-focus-within:text-blue-500 transition-colors">business</span>
+                                        </div>
+                                        <input
+                                            className="block w-full pl-11 pr-4 py-3 border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 input-transition bg-slate-50 text-sm font-medium"
+                                            id="companyName"
+                                            name="companyName"
+                                            placeholder="Athena Inc."
+                                            required={!inviteToken}
+                                            type="text"
+                                            value={companyName}
+                                            onChange={(e) => setCompanyName(e.target.value)}
+                                            onFocus={() => setFocusedField('companyName')}
+                                            onBlur={() => setFocusedField(null)}
+                                            disabled={loading || success}
+                                        />
                                     </div>
-                                    <input
-                                        className="block w-full pl-11 pr-4 py-3 border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 input-transition bg-slate-50 text-sm font-medium"
-                                        id="companyName"
-                                        name="companyName"
-                                        placeholder="Athena Inc."
-                                        required
-                                        type="text"
-                                        value={companyName}
-                                        onChange={(e) => setCompanyName(e.target.value)}
-                                        onFocus={() => setFocusedField('companyName')}
-                                        onBlur={() => setFocusedField(null)}
-                                        disabled={loading || success}
-                                    />
                                 </div>
-                            </div>
+                            )}
 
                             <div className="space-y-1.5">
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500" htmlFor="email">

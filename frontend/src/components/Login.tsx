@@ -63,8 +63,8 @@ const Login: React.FC = () => {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) {
                     try {
-                        const profileResponse = await attendanceApi.get(`/api/v1/profiles/${user.id}`);
-                        const profileData = profileResponse.data;
+                        const profileResponse = await attendanceApi.get('/api/v1/profiles/me');
+                        const profileData = profileResponse.data.payload;
                         
                         if (profileData.tenantStatus === 'PENDING') {
                             setError(t('tenant_pending_approval'));

@@ -10,6 +10,7 @@ const Sidebar: React.FC = () => {
     const [userName, setUserName] = useState<string>('');
     const [userRole, setUserRole] = useState<string>('');
     const [isSuperadmin, setIsSuperadmin] = useState<boolean>(false);
+    const [isTenantAdmin, setIsTenantAdmin] = useState<boolean>(false);
     const [userAvatar, setUserAvatar] = useState<string>('');
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -29,9 +30,15 @@ const Sidebar: React.FC = () => {
                     if (profile.role_description) setUserRole(profile.role_description);
                     
                     // Check if superadmin
-                    // @ts-ignore - Supabase types can be tricky with joins
-                    if (profile.roles?.name === 'SUPERADMIN') {
+                    const roles = profile.roles as any;
+                    const roleName = Array.isArray(roles) ? roles[0]?.name : roles?.name;
+
+                    if (roleName === 'SUPERADMIN') {
                         setIsSuperadmin(true);
+                    }
+                    
+                    if (profile.role_id === 3 || roleName === 'AMMINISTRATORE_TENANT') {
+                        setIsTenantAdmin(true);
                     }
                     
                     if (profile.avatar_url) {
@@ -121,6 +128,18 @@ const Sidebar: React.FC = () => {
                         <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/office-map' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>map</span>
                         {t('office_map')}
                     </Link>
+                    {(isSuperadmin || isTenantAdmin) && (
+                        <Link to="/departments" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/departments' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
+                            <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/departments' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>domain</span>
+                            {t('departments', 'Dipartimenti')}
+                        </Link>
+                    )}
+                    {(isSuperadmin || isTenantAdmin) && (
+                        <Link to="/employees" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/employees' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
+                            <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/employees' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>badge</span>
+                            {t('employees', 'Dipendenti')}
+                        </Link>
+                    )}
                     {isSuperadmin && (
                         <>
                             <Link to="/superadmin/tenants" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/superadmin/tenants' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>

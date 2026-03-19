@@ -204,7 +204,24 @@ const resources = {
             "approve": "Approva",
             "reject": "Rifiuta",
             "company_name_label": "Nome Azienda",
-            "status_label": "Stato"
+            "status_label": "Stato",
+
+            // ── Invite Links ──
+            "invite_employee": "Invita Dipendente",
+            "invite_new_employee": "Invita nuovo dipendente",
+            "expires_in_days": "Scade tra (giorni)",
+            "max_uses": "Utilizzi massimi",
+            "assign_manager": "Assegna Manager (Opzionale)",
+            "no_manager": "Nessun manager",
+            "generate_invite_link": "Genera Link Invito",
+            "link_generated_success": "Link generato con successo!",
+            "invite_link": "Link di invito",
+            "invite_link_usage_hint": "Invia questo link alla persona che vuoi invitare. Potrà registrarsi direttamente nel tuo team.",
+            "close_modal": "Chiudi",
+            "confirm_delete": "Conferma eliminazione",
+            "delete_employee_confirm": "Sei sicuro di voler eliminare il dipendente",
+            "delete_warning": "Questa azione è irreversibile.",
+            "delete": "Elimina"
         }
     },
     en: {
@@ -409,7 +426,24 @@ const resources = {
             "approve": "Approve",
             "reject": "Reject",
             "company_name_label": "Company Name",
-            "status_label": "Status"
+            "status_label": "Status",
+
+            // ── Invite Links ──
+            "invite_employee": "Invite Employee",
+            "invite_new_employee": "Invite New Employee",
+            "expires_in_days": "Expires in (days)",
+            "max_uses": "Maximum Uses",
+            "assign_manager": "Assign Manager (Optional)",
+            "no_manager": "No manager",
+            "generate_invite_link": "Generate Invite Link",
+            "link_generated_success": "Link generated successfully!",
+            "invite_link": "Invite Link",
+            "invite_link_usage_hint": "Send this link to the person you want to invite. They will be able to register directly into your team.",
+            "close_modal": "Close",
+            "confirm_delete": "Confirm deletion",
+            "delete_employee_confirm": "Are you sure you want to delete the employee",
+            "delete_warning": "This action is irreversible.",
+            "delete": "Delete"
         }
     }
 };

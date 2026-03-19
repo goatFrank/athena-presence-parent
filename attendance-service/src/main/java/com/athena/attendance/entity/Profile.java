@@ -42,4 +42,7 @@ public class Profile {
 
     @Column(name = "profile_cellphone")
     private String profileCellphone;
+
+    @Column(name = "manager_id")
+    private UUID managerId;
 }

@@ -9,6 +9,8 @@ import LandingPage from './components/LandingPage';
 import Register from './components/Register';
 import SuperadminTenants from './components/SuperadminTenants';
 import SuperadminManageTenants from './components/SuperadminManageTenants';
+import Departments from './components/Departments';
+import Employees from './components/Employees';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -42,6 +44,16 @@ function App() {
             <OfficeMap />
           </ProtectedRoute>
         } />
+        <Route path="/departments" element={
+          <ProtectedRoute>
+            <Departments />
+          </ProtectedRoute>
+        } />
+        <Route path="/employees" element={
+          <ProtectedRoute>
+            <Employees />
+          </ProtectedRoute>
+        } />
         <Route path="/superadmin/tenants" element={
           <ProtectedRoute>
             <SuperadminTenants />
@@ -54,7 +66,7 @@ function App() {
         } />
         {/* Landing Page */}
         <Route path="/" element={<LandingPage />} />
-        
+
         {/* Default redirect to landing or login */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

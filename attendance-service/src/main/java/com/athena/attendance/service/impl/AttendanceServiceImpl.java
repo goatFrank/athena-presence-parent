@@ -46,6 +46,13 @@ public class AttendanceServiceImpl implements AttendanceService {
                                                 org.springframework.http.HttpStatus.NOT_FOUND,
                                                 "UserProfile not found for authenticated user"));
 
+                // Verify the user has a role assigned before allowing them to insert attendance
+                if (profile.getRole() == null) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.FORBIDDEN,
+                                        "Una nuova persona che si registra non può inserire la presenza. Attendi l'approvazione per ricevere un ruolo.");
+                }
+
                 // Cerchiamo se esiste già un record per l'utente in quel giorno (Update)
                 // altrimenti ne istanziamo uno nuovo (Create)
                 Attendance attendance = repository.findByUserIdAndWorkDate(authenticatedUserId, dto.getWorkDate())

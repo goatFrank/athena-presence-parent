@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final com.athena.attendance.repository.ProfileRepository profileRepository;
+    private final com.athena.attendance.repository.TenantRepository tenantRepository;
 
     @Override
     public List<DepartmentDTO> getAllDepartments() {
@@ -33,11 +35,133 @@ public class DepartmentServiceImpl implements DepartmentService {
         return getAllDepartments();
     }
 
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public DepartmentDTO createDepartment(String name, java.util.UUID adminUserId) {
+        com.athena.attendance.entity.Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+
+        if (adminProfile.getRole() == null || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono creare dipartimenti");
+        }
+
+        Department dept = new Department();
+        dept.setName(name);
+        dept.setTenantId(adminProfile.getTenantId());
+        
+        Department saved = departmentRepository.save(dept);
+        return mapToDTO(saved);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public DepartmentDTO renameDepartment(Long departmentId, String newName, java.util.UUID adminUserId) {
+        com.athena.attendance.entity.Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+
+        if (adminProfile.getRole() == null || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono rinominare dipartimenti");
+        }
+
+        Department dept = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Department not found"));
+
+        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(1L)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
+        }
+
+        dept.setName(newName);
+        Department saved = departmentRepository.save(dept);
+        return mapToDTO(saved);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteDepartment(Long departmentId, java.util.UUID adminUserId) {
+        com.athena.attendance.entity.Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+
+        if (adminProfile.getRole() == null || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono eliminare dipartimenti");
+        }
+
+        Department dept = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Department not found"));
+
+        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(1L)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
+        }
+
+        // Remove department association from all profiles
+        List<com.athena.attendance.entity.Profile> assignedProfiles = profileRepository.findByTenantIdAndDepartmentId(dept.getTenantId(), departmentId);
+        for (com.athena.attendance.entity.Profile p : assignedProfiles) {
+            p.setDepartmentId(null);
+        }
+
+        departmentRepository.delete(dept);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void assignUsersToDepartment(Long departmentId, List<java.util.UUID> userIds, java.util.UUID adminUserId) {
+        com.athena.attendance.entity.Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+
+        if (adminProfile.getRole() == null || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono assegnare utenti");
+        }
+
+        Department dept = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Department not found"));
+
+        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(1L)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
+        }
+
+        // Prima troviamo tutti i profili del tenant che attualmente hanno questo dipartimento e li resettiamo
+        List<com.athena.attendance.entity.Profile> currentProfiles = profileRepository.findByTenantIdAndDepartmentId(dept.getTenantId(), departmentId);
+        for (com.athena.attendance.entity.Profile p : currentProfiles) {
+            p.setDepartmentId(null);
+        }
+
+        // Poi assegniamo il dipartimento solo agli id passati
+        if (userIds != null && !userIds.isEmpty()) {
+            for (java.util.UUID uid : userIds) {
+                com.athena.attendance.entity.Profile p = profileRepository.findById(uid).orElse(null);
+                if (p != null && (p.getTenantId().equals(dept.getTenantId()) || adminProfile.getRole().getId().equals(1L))) {
+                    p.setDepartmentId(departmentId);
+                }
+            }
+        }
+    }
+
     private DepartmentDTO mapToDTO(Department dept) {
+        String tenantName = "Unknown Tenant";
+        if (dept.getTenantId() != null) {
+            tenantName = tenantRepository.findById(dept.getTenantId())
+                    .map(com.athena.attendance.entity.Tenant::getName)
+                    .orElse("Unknown Tenant");
+        }
+
         return DepartmentDTO.builder()
                 .id(dept.getId())
                 .name(dept.getName())
                 .tenantId(dept.getTenantId())
+                .tenantName(tenantName)
                 .build();
     }
 }

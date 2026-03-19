@@ -5,14 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DepartmentDTO {
-    private Long id;
-    private String name;
-    private Long tenantId;
-    private String tenantName;
+public class InviteLinkRequest {
+    private Integer expiresInDays;
+    private Integer maxUses;
+    private UUID managerId;
 }
-

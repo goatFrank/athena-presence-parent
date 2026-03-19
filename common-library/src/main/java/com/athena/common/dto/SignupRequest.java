@@ -26,4 +26,7 @@ public class SignupRequest {
     @NotBlank
     @Schema(example = "Athena Inc.")
     private String companyName;
+
+    @Schema(description = "Token opzionale per la registrazione tramite invito")
+    private String inviteToken;
 }

@@ -1,17 +1,13 @@
 package com.athena.attendance.service.impl;
 
-import com.athena.attendance.entity.Department;
-import com.athena.attendance.entity.Profile;
-import com.athena.attendance.entity.Tenant;
-import com.athena.attendance.entity.TenantStatus;
-import com.athena.attendance.repository.DepartmentRepository;
-import com.athena.attendance.repository.LocationRepository;
-import com.athena.attendance.repository.ProfileRepository;
-import com.athena.attendance.repository.TenantRepository;
+import com.athena.attendance.entity.*;
+import com.athena.attendance.repository.*;
 import com.athena.attendance.service.ProfileService;
 import com.athena.common.dto.ProfileDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -23,6 +19,8 @@ public class ProfileServiceImpl implements ProfileService {
     private final TenantRepository tenantRepository;
     private final DepartmentRepository departmentRepository;
     private final LocationRepository locationRepository;
+    private final com.athena.attendance.repository.RoleRepository roleRepository;
+    private final com.athena.attendance.service.InviteLinkService inviteLinkService;
 
     @Override
     public ProfileDTO getProfile(UUID userId) {
@@ -30,6 +28,85 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Profile not found for user: " + userId));
 
+        return mapToDTO(profile);
+    }
+
+    @Override
+    public java.util.List<ProfileDTO> getProfilesByTenant(Long tenantId, UUID adminUserId) {
+        Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+
+        if (adminProfile.getRole() == null
+                || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN,
+                    "Solo gli amministratori possono vedere i profili del tenant");
+        }
+
+        if (!adminProfile.getRole().getId().equals(1L) && !adminProfile.getTenantId().equals(tenantId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Non puoi vedere i profili di un altro tenant");
+        }
+
+        return profileRepository.findByTenantId(tenantId).stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    @Override
+    public java.util.List<ProfileDTO> getAllProfiles(java.util.UUID adminUserId) {
+        Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+
+        if (adminProfile.getRole() == null || !adminProfile.getRole().getId().equals(1L)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo i superadmin possono vedere tutti i profili");
+        }
+
+        return profileRepository.findAll().stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteProfile(java.util.UUID profileId, java.util.UUID adminUserId) {
+        Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+
+        if (adminProfile.getRole() == null
+                || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN,
+                    "Solo gli amministratori possono eliminare dipendenti");
+        }
+
+        Profile targetProfile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Profilo non trovato"));
+
+        // Tenant admin can only delete profiles in own tenant; superadmin can delete
+        // any
+        if (!adminProfile.getRole().getId().equals(1L)
+                && !adminProfile.getTenantId().equals(targetProfile.getTenantId())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN,
+                    "Non puoi eliminare un dipendente di un altro tenant");
+        }
+
+        // Prevent self-deletion
+        if (adminUserId.equals(profileId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Non puoi eliminare il tuo stesso profilo");
+        }
+
+        profileRepository.delete(targetProfile);
+    }
+
+    private ProfileDTO mapToDTO(Profile profile) {
         String tenantName = "Unknown Tenant";
         String tenantStatus = null;
         if (profile.getTenantId() != null) {
@@ -66,6 +143,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .locationName(locationName)
                 .profileCellphone(profile.getProfileCellphone())
                 .tenantStatus(tenantStatus)
+                .managerId(profile.getManagerId())
                 .build();
     }
 
@@ -88,25 +166,47 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public void createProfile(UUID userId, String fullName, String companyName) {
-        // 0. Check for existing tenant name
-        if (tenantRepository.findByName(companyName).isPresent()) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.CONFLICT, "A company with this name is already registered");
-        }
-
-        // 1. Create Tenant
-        Tenant tenant = new Tenant();
-        tenant.setName(companyName);
-        tenant.setStatus(TenantStatus.PENDING);
-        tenant = tenantRepository.save(tenant);
-
-        // 2. Create Profile
+    public void createProfile(UUID userId, com.athena.common.dto.SignupRequest request) {
         Profile profile = new Profile();
         profile.setId(userId);
-        profile.setFullName(fullName);
-        profile.setTenantId(tenant.getId());
-        
+        profile.setFullName(request.getFullName());
+
+        if (request.getInviteToken() != null && !request.getInviteToken().isBlank()) {
+            // Registration via Invite Link
+            com.athena.common.dto.InviteLinkDTO invite = inviteLinkService.validateToken(request.getInviteToken());
+
+            profile.setTenantId(invite.getTenantId());
+            profile.setManagerId(invite.getManagerId());
+
+            // Assign EMPLOYEE role (ID 4)
+            Role employeeRole = roleRepository.findById(4L)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Role EMPLOYEE not found"));
+            profile.setRole(employeeRole);
+
+            // Increment used count
+            inviteLinkService.useToken(request.getInviteToken());
+        } else {
+            // Standard registration - Create new Tenant
+            if (tenantRepository.findByName(request.getCompanyName()).isPresent()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "A company with this name is already registered");
+            }
+
+            Tenant tenant = new Tenant();
+            tenant.setName(request.getCompanyName());
+            tenant.setStatus(TenantStatus.PENDING);
+            tenant = tenantRepository.save(tenant);
+
+            profile.setTenantId(tenant.getId());
+
+            // Assign ADMIN_TENANT role (ID 3)
+            Role adminRole = roleRepository.findById(3L)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Role AMMINISTRATORE_TENANT not found"));
+            profile.setRole(adminRole);
+        }
+
         profileRepository.save(profile);
     }
 }

@@ -23,7 +23,6 @@ public class AttendanceDTO {
     @NotNull
     private Long tenantId;      // ID dell'azienda/tenant
 
-    @NotNull
     private Long departmentId;  // ID del dipartimento
 
     @NotNull
