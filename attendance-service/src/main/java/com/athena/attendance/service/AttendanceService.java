@@ -25,12 +25,12 @@ public interface AttendanceService {
     /**
      * Recupera lo stato di presenza di un dipartimento specifico per una data.
      */
-    ResponseDTO<List<Attendance>> getTeamPresence(Long tenantId, Long departmentId, LocalDate date);
+    ResponseDTO<List<Attendance>> getTeamPresence(Long tenantId, Long departmentId, LocalDate date, UUID authenticatedUserId);
 
     /**
      * Recupera lo stato di presenza di tutto il tenant per una data.
      */
-    ResponseDTO<List<Attendance>> getTenantPresence(Long tenantId, LocalDate date);
+    ResponseDTO<List<Attendance>> getTenantPresence(Long tenantId, LocalDate date, UUID authenticatedUserId);
 
     /**
      * Recupera lo storico delle presenze di un singolo utente.

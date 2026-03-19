@@ -39,8 +39,10 @@ public class AttendanceController {
     @Operation(summary = "Recupera le presenze dell'intero tenant per una data specifica")
     public ResponseEntity<ResponseDTO<List<Attendance>>> getTenantPresence(
             @PathVariable Long tenantId,
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        ResponseDTO<List<Attendance>> response = attendanceService.getTenantPresence(tenantId, date);
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        ResponseDTO<List<Attendance>> response = attendanceService.getTenantPresence(tenantId, date, authenticatedUserId);
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
@@ -49,8 +51,10 @@ public class AttendanceController {
     public ResponseEntity<ResponseDTO<List<Attendance>>> getTeamPresence(
             @PathVariable Long tenantId,
             @PathVariable Long departmentId,
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        ResponseDTO<List<Attendance>> response = attendanceService.getTeamPresence(tenantId, departmentId, date);
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        ResponseDTO<List<Attendance>> response = attendanceService.getTeamPresence(tenantId, departmentId, date, authenticatedUserId);
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 

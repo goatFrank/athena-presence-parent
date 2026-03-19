@@ -77,7 +77,20 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         @Override
-        public ResponseDTO<List<Attendance>> getTeamPresence(Long tenantId, Long departmentId, LocalDate date) {
+        public ResponseDTO<List<Attendance>> getTeamPresence(Long tenantId, Long departmentId, LocalDate date, UUID authenticatedUserId) {
+                // Authorization Check
+                com.athena.attendance.entity.Profile profile = profileRepository.findById(authenticatedUserId)
+                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.NOT_FOUND,
+                                                "UserProfile not found"));
+
+                if (profile.getTenantId() == null || !profile.getTenantId().equals(tenantId) || 
+                    profile.getDepartmentId() == null || !profile.getDepartmentId().equals(departmentId)) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.FORBIDDEN,
+                                        "Access Denied: You cannot access other department's data");
+                }
+
                 List<Attendance> list = repository.findByTenantIdAndDepartmentIdAndWorkDate(tenantId, departmentId,
                                 date);
                 return ResponseDTO.<List<Attendance>>builder()
@@ -88,7 +101,19 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         @Override
-        public ResponseDTO<List<Attendance>> getTenantPresence(Long tenantId, LocalDate date) {
+        public ResponseDTO<List<Attendance>> getTenantPresence(Long tenantId, LocalDate date, UUID authenticatedUserId) {
+                // Authorization Check
+                com.athena.attendance.entity.Profile profile = profileRepository.findById(authenticatedUserId)
+                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.NOT_FOUND,
+                                                "UserProfile not found"));
+
+                if (profile.getTenantId() == null || !profile.getTenantId().equals(tenantId)) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.FORBIDDEN,
+                                        "Access Denied: You cannot access other tenant's data");
+                }
+
                 List<Attendance> list = repository.findByTenantIdAndWorkDate(tenantId, date);
                 return ResponseDTO.<List<Attendance>>builder()
                                 .message("Tenant presence retrieved successfully")
