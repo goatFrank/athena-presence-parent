@@ -27,7 +27,7 @@ public class TenantServiceImpl implements TenantService {
         verificaSuperAdmin(adminUserId);
         return tenantRepository.findAll().stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -35,7 +35,7 @@ public class TenantServiceImpl implements TenantService {
         verificaSuperAdmin(adminUserId);
         return tenantRepository.findByStatus(TenantStatus.PENDING).stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -46,7 +46,12 @@ public class TenantServiceImpl implements TenantService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Tenant non trovato: " + tenantId));
 
-        TenantStatus newStatus = TenantStatus.valueOf(status.toUpperCase());
+        TenantStatus newStatus;
+        try {
+            newStatus = TenantStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stato non valido");
+        }
 
         tenant.setStatus(newStatus);
         tenantRepository.save(tenant);

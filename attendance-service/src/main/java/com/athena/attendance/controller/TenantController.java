@@ -82,7 +82,7 @@ public class TenantController {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         tenantService.updateTenantStatus(id, status, adminUserId);
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
-                .message("Stato del tenant aggiornato con successo a " + status)
+                .message("Stato del tenant aggiornato con successo")
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
