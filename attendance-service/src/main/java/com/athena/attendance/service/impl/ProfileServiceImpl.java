@@ -223,7 +223,13 @@ public class ProfileServiceImpl implements ProfileService {
             Tenant tenant = new Tenant();
             tenant.setName(request.getCompanyName());
             tenant.setStatus(TenantStatus.PENDING);
-            tenant = tenantRepository.save(tenant);
+            try {
+                tenant = tenantRepository.save(tenant);
+                tenantRepository.flush();
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "A company with this name is already registered");
+            }
 
             profile.setTenantId(tenant.getId());
 
