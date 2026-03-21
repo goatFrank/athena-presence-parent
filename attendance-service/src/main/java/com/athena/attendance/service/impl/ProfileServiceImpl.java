@@ -41,7 +41,9 @@ public class ProfileServiceImpl implements ProfileService {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
         if (adminProfile.getRole() == null
-                || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+                || (!adminProfile.getRole().getId().equals(1L) 
+                    && !adminProfile.getRole().getId().equals(2L) 
+                    && !adminProfile.getRole().getId().equals(3L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono vedere i profili del tenant");
@@ -81,7 +83,9 @@ public class ProfileServiceImpl implements ProfileService {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
         if (adminProfile.getRole() == null
-                || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+                || (!adminProfile.getRole().getId().equals(1L) 
+                    && !adminProfile.getRole().getId().equals(2L) 
+                    && !adminProfile.getRole().getId().equals(3L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono eliminare dipendenti");
