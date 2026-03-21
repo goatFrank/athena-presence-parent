@@ -112,7 +112,7 @@ const ResetPassword: React.FC = () => {
                 </p>
 
                 {message && (
-                    <div className={`mb-6 p-4 rounded-2xl border text-sm flex items-start gap-3 ${
+                    <div className={`mb-6 p-4 rounded-2xl border text-sm flex items-center gap-3 ${
                         message.type === 'success' 
                             ? 'bg-green-50 border-green-100 text-green-700' 
                             : 'bg-red-50 border-red-100 text-red-700'

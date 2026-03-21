@@ -26,13 +26,26 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public List<DepartmentDTO> getDepartmentsByTenant(Long tenantId) {
-        if(tenantId != null) {
-            return departmentRepository.findByTenantId(tenantId).stream()
-                    .map(this::mapToDTO)
-                    .collect(Collectors.toList());
+    public List<DepartmentDTO> getDepartmentsByTenant(Long tenantId, java.util.UUID userId) {
+        com.athena.attendance.entity.Profile userProfile = profileRepository.findById(userId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "User profile not found"));
+
+        // Se è Superadmin (Role ID: 1), può vedere tutto o filtrare per tenant passato
+        if (userProfile.getRole() != null && userProfile.getRole().getId().equals(1L)) {
+            if (tenantId != null) {
+                return departmentRepository.findByTenantId(tenantId).stream()
+                        .map(this::mapToDTO)
+                        .collect(Collectors.toList());
+            }
+            return getAllDepartments();
         }
-        return getAllDepartments();
+
+        // Se non è Superadmin, vede SOLO i dipartimenti del proprio tenant
+        Long effectiveTenantId = userProfile.getTenantId();
+        return departmentRepository.findByTenantId(effectiveTenantId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -42,7 +55,10 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
-        if (adminProfile.getRole() == null || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+        if (adminProfile.getRole() == null || 
+            (!adminProfile.getRole().getId().equals(1L) && 
+             !adminProfile.getRole().getId().equals(2L) && 
+             !adminProfile.getRole().getId().equals(3L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono creare dipartimenti");
         }
@@ -62,7 +78,10 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
-        if (adminProfile.getRole() == null || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+        if (adminProfile.getRole() == null || 
+            (!adminProfile.getRole().getId().equals(1L) && 
+             !adminProfile.getRole().getId().equals(2L) && 
+             !adminProfile.getRole().getId().equals(3L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono rinominare dipartimenti");
         }
@@ -88,7 +107,10 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
-        if (adminProfile.getRole() == null || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+        if (adminProfile.getRole() == null || 
+            (!adminProfile.getRole().getId().equals(1L) && 
+             !adminProfile.getRole().getId().equals(2L) && 
+             !adminProfile.getRole().getId().equals(3L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono eliminare dipartimenti");
         }
@@ -118,7 +140,10 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
-        if (adminProfile.getRole() == null || (!adminProfile.getRole().getId().equals(3L) && !adminProfile.getRole().getId().equals(1L))) {
+        if (adminProfile.getRole() == null || 
+            (!adminProfile.getRole().getId().equals(1L) && 
+             !adminProfile.getRole().getId().equals(2L) && 
+             !adminProfile.getRole().getId().equals(3L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono assegnare utenti");
         }

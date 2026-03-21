@@ -311,13 +311,22 @@ public class AttendanceServiceImpl implements AttendanceService {
 
                 // 2. Get all other profiles in the same tenant and department
                 List<com.athena.attendance.entity.Profile> colleagues;
+                boolean isSuperAdmin = me.getRole() != null && me.getRole().getId().equals(1L);
+
                 if (me.getTenantId() != null && me.getDepartmentId() != null) {
                         colleagues = profileRepository.findByTenantIdAndDepartmentId(me.getTenantId(),
                                         me.getDepartmentId());
                 } else if (me.getTenantId() != null) {
                         colleagues = profileRepository.findByTenantId(me.getTenantId());
-                } else {
+                } else if (isSuperAdmin) {
                         colleagues = profileRepository.findAll();
+                } else {
+                        // User without tenant and not Superadmin should see nothing
+                        return ResponseDTO.<List<com.athena.common.dto.TeamColleagueDTO>>builder()
+                                        .message("Team overview retrieved successfully")
+                                        .payload(java.util.Collections.emptyList())
+                                        .status(ResponseStatus.SUCCESS)
+                                        .build();
                 }
 
                 // Remove self
@@ -331,8 +340,10 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         me.getDepartmentId(), targetDate);
                 } else if (me.getTenantId() != null) {
                         targetAttendances = repository.findByTenantIdAndWorkDate(me.getTenantId(), targetDate);
-                } else {
+                } else if (isSuperAdmin) {
                         targetAttendances = repository.findByWorkDate(targetDate);
+                } else {
+                        targetAttendances = java.util.Collections.emptyList();
                 }
 
                 String searchLower = search == null ? "" : search.toLowerCase();

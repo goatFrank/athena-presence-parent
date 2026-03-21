@@ -25,8 +25,12 @@ public class DepartmentController {
 
     @Operation(summary = "Recupera la lista dei dipartimenti, opzionalmente filtrata per tenant")
     @GetMapping
-    public ResponseEntity<ResponseDTO<List<DepartmentDTO>>> getDepartments(@RequestParam(required = false) Long tenantId) {
-        List<DepartmentDTO> departments = departmentService.getDepartmentsByTenant(tenantId);
+    public ResponseEntity<ResponseDTO<List<DepartmentDTO>>> getDepartments(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt,
+            @RequestParam(required = false) Long tenantId) {
+        
+        java.util.UUID userId = java.util.UUID.fromString(jwt.getSubject());
+        List<DepartmentDTO> departments = departmentService.getDepartmentsByTenant(tenantId, userId);
 
         // NOTA: Aggiungiamo.<List<DepartmentDTO>> prima di builder()
         return ResponseEntity.ok(ResponseDTO.<List<DepartmentDTO>>builder()

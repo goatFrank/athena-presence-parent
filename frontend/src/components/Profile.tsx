@@ -520,7 +520,7 @@ const Profile: React.FC = () => {
 
                         <div className="p-6 space-y-6">
                             {uploadError && (
-                                <div className="p-4 rounded-xl bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-sm flex items-start gap-3 border border-red-100 dark:border-red-800">
+                                <div className="p-4 rounded-xl bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-sm flex items-center gap-3 border border-red-100 dark:border-red-800">
                                     <span className="material-icons text-xl shrink-0">error_outline</span>
                                     <p className="mt-0.5 font-medium">{uploadError}</p>
                                 </div>

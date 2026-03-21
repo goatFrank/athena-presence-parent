@@ -161,6 +161,7 @@ const resources = {
             "terms": "Termini",
             "help": "Aiuto",
             "login_error_unexpected": "Si è verificato un errore imprevisto durante l'accesso.",
+            "login_invalid_credentials": "Credenziali di accesso non valide",
 
             // ── Register Page ──
             "create_account": "Crea Account Aziendale",
@@ -393,6 +394,7 @@ const resources = {
             "terms": "Terms",
             "help": "Help",
             "login_error_unexpected": "An unexpected error occurred during login.",
+            "login_invalid_credentials": "Invalid login credentials",
 
             // ── Register Page ──
             "create_account": "Create Company Account",

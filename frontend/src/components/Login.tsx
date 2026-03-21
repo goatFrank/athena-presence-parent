@@ -58,7 +58,11 @@ const Login: React.FC = () => {
             });
 
             if (signInError) {
-                setError(signInError.message);
+                if (signInError.message === 'Invalid login credentials') {
+                    setError(t('login_invalid_credentials'));
+                } else {
+                    setError(signInError.message);
+                }
             } else {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) {
@@ -224,14 +228,14 @@ const Login: React.FC = () => {
                         <p className="text-slate-500 mb-8 text-sm">{t('enter_details')}</p>
 
                         {error && (
-                            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-start gap-2">
+                            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2">
                                 <span className="material-icons text-red-500 text-lg">error_outline</span>
                                 <span>{error}</span>
                             </div>
                         )}
 
                         {magicLinkSent && (
-                            <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm flex items-start gap-2">
+                            <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm flex items-center gap-2">
                                 <span className="material-icons text-green-500 text-lg">check_circle_outline</span>
                                 <span>{t('magic_link_sent')}</span>
                             </div>

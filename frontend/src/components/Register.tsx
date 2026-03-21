@@ -223,7 +223,7 @@ const Register: React.FC = () => {
                         </p>
 
                         {error && (
-                            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-start gap-2">
+                            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2">
                                 <span className="material-icons text-red-500 text-lg">error_outline</span>
                                 <span>{error}</span>
                             </div>
