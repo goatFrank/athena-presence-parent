@@ -26,6 +26,9 @@ spring:
         jwt:
           issuer-uri: ${JWT_ISSUER}
 
+supabase:
+  url: ${SUPABASE_URL}
+
 logging:
   level:
     org.springframework.security: INFO

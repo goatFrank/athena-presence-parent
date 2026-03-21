@@ -22,6 +22,9 @@ public class ProfileServiceImpl implements ProfileService {
     private final com.athena.attendance.repository.RoleRepository roleRepository;
     private final com.athena.attendance.service.InviteLinkService inviteLinkService;
 
+    @org.springframework.beans.factory.annotation.Value("${supabase.url}")
+    private String supabaseUrl;
+
     @Override
     public ProfileDTO getProfile(UUID userId) {
         Profile profile = profileRepository.findById(userId)
@@ -157,6 +160,17 @@ public class ProfileServiceImpl implements ProfileService {
         if (avatarUrl == null || avatarUrl.isBlank()) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.BAD_REQUEST, "Avatar URL is empty");
+        }
+
+        // --- Security Check: SSRF & Redirect Prevention ---
+        // 1. Must be a valid HTTPS URL
+        // 2. Must start with the authorized Supabase URL
+        // 3. Must point to the /storage path
+        if (!avatarUrl.startsWith("https://") ||
+            !avatarUrl.startsWith(supabaseUrl) ||
+            !avatarUrl.contains("/storage/v1/object/public/")) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "URL avatar non valido o non autorizzato");
         }
 
         profile.setAvatarUrl(avatarUrl);
