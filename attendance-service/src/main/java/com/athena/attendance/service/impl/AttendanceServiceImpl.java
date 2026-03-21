@@ -258,6 +258,20 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         "Unauthorized: You can only update your own attendance records.");
                 }
 
+                // Cannot modify past days
+                if (attendance.getWorkDate().isBefore(LocalDate.now())) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.BAD_REQUEST,
+                                        "Cannot modify attendance for past dates");
+                }
+
+                // Cannot move a record TO a past date
+                if (dto.getWorkDate().isBefore(LocalDate.now())) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.BAD_REQUEST,
+                                        "Cannot move attendance to past dates");
+                }
+
                 // Update only allowed fields. Do NOT overwrite userId, tenantId, departmentId
                 attendance.setWorkDate(dto.getWorkDate());
                 attendance.setStatus(dto.getStatus());
@@ -291,6 +305,13 @@ public class AttendanceServiceImpl implements AttendanceService {
                         throw new org.springframework.web.server.ResponseStatusException(
                                         org.springframework.http.HttpStatus.FORBIDDEN,
                                         "Unauthorized: You can only delete your own attendance records.");
+                }
+
+                // Cannot delete past days
+                if (attendance.getWorkDate().isBefore(LocalDate.now())) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.BAD_REQUEST,
+                                        "Cannot delete attendance for past dates");
                 }
 
                 repository.delete(attendance);
