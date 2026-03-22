@@ -162,14 +162,23 @@ public class ProfileServiceImpl implements ProfileService {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Profile not found for user: " + userId));
 
         // --- Security Check: SSRF & Redirect Prevention ---
-        // 1. Must be a valid HTTPS URL
-        // 2. Must start with the authorized Supabase URL
-        // 3. Must point to the /storage path
-        if (!avatarUrl.startsWith("https://") ||
-            !avatarUrl.startsWith(supabaseUrl) ||
-            !avatarUrl.contains("/storage/v1/object/public/")) {
+        try {
+            java.net.URI uri = new java.net.URI(avatarUrl);
+            java.net.URI baseUri = new java.net.URI(supabaseUrl);
+
+            // 1. Must be a valid HTTPS URL
+            // 2. Host must exactly match the authorized Supabase host
+            // 3. Must point to the public storage path
+            if (!"https".equalsIgnoreCase(uri.getScheme()) ||
+                !baseUri.getHost().equalsIgnoreCase(uri.getHost()) ||
+                uri.getPath() == null ||
+                !uri.getPath().startsWith("/storage/v1/object/public/")) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "URL avatar non valido o non autorizzato");
+            }
+        } catch (java.net.URISyntaxException e) {
             throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "URL avatar non valido o non autorizzato");
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Formato URL avatar non valido");
         }
 
         profile.setAvatarUrl(avatarUrl);
