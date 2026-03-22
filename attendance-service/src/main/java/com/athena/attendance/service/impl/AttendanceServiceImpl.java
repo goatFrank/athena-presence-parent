@@ -287,7 +287,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 if (meProfileOpt.isEmpty()) {
                         return ResponseDTO.<List<com.athena.common.dto.TeamColleagueDTO>>builder()
                                         .message("User profile not found")
-                                        .status(ResponseStatus.ERROR)
+                                        .status(ResponseStatus.NOT_FOUND)
                                         .build();
                 }
                 var me = meProfileOpt.get();
