@@ -16,11 +16,6 @@ public interface AttendanceService {
      */
     ResponseDTO<Attendance> saveAttendance(AttendanceDTO dto, UUID authenticatedUserId);
 
-    /**
-     * Aggiorna la presenza esistente di un utente per una specifica data. Se il
-     * record non esiste, restituisce un errore.
-     */
-    ResponseDTO<Attendance> updateAttendance(Long id, AttendanceDTO dto, UUID authenticatedUserId);
 
     /**
      * Recupera lo stato di presenza di un dipartimento specifico per una data.

@@ -69,6 +69,11 @@ public class AttendanceServiceImpl implements AttendanceService {
                 attendance.setNote(dto.getNote());
 
                 Attendance saved = repository.save(attendance);
+
+                // Invio dell'aggiornamento in tempo reale via WebSocket
+                String destination = String.format("/topic/team/%d/%d", saved.getTenantId(), saved.getDepartmentId());
+                messagingTemplate.convertAndSend(destination, saved);
+
                 return ResponseDTO.<Attendance>builder()
                                 .message("Attendance saved successfully")
                                 .payload(saved)
@@ -243,55 +248,6 @@ public class AttendanceServiceImpl implements AttendanceService {
                 }
         }
 
-        @Override
-        @Transactional
-        public ResponseDTO<Attendance> updateAttendance(Long id, AttendanceDTO dto, UUID authenticatedUserId) {
-                Attendance attendance = repository.findById(id)
-                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                                                org.springframework.http.HttpStatus.NOT_FOUND,
-                                                "Attendance record not found with id: " + id));
-
-                // Verification: ensure the authenticated user owns this record
-                if (!attendance.getUserId().equals(authenticatedUserId)) {
-                        throw new org.springframework.web.server.ResponseStatusException(
-                                        org.springframework.http.HttpStatus.FORBIDDEN,
-                                        "Unauthorized: You can only update your own attendance records.");
-                }
-
-                // Cannot modify past days
-                if (attendance.getWorkDate().isBefore(LocalDate.now())) {
-                        throw new org.springframework.web.server.ResponseStatusException(
-                                        org.springframework.http.HttpStatus.BAD_REQUEST,
-                                        "Cannot modify attendance for past dates");
-                }
-
-                // Cannot move a record TO a past date
-                if (dto.getWorkDate().isBefore(LocalDate.now())) {
-                        throw new org.springframework.web.server.ResponseStatusException(
-                                        org.springframework.http.HttpStatus.BAD_REQUEST,
-                                        "Cannot move attendance to past dates");
-                }
-
-                // Update only allowed fields. Do NOT overwrite userId, tenantId, departmentId
-                attendance.setWorkDate(dto.getWorkDate());
-                attendance.setStatus(dto.getStatus());
-                attendance.setNote(dto.getNote());
-
-                Attendance updated = repository.save(attendance);
-
-                // Invio dell'aggiornamento in tempo reale via WebSocket
-                // Il team iscritto al canale /topic/team/{tenantId}/{deptId} riceverà il nuovo
-                // stato
-                String destination = String.format("/topic/team/%d/%d", updated.getTenantId(),
-                                updated.getDepartmentId());
-                messagingTemplate.convertAndSend(destination, updated);
-
-                return ResponseDTO.<Attendance>builder()
-                                .message("Attendance updated successfully")
-                                .payload(updated)
-                                .status(ResponseStatus.SUCCESS)
-                                .build();
-        }
 
         @Override
         @Transactional
@@ -313,6 +269,12 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         org.springframework.http.HttpStatus.BAD_REQUEST,
                                         "Cannot delete attendance for past dates");
                 }
+
+                // Invio notifica di cancellazione via WebSocket
+                String destination = String.format("/topic/team/%d/%d", attendance.getTenantId(), attendance.getDepartmentId());
+                // Inviamo l'oggetto con un flag 'deleted' o simili se necessario, 
+                // oppure semplicemente l'oggetto che verrà rimosso.
+                messagingTemplate.convertAndSend(destination, attendance);
 
                 repository.delete(attendance);
         }
