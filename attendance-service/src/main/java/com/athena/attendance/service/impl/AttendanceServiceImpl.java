@@ -36,7 +36,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                         return ResponseDTO.<Attendance>builder()
                                         .message("Cannot modify attendance for past dates")
                                         .payload(null)
-                                        .status(ResponseStatus.ERROR)
+                                        .status(ResponseStatus.BAD_REQUEST)
                                         .build();
                 }
 
