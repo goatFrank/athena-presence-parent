@@ -44,13 +44,29 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Object register(SignupRequest signupRequest) {
+        // Validazione manuale: deve esserci o il nome azienda (nuovo tenant) o un token invito
+        if ((signupRequest.getCompanyName() == null || signupRequest.getCompanyName().isBlank()) &&
+            (signupRequest.getInviteToken() == null || signupRequest.getInviteToken().isBlank())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST, 
+                "Nome azienda obbligatorio per la creazione di un nuovo account (a meno che non si usi un invito)"
+            );
+        }
+
+        java.util.Map<String, Object> metadata = new java.util.HashMap<>();
+        metadata.put("full_name", signupRequest.getFullName());
+        
+        if (signupRequest.getCompanyName() != null) {
+            metadata.put("company_name", signupRequest.getCompanyName());
+        }
+        if (signupRequest.getInviteToken() != null) {
+            metadata.put("invite_token", signupRequest.getInviteToken());
+        }
+
         Map<String, Object> body = Map.of(
                 "email", signupRequest.getEmail(),
                 "password", signupRequest.getPassword(),
-                "data", Map.of(
-                        "full_name", signupRequest.getFullName(),
-                        "company_name", signupRequest.getCompanyName()
-                )
+                "data", metadata
         );
 
         return restClient.post()
