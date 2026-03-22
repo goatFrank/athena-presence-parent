@@ -22,7 +22,7 @@ const customStorage = {
         return localStorage.getItem(key) ?? sessionStorage.getItem(key);
     },
     setItem: (key: string, value: string): void => {
-        const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) !== 'false';
+        const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
         if (rememberMe) {
             localStorage.setItem(key, value);
             sessionStorage.removeItem(key); // Clean up the other storage
@@ -52,8 +52,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
  */
 export const setRememberMe = (remember: boolean): void => {
     if (remember) {
-        localStorage.removeItem(REMEMBER_ME_KEY); // default behavior = remember
+        localStorage.setItem(REMEMBER_ME_KEY, 'true');
     } else {
-        localStorage.setItem(REMEMBER_ME_KEY, 'false');
+        localStorage.removeItem(REMEMBER_ME_KEY);
     }
 };
