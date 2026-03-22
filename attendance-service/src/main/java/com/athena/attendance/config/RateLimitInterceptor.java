@@ -2,38 +2,40 @@ package com.athena.attendance.config;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.Refill;
+import io.github.bucket4j.distributed.proxy.ProxyManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.function.Supplier;
 
 @Component
+@RequiredArgsConstructor
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-    private final Map<String, Bucket> cache = Collections.synchronizedMap(new LinkedHashMap<String, Bucket>(100, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, Bucket> eldest) {
-            return size() > 1000;
-        }
-    });
+    private final ProxyManager<byte[]> proxyManager;
 
-    private Bucket createNewBucket() {
-        // 10 requests per minute
-        Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
-        return Bucket.builder().addLimit(limit).build();
+    private Supplier<BucketConfiguration> getBucketConfiguration() {
+        return () -> {
+            // 10 requests per minute
+            Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
+            return BucketConfiguration.builder()
+                    .addLimit(limit)
+                    .build();
+        };
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String clientIp = getClientIp(request);
-        Bucket bucket = cache.computeIfAbsent(clientIp, k -> createNewBucket());
+        byte[] key = clientIp.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Bucket bucket = proxyManager.builder().build(key, getBucketConfiguration());
 
         if (bucket.tryConsume(1)) {
             return true;

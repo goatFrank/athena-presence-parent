@@ -10,13 +10,16 @@ services:
     environment:
       - SERVER_PORT=8081
       - SPRING_PROFILES_ACTIVE=dev
-      # Environment variables can be fetched from your host system using ${ENV_VAR} syntax
       - DB_URL=${SUPABASE_DB_URL}
       - DB_USERNAME=${SUPABASE_DB_USERNAME}
       - DB_PASSWORD=${SUPABASE_DB_PASSWORD}
       - JWT_ISSUER=${SUPABASE_JWT_ISSUER}
       - SUPABASE_URL=${SUPABASE_URL}
       - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
     restart: unless-stopped
     networks:
       - athena-network
@@ -32,7 +35,18 @@ services:
       - SPRING_PROFILES_ACTIVE=dev
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
     restart: unless-stopped
+    networks:
+      - athena-network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
     networks:
       - athena-network
 
