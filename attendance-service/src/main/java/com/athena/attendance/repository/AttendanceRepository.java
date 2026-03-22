@@ -1,6 +1,7 @@
 package com.athena.attendance.repository;
 
 import com.athena.attendance.entity.Attendance;
+import com.athena.common.enums.WorkMode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -32,10 +33,10 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         List<Attendance> findByTenantIdAndDepartmentIdAndWorkDate(Long tenantId, Long departmentId, LocalDate workDate);
 
         // Conta le presenze di un utente per uno status e in un intervallo di date
-        int countByUserIdAndStatusAndWorkDateBetween(UUID userId, String status, LocalDate startDate,
+        int countByUserIdAndStatusAndWorkDateBetween(UUID userId, WorkMode status, LocalDate startDate,
                         LocalDate endDate);
 
         // Conta i membri di un dipartimento presenti in ufficio oggi
-        int countByTenantIdAndDepartmentIdAndStatusAndWorkDate(Long tenantId, Long departmentId, String status,
+        int countByTenantIdAndDepartmentIdAndStatusAndWorkDate(Long tenantId, Long departmentId, WorkMode status,
                         LocalDate workDate);
 }
