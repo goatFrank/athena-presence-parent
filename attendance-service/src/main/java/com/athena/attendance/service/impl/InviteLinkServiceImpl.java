@@ -34,48 +34,14 @@ public class InviteLinkServiceImpl implements InviteLinkService {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin profile not found"));
 
-        if (adminProfile.getRole() == null || 
-            (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L) && 
-             !adminProfile.getRole().getId().equals(3L))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non hai i permessi per generare link di invito");
-        }
-
+        validateAdminPrivileges(adminProfile);
+        
         Long tenantId = adminProfile.getTenantId();
-        if (tenantId == null) {
-            // If it's a superadmin, they MUST belong to a tenant to invite people there 
-            // OR we should allow passing tenantId in request. For now, we block.
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossibile generare un link di invito: nessun tenant associato al profilo");
-        }
+        validateTenantPresence(tenantId);
 
-        OffsetDateTime expiresAt = null;
-        if (request.getExpiresInDays() != null) {
-            expiresAt = OffsetDateTime.now().plusDays(request.getExpiresInDays());
-        }
-
-        // If managerId is provided, verify it exists and has the MANAGER role (ID: 3)
-        if (request.getManagerId() != null) {
-            Profile managerProfile = profileRepository.findById(request.getManagerId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Manager profile not found"));
-            
-            if (managerProfile.getRole() == null || !managerProfile.getRole().getId().equals(3L)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'utente selezionato non ha il ruolo di Manager");
-            }
-            
-            if (!managerProfile.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(1L)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il manager deve appartenere allo stesso tenant");
-            }
-        }
-
-        // Validate departmentId
-        if (request.getDepartmentId() != null) {
-            com.athena.attendance.entity.Department department = departmentRepository.findById(request.getDepartmentId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dipartimento non trovato"));
-
-            if (!department.getTenantId().equals(tenantId) && !adminProfile.getRole().getId().equals(1L)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il dipartimento deve appartenere allo stesso tenant");
-            }
-        }
+        OffsetDateTime expiresAt = calculateExpiration(request.getExpiresInDays());
+        validateManager(request.getManagerId(), adminProfile.getTenantId(), adminProfile.getRole().getId());
+        validateDepartment(request.getDepartmentId(), tenantId, adminProfile.getRole().getId());
 
         InviteLink inviteLink = InviteLink.builder()
                 .token(UUID.randomUUID().toString())
@@ -141,6 +107,51 @@ public class InviteLinkServiceImpl implements InviteLinkService {
             inviteLink.setActive(false);
         }
         inviteLinkRepository.save(inviteLink);
+    }
+
+    private void validateAdminPrivileges(Profile adminProfile) {
+        if (adminProfile.getRole() == null || 
+            (!adminProfile.getRole().getId().equals(1L) && 
+             !adminProfile.getRole().getId().equals(2L) && 
+             !adminProfile.getRole().getId().equals(3L))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non hai i permessi per generare link di invito");
+        }
+    }
+
+    private void validateTenantPresence(Long tenantId) {
+        if (tenantId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossibile generare un link di invito: nessun tenant associato al profilo");
+        }
+    }
+
+    private OffsetDateTime calculateExpiration(Integer expiresInDays) {
+        return expiresInDays != null ? OffsetDateTime.now().plusDays(expiresInDays) : null;
+    }
+
+    private void validateManager(UUID managerId, Long adminTenantId, Long adminRoleId) {
+        if (managerId != null) {
+            Profile managerProfile = profileRepository.findById(managerId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Manager profile not found"));
+            
+            if (managerProfile.getRole() == null || !managerProfile.getRole().getId().equals(3L)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'utente selezionato non ha il ruolo di Manager");
+            }
+            
+            if (!managerProfile.getTenantId().equals(adminTenantId) && !adminRoleId.equals(1L)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il manager deve appartenere allo stesso tenant");
+            }
+        }
+    }
+
+    private void validateDepartment(Long departmentId, Long tenantId, Long adminRoleId) {
+        if (departmentId != null) {
+            com.athena.attendance.entity.Department department = departmentRepository.findById(departmentId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dipartimento non trovato"));
+
+            if (!department.getTenantId().equals(tenantId) && !adminRoleId.equals(1L)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il dipartimento deve appartenere allo stesso tenant");
+            }
+        }
     }
 
     private InviteLinkDTO mapToDTO(InviteLink inviteLink) {

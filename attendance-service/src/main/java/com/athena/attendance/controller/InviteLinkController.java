@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class InviteLinkController {
     @Operation(summary = "Genera un nuovo token di invito (solo Admin/Superadmin)")
     public ResponseEntity<ResponseDTO<InviteLinkDTO>> generateInvite(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody InviteLinkRequest request) {
+            @RequestBody @Valid InviteLinkRequest request) {
         
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         InviteLinkDTO invite = inviteLinkService.generateInviteLink(adminUserId, request);
