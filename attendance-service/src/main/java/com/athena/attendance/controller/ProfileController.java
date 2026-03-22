@@ -7,6 +7,8 @@ import com.athena.common.enums.ResponseStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -65,13 +67,14 @@ public class ProfileController {
 
     @GetMapping("/tenant/{tenantId}")
     @Operation(summary = "Recupera la lista dei profili di un tenant")
-    public ResponseEntity<ResponseDTO<java.util.List<ProfileDTO>>> getProfilesByTenant(
+    public ResponseEntity<ResponseDTO<Page<ProfileDTO>>> getProfilesByTenant(
             @AuthenticationPrincipal Jwt jwt, 
-            @org.springframework.web.bind.annotation.PathVariable Long tenantId) {
+            @org.springframework.web.bind.annotation.PathVariable Long tenantId,
+            Pageable pageable) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
-        java.util.List<ProfileDTO> profiles = profileService.getProfilesByTenant(tenantId, adminUserId);
+        Page<ProfileDTO> profiles = profileService.getProfilesByTenant(tenantId, adminUserId, pageable);
         
-        return ResponseEntity.ok(ResponseDTO.<java.util.List<ProfileDTO>>builder()
+        return ResponseEntity.ok(ResponseDTO.<Page<ProfileDTO>>builder()
                 .message("Profiles retrieved successfully")
                 .payload(profiles)
                 .status(ResponseStatus.SUCCESS)
@@ -80,11 +83,13 @@ public class ProfileController {
 
     @GetMapping("/all")
     @Operation(summary = "Recupera tutti i profili (solo superadmin)")
-    public ResponseEntity<ResponseDTO<java.util.List<ProfileDTO>>> getAllProfiles(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseDTO<Page<ProfileDTO>>> getAllProfiles(
+            @AuthenticationPrincipal Jwt jwt,
+            Pageable pageable) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
-        java.util.List<ProfileDTO> profiles = profileService.getAllProfiles(adminUserId);
+        Page<ProfileDTO> profiles = profileService.getAllProfiles(adminUserId, pageable);
 
-        return ResponseEntity.ok(ResponseDTO.<java.util.List<ProfileDTO>>builder()
+        return ResponseEntity.ok(ResponseDTO.<Page<ProfileDTO>>builder()
                 .message("All profiles retrieved successfully")
                 .payload(profiles)
                 .status(ResponseStatus.SUCCESS)

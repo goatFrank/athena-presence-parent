@@ -1,12 +1,12 @@
 package com.athena.attendance.service;
 
 import com.athena.common.dto.TenantDTO;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.UUID;
-
+ 
 public interface TenantService {
-    List<TenantDTO> getAllTenants(UUID adminUserId);
-    List<TenantDTO> getPendingTenants(UUID adminUserId);
+    Page<TenantDTO> getAllTenants(UUID adminUserId, Pageable pageable);
+    Page<TenantDTO> getPendingTenants(UUID adminUserId, Pageable pageable);
     void updateTenantStatus(Long tenantId, String status, UUID adminUserId);
 }
-

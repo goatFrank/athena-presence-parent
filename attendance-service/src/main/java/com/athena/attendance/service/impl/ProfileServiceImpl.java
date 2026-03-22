@@ -5,6 +5,8 @@ import com.athena.attendance.repository.*;
 import com.athena.attendance.service.ProfileService;
 import com.athena.common.dto.ProfileDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,11 +37,11 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public java.util.List<ProfileDTO> getProfilesByTenant(Long tenantId, UUID adminUserId) {
+    public Page<ProfileDTO> getProfilesByTenant(Long tenantId, UUID adminUserId, Pageable pageable) {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
-
+ 
         if (adminProfile.getRole() == null
                 || (!adminProfile.getRole().getId().equals(1L) 
                     && !adminProfile.getRole().getId().equals(2L) 
@@ -48,31 +50,29 @@ public class ProfileServiceImpl implements ProfileService {
                     org.springframework.http.HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono vedere i profili del tenant");
         }
-
+ 
         if (!adminProfile.getRole().getId().equals(1L) && !adminProfile.getTenantId().equals(tenantId)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Non puoi vedere i profili di un altro tenant");
         }
-
-        return profileRepository.findByTenantId(tenantId).stream()
-                .map(this::mapToDTO)
-                .toList();
+ 
+        return profileRepository.findByTenantId(tenantId, pageable)
+                .map(this::mapToDTO);
     }
-
+ 
     @Override
-    public java.util.List<ProfileDTO> getAllProfiles(java.util.UUID adminUserId) {
+    public Page<ProfileDTO> getAllProfiles(java.util.UUID adminUserId, Pageable pageable) {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
-
+ 
         if (adminProfile.getRole() == null || !adminProfile.getRole().getId().equals(1L)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo i superadmin possono vedere tutti i profili");
         }
-
-        return profileRepository.findAll().stream()
-                .map(this::mapToDTO)
-                .toList();
+ 
+        return profileRepository.findAll(pageable)
+                .map(this::mapToDTO);
     }
 
     @Override

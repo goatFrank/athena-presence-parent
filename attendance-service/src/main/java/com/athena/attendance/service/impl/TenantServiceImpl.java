@@ -7,11 +7,12 @@ import com.athena.attendance.repository.TenantRepository;
 import com.athena.attendance.service.TenantService;
 import com.athena.common.dto.TenantDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,19 +23,17 @@ public class TenantServiceImpl implements TenantService {
     private final ProfileRepository profileRepository;
 
     @Override
-    public List<TenantDTO> getAllTenants(UUID adminUserId) {
+    public Page<TenantDTO> getAllTenants(UUID adminUserId, Pageable pageable) {
         verificaSuperAdmin(adminUserId);
-        return tenantRepository.findAll().stream()
-                .map(this::mapToDTO)
-                .toList();
+        return tenantRepository.findAll(pageable)
+                .map(this::mapToDTO);
     }
-
+ 
     @Override
-    public List<TenantDTO> getPendingTenants(UUID adminUserId) {
+    public Page<TenantDTO> getPendingTenants(UUID adminUserId, Pageable pageable) {
         verificaSuperAdmin(adminUserId);
-        return tenantRepository.findByStatus(TenantStatus.PENDING).stream()
-                .map(this::mapToDTO)
-                .toList();
+        return tenantRepository.findByStatus(TenantStatus.PENDING, pageable)
+                .map(this::mapToDTO);
     }
 
     @Override

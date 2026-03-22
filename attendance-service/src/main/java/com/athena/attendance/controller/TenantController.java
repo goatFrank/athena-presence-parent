@@ -7,12 +7,13 @@ import com.athena.common.enums.ResponseStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,22 +26,26 @@ public class TenantController {
 
     @GetMapping("/all")
     @Operation(summary = "Recupera la lista di tutti i tenant (solo superadmin)")
-    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getAllTenants(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getAllTenants(
+            @AuthenticationPrincipal Jwt jwt,
+            Pageable pageable) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
-        List<TenantDTO> tenants = tenantService.getAllTenants(adminUserId);
-        return ResponseEntity.ok(ResponseDTO.<List<TenantDTO>>builder()
+        Page<TenantDTO> tenants = tenantService.getAllTenants(adminUserId, pageable);
+        return ResponseEntity.ok(ResponseDTO.<Page<TenantDTO>>builder()
                 .message("Lista tenant recuperata con successo")
                 .payload(tenants)
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
-
+ 
     @GetMapping("/pending")
     @Operation(summary = "Recupera la lista dei tenant in attesa di approvazione (solo superadmin)")
-    public ResponseEntity<ResponseDTO<List<TenantDTO>>> getPendingTenants(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getPendingTenants(
+            @AuthenticationPrincipal Jwt jwt,
+            Pageable pageable) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
-        List<TenantDTO> tenants = tenantService.getPendingTenants(adminUserId);
-        return ResponseEntity.ok(ResponseDTO.<List<TenantDTO>>builder()
+        Page<TenantDTO> tenants = tenantService.getPendingTenants(adminUserId, pageable);
+        return ResponseEntity.ok(ResponseDTO.<Page<TenantDTO>>builder()
                 .message("Lista tenant in attesa recuperata con successo")
                 .payload(tenants)
                 .status(ResponseStatus.SUCCESS)
