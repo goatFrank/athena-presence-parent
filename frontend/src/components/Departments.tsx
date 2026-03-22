@@ -144,13 +144,13 @@ const Departments: React.FC = () => {
                         // Superadmin: get ALL profiles from ALL tenants
                         const profilesResponse = await attendanceApi.get('/api/v1/profiles/all');
                         if (profilesResponse.status === 200 && profilesResponse.data.payload) {
-                            setProfiles(profilesResponse.data.payload);
+                            setProfiles(profilesResponse.data.payload.content || []);
                         }
                     } else if (currentTenantId) {
                         // Tenant admin: get profiles from own tenant
                         const profilesResponse = await attendanceApi.get(`/api/v1/profiles/tenant/${currentTenantId}`);
                         if (profilesResponse.status === 200 && profilesResponse.data.payload) {
-                            setProfiles(profilesResponse.data.payload);
+                            setProfiles(profilesResponse.data.payload.content || []);
                         }
                     }
                 } catch (profileErr) {

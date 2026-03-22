@@ -20,7 +20,7 @@ const SuperadminTenants: React.FC = () => {
         setError(null);
         try {
             const response = await attendanceApi.get('/api/v1/tenants/pending');
-            setTenants(response.data.payload || []);
+            setTenants(response.data.payload?.content || []);
         } catch (err: any) {
             console.error('Error fetching tenants:', err);
             const errorMessage = err.response?.data?.message || err.message || 'Error connecting to server';

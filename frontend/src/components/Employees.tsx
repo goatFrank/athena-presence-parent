@@ -69,12 +69,12 @@ const Employees: React.FC = () => {
                 if (isSA) {
                     const res = await attendanceApi.get('/api/v1/profiles/all');
                     if (res.status === 200 && res.data.payload) {
-                        setProfiles(res.data.payload);
+                        setProfiles(res.data.payload.content || []);
                     }
                 } else if (currentTenantId) {
                     const res = await attendanceApi.get(`/api/v1/profiles/tenant/${currentTenantId}`);
                     if (res.status === 200 && res.data.payload) {
-                        setProfiles(res.data.payload);
+                        setProfiles(res.data.payload.content || []);
                     }
                     
                     // Fetch departments
