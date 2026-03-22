@@ -161,11 +161,6 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Profile not found for user: " + userId));
 
-        if (avatarUrl == null || avatarUrl.isBlank()) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "Avatar URL is empty");
-        }
-
         // --- Security Check: SSRF & Redirect Prevention ---
         // 1. Must be a valid HTTPS URL
         // 2. Must start with the authorized Supabase URL

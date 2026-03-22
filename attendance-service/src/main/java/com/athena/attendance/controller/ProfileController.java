@@ -42,7 +42,7 @@ public class ProfileController {
     @Operation(summary = "Aggiorna l'URL dell'avatar dopo l'upload su Storage")
     public ResponseEntity<ResponseDTO<String>> updateAvatar(
             @AuthenticationPrincipal Jwt jwt, 
-            @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.AvatarUrlUpdateRequest request) {
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.AvatarUrlUpdateRequest request) {
         UUID userId = UUID.fromString(jwt.getSubject());
         String publicUrl = profileService.updateAvatar(userId, request.getAvatarUrl());
         return ResponseEntity.ok(ResponseDTO.<String>builder()
