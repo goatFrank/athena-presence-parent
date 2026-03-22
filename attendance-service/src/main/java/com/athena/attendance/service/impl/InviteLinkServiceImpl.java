@@ -67,6 +67,16 @@ public class InviteLinkServiceImpl implements InviteLinkService {
             }
         }
 
+        // Validate departmentId
+        if (request.getDepartmentId() != null) {
+            com.athena.attendance.entity.Department department = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dipartimento non trovato"));
+
+            if (!department.getTenantId().equals(tenantId) && !adminProfile.getRole().getId().equals(1L)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il dipartimento deve appartenere allo stesso tenant");
+            }
+        }
+
         InviteLink inviteLink = InviteLink.builder()
                 .token(UUID.randomUUID().toString())
                 .tenantId(tenantId)
