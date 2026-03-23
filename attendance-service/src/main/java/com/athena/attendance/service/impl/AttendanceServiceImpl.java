@@ -294,11 +294,11 @@ public class AttendanceServiceImpl implements AttendanceService {
 
                 // Invio notifica di cancellazione via WebSocket
                 String destination = String.format("/topic/team/%d/%d", attendance.getTenantId(), attendance.getDepartmentId());
-                // Inviamo l'oggetto con un flag 'deleted' o simili se necessario, 
-                // oppure semplicemente l'oggetto che verrà rimosso.
-                messagingTemplate.convertAndSend(destination, attendance);
-
+                // Delete the attendance record
                 repository.delete(attendance);
+
+                // Invio notifica di cancellazione via WebSocket solo dopo il successo
+                messagingTemplate.convertAndSend(destination, attendance);
         }
 
         @Override
