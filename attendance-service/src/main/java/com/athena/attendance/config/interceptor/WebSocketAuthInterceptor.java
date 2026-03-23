@@ -98,12 +98,33 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
     private void validateSubscription(UUID userId, Long tenantId, Long deptId, String destination) {
         Profile profile = profileRepository.findById(userId).orElse(null);
-        if (profile == null || 
-            profile.getTenantId() == null || !profile.getTenantId().equals(tenantId) || 
-            profile.getDepartmentId() == null || !profile.getDepartmentId().equals(deptId)) {
-            
-            log.warn("SECURITY ALERT: User {} attempted to subscribe to unauthorized topic: {}", userId, destination);
-            throw new org.springframework.messaging.MessagingException("Access Denied: You can only subscribe to your own team's presence updates");
+        if (profile == null || profile.getRole() == null) {
+            log.warn("WebSocket subscription denied: Profile or Role not found for user: {}", userId);
+            throw new org.springframework.messaging.MessagingException("Access Denied: Profile or Role not found");
+        }
+
+        Long roleId = profile.getRole().getId();
+
+        // 1. Superadmin (ID 1) has global access
+        if (roleId.equals(1L)) {
+            return;
+        }
+
+        // 2. All other roles must belong to the requested tenant
+        if (profile.getTenantId() == null || !profile.getTenantId().equals(tenantId)) {
+            log.warn("SECURITY ALERT: User {} attempted to subscribe to unauthorized tenant topic: {}", userId, destination);
+            throw new org.springframework.messaging.MessagingException("Access Denied: You can only subscribe to your own tenant's updates");
+        }
+
+        // 3. Tenant Admin (ID 2) has access to all departments in their tenant
+        if (roleId.equals(2L)) {
+            return;
+        }
+
+        // 4. Managers/Employees (ID 3/4) must match the department
+        if (profile.getDepartmentId() == null || !profile.getDepartmentId().equals(deptId)) {
+            log.warn("SECURITY ALERT: User {} attempted to subscribe to unauthorized department topic: {}", userId, destination);
+            throw new org.springframework.messaging.MessagingException("Access Denied: You can only subscribe to your own department's updates");
         }
     }
 }
