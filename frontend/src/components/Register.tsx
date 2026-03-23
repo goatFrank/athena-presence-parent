@@ -65,6 +65,17 @@ const Register: React.FC = () => {
             return;
         }
 
+        if (password.length < 8) {
+            setError(t('password_too_short'));
+            return;
+        }
+
+        const complexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!complexityRegex.test(password)) {
+            setError(t('password_complexity'));
+            return;
+        }
+
         setLoading(true);
 
         try {
