@@ -126,11 +126,19 @@ public class AttendanceServiceImpl implements AttendanceService {
                                                 "UserProfile not found"));
 
                 boolean isSuperAdmin = profile.getRole() != null && profile.getRole().getId().equals(1L);
+                boolean isTenantAdmin = profile.getRole() != null && profile.getRole().getId().equals(2L);
 
-                if (!isSuperAdmin && (profile.getTenantId() == null || !profile.getTenantId().equals(tenantId))) {
-                        throw new org.springframework.web.server.ResponseStatusException(
-                                        org.springframework.http.HttpStatus.FORBIDDEN,
-                                        "Access Denied: You cannot access other tenant's data");
+                if (!isSuperAdmin) {
+                        if (profile.getTenantId() == null || !profile.getTenantId().equals(tenantId)) {
+                                throw new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.FORBIDDEN,
+                                                "Access Denied: You cannot access other tenant's data");
+                        }
+                        if (!isTenantAdmin) {
+                                throw new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.FORBIDDEN,
+                                                "Access Denied: You must be a Tenant Admin to view full tenant data");
+                        }
                 }
 
                 List<Attendance> list = repository.findByTenantIdAndWorkDate(tenantId, date);
