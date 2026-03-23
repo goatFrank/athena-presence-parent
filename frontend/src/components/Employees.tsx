@@ -31,6 +31,15 @@ const Employees: React.FC = () => {
     const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // Pagination
+    const [page, setPage] = useState(0);
+    const pageSize = 12;
+
+    // Reset page to 0 when filters change
+    useEffect(() => {
+        setPage(0);
+    }, [searchQuery]);
+
     // Invite Link modal
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [inviteConfig, setInviteConfig] = useState({
@@ -147,6 +156,9 @@ const Employees: React.FC = () => {
         (p.departmentName || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const displayedProfiles = filtered.slice(page * pageSize, (page + 1) * pageSize);
+    const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+
     return (
         <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
@@ -214,7 +226,7 @@ const Employees: React.FC = () => {
 
                             {/* Rows */}
                             <ul className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                                {filtered.map(p => (
+                                {displayedProfiles.map(p => (
                                     <li key={p.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 md:gap-4 items-center px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
                                         {/* Name */}
                                         <div className="flex items-center gap-3">
@@ -257,9 +269,47 @@ const Employees: React.FC = () => {
                                 ))}
                             </ul>
 
-                            {/* Footer count */}
-                            <div className="px-6 py-3 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400">
-                                {filtered.length} {t('employees_total', 'dipendenti totali')}
+                            {/* Footer count and Pagination */}
+                            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50 shadow-sm">
+                                    {page * pageSize + 1} - {Math.min((page + 1) * pageSize, filtered.length)} di {filtered.length} {t('employees', 'dipendenti')}
+                                </div>
+
+                                {totalPages > 1 && (
+                                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm">
+                                        <button
+                                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                                            disabled={page === 0}
+                                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                                        >
+                                            <span className="material-icons text-xl">chevron_left</span>
+                                        </button>
+                                        
+                                        <div className="flex items-center px-2 gap-1 overflow-x-auto hide-scrollbar max-w-[150px]">
+                                            {Array.from({ length: totalPages }, (_, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => setPage(i)}
+                                                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                                                        page === i
+                                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                                                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                                    }`}
+                                                >
+                                                    {i + 1}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                            disabled={page === totalPages - 1}
+                                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                                        >
+                                            <span className="material-icons text-xl">chevron_right</span>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

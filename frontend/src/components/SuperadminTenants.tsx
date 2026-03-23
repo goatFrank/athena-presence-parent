@@ -15,6 +15,10 @@ const SuperadminTenants: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Pagination
+    const [page, setPage] = useState(0);
+    const pageSize = 10;
+
     const fetchPendingTenants = async () => {
         setLoading(true);
         setError(null);
@@ -45,6 +49,9 @@ const SuperadminTenants: React.FC = () => {
             alert(`Failed to ${action} tenant: ${errorMessage}`);
         }
     };
+
+    const displayedTenants = tenants.slice(page * pageSize, (page + 1) * pageSize);
+    const totalPages = Math.ceil(tenants.length / pageSize) || 1;
 
     return (
         <div className="min-h-screen bg-[#f0f4f8] dark:bg-slate-900 flex">
@@ -104,7 +111,7 @@ const SuperadminTenants: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                    {tenants.map((tenant) => (
+                                    {displayedTenants.map((tenant) => (
                                         <tr key={tenant.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/10 transition-colors">
                                             <td className="px-8 py-5">
                                                 <div className="flex items-center gap-4">
@@ -139,6 +146,48 @@ const SuperadminTenants: React.FC = () => {
                                     ))}
                                 </tbody>
                             </table>
+                            {/* Pagination Controls */}
+                            <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                                    {page * pageSize + 1} - {Math.min((page + 1) * pageSize, tenants.length)} di {tenants.length} aziende in attesa
+                                </div>
+
+                                {totalPages > 1 && (
+                                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                        <button
+                                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                                            disabled={page === 0}
+                                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                                        >
+                                            <span className="material-icons text-xl">chevron_left</span>
+                                        </button>
+                                        
+                                        <div className="flex items-center px-2 gap-1 overflow-x-auto hide-scrollbar max-w-[150px]">
+                                            {Array.from({ length: totalPages }, (_, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => setPage(i)}
+                                                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                                                        page === i
+                                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                                                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                                    }`}
+                                                >
+                                                    {i + 1}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                            disabled={page === totalPages - 1}
+                                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                                        >
+                                            <span className="material-icons text-xl">chevron_right</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>

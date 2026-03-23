@@ -26,7 +26,7 @@ const ResetPassword: React.FC = () => {
         checkSession();
 
         // Listen for auth state changes to detect when recovery link is clicked
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
             if (event === 'PASSWORD_RECOVERY') {
                 setIsRecoveryMode(true);
             }

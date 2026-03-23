@@ -26,7 +26,7 @@ const Departments: React.FC = () => {
     const [departments, setDepartments] = useState<Department[]>([]);
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [tenantId, setTenantId] = useState<number | null>(null);
+    const [, setTenantId] = useState<number | null>(null);
     const [isSuperadmin, setIsSuperadmin] = useState(false);
 
     // Modal state

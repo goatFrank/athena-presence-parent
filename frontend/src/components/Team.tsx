@@ -23,7 +23,7 @@ const Team: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [page, setPage] = useState(0);
-    const pageSize = 12;
+    const pageSize = 10;
 
     // Reset page to 0 when filters change
     useEffect(() => {

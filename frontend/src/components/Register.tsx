@@ -7,9 +7,9 @@ import { attendanceApi } from '../api/clients';
 const Register: React.FC = () => {
     const { t } = useTranslation();
     const [searchParams] = useSearchParams();
-    const [inviteToken, setInviteToken] = useState<string | null>(searchParams.get('token'));
+    const [inviteToken] = useState<string | null>(searchParams.get('token'));
     const [inviteData, setInviteData] = useState<any | null>(null);
-    const [tokenValid, setTokenValid] = useState<boolean | null>(null);
+    const [, setTokenValid] = useState<boolean | null>(null);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
