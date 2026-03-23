@@ -137,7 +137,7 @@ public class InviteLinkServiceImpl implements InviteLinkService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'utente selezionato non ha il ruolo di Manager");
             }
             
-            if (!managerProfile.getTenantId().equals(adminTenantId) && !adminRoleId.equals(1L)) {
+            if (!adminTenantId.equals(managerProfile.getTenantId()) && !adminRoleId.equals(1L)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il manager deve appartenere allo stesso tenant");
             }
         }
@@ -148,7 +148,7 @@ public class InviteLinkServiceImpl implements InviteLinkService {
             com.athena.attendance.entity.Department department = departmentRepository.findById(departmentId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dipartimento non trovato"));
 
-            if (!department.getTenantId().equals(tenantId) && !adminRoleId.equals(1L)) {
+            if (!tenantId.equals(department.getTenantId()) && !adminRoleId.equals(1L)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il dipartimento deve appartenere allo stesso tenant");
             }
         }
