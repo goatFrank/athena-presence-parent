@@ -44,7 +44,7 @@ public class DepartmentController {
     @org.springframework.web.bind.annotation.PostMapping
     public ResponseEntity<ResponseDTO<DepartmentDTO>> createDepartment(
             @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt,
-            @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.DepartmentDTO request) {
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.DepartmentDTO request) {
         
         java.util.UUID adminUserId = java.util.UUID.fromString(jwt.getSubject());
         DepartmentDTO created = departmentService.createDepartment(request.getName(), adminUserId);
@@ -77,7 +77,7 @@ public class DepartmentController {
     public ResponseEntity<ResponseDTO<DepartmentDTO>> renameDepartment(
             @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt,
             @org.springframework.web.bind.annotation.PathVariable Long departmentId,
-            @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.DepartmentDTO request) {
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.DepartmentDTO request) {
         
         java.util.UUID adminUserId = java.util.UUID.fromString(jwt.getSubject());
         DepartmentDTO renamed = departmentService.renameDepartment(departmentId, request.getName(), adminUserId);
