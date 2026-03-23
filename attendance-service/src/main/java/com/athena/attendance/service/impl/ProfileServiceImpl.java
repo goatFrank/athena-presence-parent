@@ -191,7 +191,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public void createProfile(UUID userId, com.athena.common.dto.SignupRequest request) {
+    public void createProfile(UUID userId, com.athena.common.dto.ProfileSetupRequest request) {
         java.util.Optional<Profile> existing = profileRepository.findById(userId);
         
         if (existing.isPresent() && (existing.get().getTenantId() != null || existing.get().getRole() != null)) {

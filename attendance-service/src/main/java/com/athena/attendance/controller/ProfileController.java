@@ -55,7 +55,7 @@ public class ProfileController {
     @org.springframework.web.bind.annotation.PostMapping("/setup")
     @Operation(summary = "Inizializza il profilo e il tenant dell'utente")
     public ResponseEntity<ResponseDTO<Void>> setupProfile(
-            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.SignupRequest request,
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.ProfileSetupRequest request,
             @AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         profileService.createProfile(userId, request);

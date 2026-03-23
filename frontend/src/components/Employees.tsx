@@ -33,7 +33,7 @@ const Employees: React.FC = () => {
 
     // Pagination
     const [page, setPage] = useState(0);
-    const pageSize = 12;
+    const pageSize = 10;
 
     // Reset page to 0 when filters change
     useEffect(() => {
@@ -85,7 +85,7 @@ const Employees: React.FC = () => {
                     if (res.status === 200 && res.data.payload) {
                         setProfiles(res.data.payload.content || []);
                     }
-                    
+
                     // Fetch departments
                     const deptRes = await attendanceApi.get(`/api/v1/departments?tenantId=${currentTenantId}`);
                     if (deptRes.status === 200 && deptRes.data.payload) {
@@ -284,17 +284,16 @@ const Employees: React.FC = () => {
                                         >
                                             <span className="material-icons text-xl">chevron_left</span>
                                         </button>
-                                        
+
                                         <div className="flex items-center px-2 gap-1 overflow-x-auto hide-scrollbar max-w-[150px]">
                                             {Array.from({ length: totalPages }, (_, i) => (
                                                 <button
                                                     key={i}
                                                     onClick={() => setPage(i)}
-                                                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                                                        page === i
+                                                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all shrink-0 ${page === i
                                                             ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                                                             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {i + 1}
                                                 </button>
@@ -331,7 +330,7 @@ const Employees: React.FC = () => {
                                         {t('invite_new_employee', 'Invita nuovo dipendente')}
                                     </h3>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setIsInviteModalOpen(false);
                                         setGeneratedLink(null);
@@ -347,10 +346,10 @@ const Employees: React.FC = () => {
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                         {t('expires_in_days', 'Scade tra (giorni)')}
                                     </label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         value={inviteConfig.expiresInDays}
-                                        onChange={(e) => setInviteConfig({...inviteConfig, expiresInDays: Number.parseInt(e.target.value)}) }
+                                        onChange={(e) => setInviteConfig({ ...inviteConfig, expiresInDays: Number.parseInt(e.target.value) })}
                                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium"
                                     />
                                 </div>
@@ -359,10 +358,10 @@ const Employees: React.FC = () => {
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                         {t('max_uses', 'Utilizzi massimi')}
                                     </label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         value={inviteConfig.maxUses}
-                                        onChange={(e) => setInviteConfig({...inviteConfig, maxUses: Number.parseInt(e.target.value)}) }
+                                        onChange={(e) => setInviteConfig({ ...inviteConfig, maxUses: Number.parseInt(e.target.value) })}
                                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium"
                                     />
                                 </div>
@@ -371,9 +370,9 @@ const Employees: React.FC = () => {
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                         {t('assign_manager', 'Assegna Manager (Opzionale)')}
                                     </label>
-                                    <select 
+                                    <select
                                         value={inviteConfig.managerId}
-                                        onChange={(e) => setInviteConfig({...inviteConfig, managerId: e.target.value})}
+                                        onChange={(e) => setInviteConfig({ ...inviteConfig, managerId: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium"
                                     >
                                         <option value="">{t('no_manager', 'Nessun manager')}</option>
@@ -390,9 +389,9 @@ const Employees: React.FC = () => {
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                         {t('assign_department', 'Assegna Dipartimento (Opzionale)')}
                                     </label>
-                                    <select 
+                                    <select
                                         value={inviteConfig.departmentId}
-                                        onChange={(e) => setInviteConfig({...inviteConfig, departmentId: e.target.value})}
+                                        onChange={(e) => setInviteConfig({ ...inviteConfig, departmentId: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium"
                                     >
                                         <option value="">{t('no_department', 'Nessun dipartimento')}</option>
@@ -409,12 +408,12 @@ const Employees: React.FC = () => {
                                             {t('invite_link', 'Link di invito')}
                                         </label>
                                         <div className="relative group">
-                                            <input 
+                                            <input
                                                 readOnly
                                                 value={generatedLink}
                                                 className="w-full pl-4 pr-12 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl font-mono text-xs text-blue-700 dark:text-blue-300 shadow-inner"
                                             />
-                                            <button 
+                                            <button
                                                 onClick={() => copyToClipboard(generatedLink)}
                                                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-white/50 dark:hover:bg-white/10 rounded-lg transition-colors text-blue-500"
                                             >

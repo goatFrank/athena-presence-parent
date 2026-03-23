@@ -104,7 +104,6 @@ const Register: React.FC = () => {
                         email,
                         fullName,
                         companyName: inviteToken ? 'JOINING_BY_INVITE' : companyName,
-                        password: '****',
                         inviteToken: inviteToken || undefined
                     });
 
