@@ -39,4 +39,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         // Conta i membri di un dipartimento presenti in ufficio oggi
         int countByTenantIdAndDepartmentIdAndStatusAndWorkDate(Long tenantId, Long departmentId, WorkMode status,
                         LocalDate workDate);
+
+        // Elimina tutte le presenze di un utente specifico
+        void deleteByUserId(UUID userId);
 }

@@ -23,6 +23,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final LocationRepository locationRepository;
     private final com.athena.attendance.repository.RoleRepository roleRepository;
     private final com.athena.attendance.service.InviteLinkService inviteLinkService;
+    private final AttendanceRepository attendanceRepository;
 
     @org.springframework.beans.factory.annotation.Value("${supabase.url}")
     private String supabaseUrl;
@@ -110,6 +111,7 @@ public class ProfileServiceImpl implements ProfileService {
                     org.springframework.http.HttpStatus.BAD_REQUEST, "Non puoi eliminare il tuo stesso profilo");
         }
 
+        attendanceRepository.deleteByUserId(targetProfile.getId());
         profileRepository.delete(targetProfile);
     }
 
