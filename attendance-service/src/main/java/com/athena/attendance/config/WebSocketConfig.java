@@ -29,7 +29,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-attendance")
-                .setAllowedOrigins(allowedOrigins.split(","))
+                .setAllowedOrigins(java.util.Arrays.stream(allowedOrigins.split(","))
+                        .map(String::trim)
+                        .toArray(String[]::new))
                 .withSockJS();
     }
 
