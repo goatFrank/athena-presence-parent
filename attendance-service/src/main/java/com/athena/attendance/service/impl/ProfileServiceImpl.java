@@ -4,6 +4,8 @@ import com.athena.attendance.entity.*;
 import com.athena.attendance.repository.*;
 import com.athena.attendance.service.ProfileService;
 import com.athena.common.dto.ProfileDTO;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,36 +44,36 @@ public class ProfileServiceImpl implements ProfileService {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
- 
+
         if (adminProfile.getRole() == null
-                || (!adminProfile.getRole().getId().equals(1L) 
-                    && !adminProfile.getRole().getId().equals(2L) 
-                    && !adminProfile.getRole().getId().equals(3L))) {
+                || (!adminProfile.getRole().getId().equals(1L)
+                        && !adminProfile.getRole().getId().equals(2L)
+                        && !adminProfile.getRole().getId().equals(3L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono vedere i profili del tenant");
         }
- 
+
         if (!adminProfile.getRole().getId().equals(1L) && !adminProfile.getTenantId().equals(tenantId)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Non puoi vedere i profili di un altro tenant");
         }
- 
+
         return profileRepository.findByTenantId(tenantId, pageable)
                 .map(this::mapToDTO);
     }
- 
+
     @Override
     public Page<ProfileDTO> getAllProfiles(java.util.UUID adminUserId, Pageable pageable) {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
- 
+
         if (adminProfile.getRole() == null || !adminProfile.getRole().getId().equals(1L)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo i superadmin possono vedere tutti i profili");
         }
- 
+
         return profileRepository.findAll(pageable)
                 .map(this::mapToDTO);
     }
@@ -84,9 +86,9 @@ public class ProfileServiceImpl implements ProfileService {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
         if (adminProfile.getRole() == null
-                || (!adminProfile.getRole().getId().equals(1L) 
-                    && !adminProfile.getRole().getId().equals(2L) 
-                    && !adminProfile.getRole().getId().equals(3L))) {
+                || (!adminProfile.getRole().getId().equals(1L)
+                        && !adminProfile.getRole().getId().equals(2L)
+                        && !adminProfile.getRole().getId().equals(3L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono eliminare dipendenti");
@@ -158,6 +160,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    @Transactional
     public String updateAvatar(UUID userId, String avatarUrl) {
         Profile profile = profileRepository.findById(userId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
@@ -172,9 +175,9 @@ public class ProfileServiceImpl implements ProfileService {
             // 2. Host must exactly match the authorized Supabase host
             // 3. Must point to the public storage path
             if (!"https".equalsIgnoreCase(uri.getScheme()) ||
-                !baseUri.getHost().equalsIgnoreCase(uri.getHost()) ||
-                uri.getPath() == null ||
-                !uri.getPath().startsWith("/storage/v1/object/public/")) {
+                    !baseUri.getHost().equalsIgnoreCase(uri.getHost()) ||
+                    uri.getPath() == null ||
+                    !uri.getPath().startsWith("/storage/v1/object/public/")) {
                 throw new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.BAD_REQUEST, "URL avatar non valido o non autorizzato");
             }
@@ -193,9 +196,10 @@ public class ProfileServiceImpl implements ProfileService {
     @org.springframework.transaction.annotation.Transactional
     public void createProfile(UUID userId, com.athena.common.dto.ProfileSetupRequest request) {
         java.util.Optional<Profile> existing = profileRepository.findById(userId);
-        
+
         if (existing.isPresent() && (existing.get().getTenantId() != null || existing.get().getRole() != null)) {
-            // Profilo già esistente e configurato. Evitiamo il re-setup e il consumo di token.
+            // Profilo già esistente e configurato. Evitiamo il re-setup e il consumo di
+            // token.
             return;
         }
 
