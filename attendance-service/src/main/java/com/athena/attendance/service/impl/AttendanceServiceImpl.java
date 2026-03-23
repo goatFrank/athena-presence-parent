@@ -162,6 +162,18 @@ public class AttendanceServiceImpl implements AttendanceService {
         @Override
         public ResponseDTO<List<Attendance>> getAttendanceForDateRange(UUID userId, LocalDate startDate,
                         LocalDate endDate) {
+                if (startDate.isAfter(endDate)) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                org.springframework.http.HttpStatus.BAD_REQUEST, "La data di inizio non può essere successiva a quella di fine"
+                        );
+                }
+                
+                if (java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) > 365) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                org.springframework.http.HttpStatus.BAD_REQUEST, "Il periodo non può superare i 365 giorni"
+                        );
+                }
+
                 List<Attendance> list = repository.findByUserIdAndWorkDateBetweenOrderByWorkDateAsc(userId, startDate,
                                 endDate);
                 return ResponseDTO.<List<Attendance>>builder()
