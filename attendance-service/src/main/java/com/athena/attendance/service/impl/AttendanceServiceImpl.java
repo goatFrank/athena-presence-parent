@@ -40,6 +40,15 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         .build();
                 }
 
+                // Cannot book too far in the future (max 1 year)
+                if (dto.getWorkDate().isAfter(LocalDate.now().plusYears(1))) {
+                        return ResponseDTO.<Attendance>builder()
+                                        .message("Spiacenti, non puoi prenotare la presenza oltre 1 anno nel futuro")
+                                        .payload(null)
+                                        .status(ResponseStatus.BAD_REQUEST)
+                                        .build();
+                }
+
                 // Security Enforcement: fetch true Profile linked to auth UUID
                 com.athena.attendance.entity.Profile profile = profileRepository.findById(authenticatedUserId)
                                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
