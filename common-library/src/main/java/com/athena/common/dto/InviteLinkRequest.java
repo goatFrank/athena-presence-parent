@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class InviteLinkRequest {
     @Min(value = 1, message = "Days until expiration must be at least 1")
+    @Max(value = 365, message = "Expiration cannot exceed 365 days")
     private Integer expiresInDays;
     
     @Min(value = 1, message = "Max uses must be at least 1")
