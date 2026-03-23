@@ -26,8 +26,10 @@ public class SignupRequest {
     @Schema(example = "PasswordSicura123!")
     private String password;
     @NotBlank
+    @Size(max = 100, message = "Il nome completo non può superare i 100 caratteri")
     @Schema(example = "Mario Rossi")
     private String fullName;
+    @Size(max = 100, message = "Il nome dell'azienda non può superare i 100 caratteri")
     @Schema(example = "Athena Inc.")
     private String companyName;
 

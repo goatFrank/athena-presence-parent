@@ -19,6 +19,7 @@ public class InviteLinkRequest {
     private Integer expiresInDays;
     
     @Min(value = 1, message = "Max uses must be at least 1")
+    @Max(value = 1000, message = "Max uses cannot exceed 1000")
     private Integer maxUses;
     private UUID managerId;
     private Long departmentId;

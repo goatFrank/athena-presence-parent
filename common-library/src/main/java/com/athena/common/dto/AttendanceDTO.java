@@ -2,6 +2,7 @@ package com.athena.common.dto;
 
 import com.athena.common.enums.WorkMode;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,5 +32,6 @@ public class AttendanceDTO {
     @NotNull
     private WorkMode status;    // OFFICE, REMOTE, etc.
 
+    @Size(max = 500, message = "Note cannot exceed 500 characters")
     private String note;        // Note opzionali (es. "Al mattino fuori sede")
 }
