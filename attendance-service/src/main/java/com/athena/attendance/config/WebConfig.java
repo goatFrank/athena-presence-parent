@@ -14,6 +14,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(rateLimitInterceptor)
-                .addPathPatterns("/api/v1/invites/validate/**");
+                .addPathPatterns("/api/v1/invites/validate/**", "/api/v1/profiles/setup", "/api/v1/profiles/me/avatar");
     }
 }
