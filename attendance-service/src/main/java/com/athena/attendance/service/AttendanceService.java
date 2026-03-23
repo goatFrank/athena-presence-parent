@@ -7,6 +7,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface AttendanceService {
 
     /**
@@ -47,8 +50,8 @@ public interface AttendanceService {
      */
     ResponseDTO<Attendance> getMyTodayStatus(UUID userId);
 
-    ResponseDTO<List<com.athena.common.dto.TeamColleagueDTO>> getTeamOverview(UUID userId, String filter, String search,
-            LocalDate date);
+    ResponseDTO<Page<com.athena.common.dto.TeamColleagueDTO>> getTeamOverview(UUID userId, String filter, String search,
+            LocalDate date, Pageable pageable);
 
     /**
      * Cancella una prenotazione specifica.

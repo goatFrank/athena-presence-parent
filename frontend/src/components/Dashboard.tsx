@@ -11,7 +11,13 @@ const Dashboard: React.FC = () => {
     const { t, i18n } = useTranslation();
     const [userName, setUserName] = useState<string>('');
     const [colleagues, setColleagues] = useState<any[]>([]);
-    const [colleagueFilter, setColleagueFilter] = useState<'all' | 'office' | 'remote'>('all');
+    const [colleagueFilter, setColleagueFilter] = useState<'all' | 'office' | 'remote' | 'leave' | 'unmarked'>('all');
+    const [teamPage, setTeamPage] = useState(0);
+    const teamPageSize = 10;
+
+    useEffect(() => {
+        setTeamPage(0);
+    }, [colleagueFilter]);
     const [debugInfo, setDebugInfo] = useState<string>('');
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [userTenantId, setUserTenantId] = useState<number | null>(null);
@@ -192,7 +198,8 @@ const Dashboard: React.FC = () => {
 
                     if (res.status === 200) {
                         const td = res.data;
-                        attendances = td.payload || [];
+                        const payloadData = Array.isArray(td.payload) ? td.payload : (td.payload?.content || []);
+                        attendances = payloadData;
                     } else {
                         setDebugInfo((prev: string) => prev + `\nAPI Fetch Failed for team overview: ${res.status}`);
                     }
@@ -597,34 +604,64 @@ const Dashboard: React.FC = () => {
                         {debugInfo && (
                             <div className="text-xs break-all text-red-500 bg-red-100 dark:bg-red-900/30 p-2 rounded-lg mb-2">DEBUG: {debugInfo}</div>
                         )}
-                        {colleagues
-                            .filter(c => colleagueFilter === 'all' || (c.work_status === 'office' && colleagueFilter === 'office') || (c.work_status === 'remote' && colleagueFilter === 'remote') || (c.work_status === 'unmarked' && colleagueFilter === ('unmarked' as any)))
-                            .map(colleague => {
-                                const isAbsent = colleague.work_status === 'leave' || colleague.work_status === 'absent';
-                                const isUnmarked = colleague.work_status === 'unmarked';
-                                return (
-                                    <div key={colleague.id} className={`flex items-center gap-3 group cursor-pointer p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-600 hover:shadow-sm ${colleague.work_status === 'remote' ? 'opacity-90' : isAbsent ? 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0' : isUnmarked ? 'opacity-60' : ''}`}>
-                                        <div className="relative">
-                                            <img alt={`${colleague.full_name} avatar`} className={`w-11 h-11 rounded-2xl object-cover ${colleague.work_status === 'office' ? 'ring-2 ring-white dark:ring-slate-700' : ''}`} src={colleague.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(colleague.full_name)}&background=random`} />
-                                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full flex items-center justify-center ${colleague.work_status === 'office' ? 'bg-green-500' : colleague.work_status === 'remote' ? 'bg-amber-400' : isUnmarked ? 'bg-slate-300' : 'bg-slate-400'}`}>
-                                                {colleague.work_status === 'office' && <div className="w-1.5 h-1.5 bg-white rounded-full opacity-50"></div>}
+                        {(() => {
+                            const filteredColleagues = colleagues.filter(c => colleagueFilter === 'all' || (c.work_status === 'office' && colleagueFilter === 'office') || (c.work_status === 'remote' && colleagueFilter === 'remote') || (c.work_status === 'unmarked' && colleagueFilter === ('unmarked' as any)));
+                            const displayedColleagues = filteredColleagues.slice(teamPage * teamPageSize, (teamPage + 1) * teamPageSize);
+                            const totalPages = Math.ceil(filteredColleagues.length / teamPageSize) || 1;
+
+                            return (
+                                <>
+                                    {displayedColleagues.map(colleague => {
+                                        const isAbsent = colleague.work_status === 'leave' || colleague.work_status === 'absent';
+                                        const isUnmarked = colleague.work_status === 'unmarked';
+                                        return (
+                                            <div key={colleague.id} className={`flex items-center gap-3 group cursor-pointer p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-600 hover:shadow-sm ${colleague.work_status === 'remote' ? 'opacity-90' : isAbsent ? 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0' : isUnmarked ? 'opacity-60' : ''}`}>
+                                                <div className="relative">
+                                                    <img alt={`${colleague.full_name} avatar`} className={`w-11 h-11 rounded-2xl object-cover ${colleague.work_status === 'office' ? 'ring-2 ring-white dark:ring-slate-700' : ''}`} src={colleague.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(colleague.full_name)}&background=random`} />
+                                                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full flex items-center justify-center ${colleague.work_status === 'office' ? 'bg-green-500' : colleague.work_status === 'remote' ? 'bg-amber-400' : isUnmarked ? 'bg-slate-300' : 'bg-slate-400'}`}>
+                                                        {colleague.work_status === 'office' && <div className="w-1.5 h-1.5 bg-white rounded-full opacity-50"></div>}
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`text-sm font-bold truncate ${isAbsent || isUnmarked ? 'text-slate-400' : 'text-[#0e121b] dark:text-white'}`}>{colleague.full_name}</p>
+                                                    <p className={`text-xs truncate font-medium ${colleague.work_status === 'office' ? 'text-blue-500' : colleague.work_status === 'remote' ? 'text-amber-500' : 'text-slate-400'}`}>
+                                                        {colleague.work_status === 'office' ? t('in_office_status') : colleague.work_status === 'remote' ? t('remote_status') : isUnmarked ? (i18n.language === 'it' ? 'Non inserita' : 'Not marked') : t('unavailable')} • {colleague.location_details}
+                                                    </p>
+                                                </div>
                                             </div>
+                                        );
+                                    })}
+                                    {filteredColleagues.length === 0 && (
+                                        <div className="text-center py-8 text-[#4e6797] dark:text-slate-400 text-sm">
+                                            {t('no_colleagues_yet', 'Nessun collega qui...')}
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={`text-sm font-bold truncate ${isAbsent || isUnmarked ? 'text-slate-400' : 'text-[#0e121b] dark:text-white'}`}>{colleague.full_name}</p>
-                                            <p className={`text-xs truncate font-medium ${colleague.work_status === 'office' ? 'text-blue-500' : colleague.work_status === 'remote' ? 'text-amber-500' : 'text-slate-400'}`}>
-                                                {colleague.work_status === 'office' ? t('in_office_status') : colleague.work_status === 'remote' ? t('remote_status') : isUnmarked ? (i18n.language === 'it' ? 'Non inserita' : 'Not marked') : t('unavailable')} • {colleague.location_details}
-                                            </p>
+                                    )}
+                                    {totalPages > 1 && (
+                                        <div className="mt-6 flex justify-center items-center gap-3 pb-2">
+                                            <button
+                                                onClick={() => setTeamPage(p => Math.max(0, p - 1))}
+                                                disabled={teamPage === 0}
+                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 disabled:opacity-50 disabled:hover:text-slate-500 disabled:cursor-not-allowed transition-all shadow-sm"
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                                            </button>
+                                            
+                                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                                                {teamPage + 1} / {totalPages}
+                                            </span>
+
+                                            <button
+                                                onClick={() => setTeamPage(p => Math.min(totalPages - 1, p + 1))}
+                                                disabled={teamPage === totalPages - 1}
+                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 disabled:opacity-50 disabled:hover:text-slate-500 disabled:cursor-not-allowed transition-all shadow-sm"
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                                            </button>
                                         </div>
-                                    </div>
-                                );
-                            })
-                        }
-                        {colleagues.length === 0 && (
-                            <div className="text-center py-8 text-[#4e6797] dark:text-slate-400 text-sm">
-                                {t('no_colleagues_yet', 'Nessun collega qui...')}
-                            </div>
-                        )}
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
 
                 </aside>

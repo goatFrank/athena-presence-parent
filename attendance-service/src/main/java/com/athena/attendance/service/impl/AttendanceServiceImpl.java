@@ -314,12 +314,12 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         @Override
-        public ResponseDTO<List<com.athena.common.dto.TeamColleagueDTO>> getTeamOverview(UUID userId, String filter,
-                        String search, LocalDate date) {
+        public ResponseDTO<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>> getTeamOverview(UUID userId, String filter,
+                        String search, LocalDate date, org.springframework.data.domain.Pageable pageable) {
                 // 1. Get the current user's profile to know tenant and department
                 var meProfileOpt = profileRepository.findById(userId);
                 if (meProfileOpt.isEmpty()) {
-                        return ResponseDTO.<List<com.athena.common.dto.TeamColleagueDTO>>builder()
+                        return ResponseDTO.<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>>builder()
                                         .message("User profile not found")
                                         .status(ResponseStatus.NOT_FOUND)
                                         .build();
@@ -327,25 +327,26 @@ public class AttendanceServiceImpl implements AttendanceService {
                 var me = meProfileOpt.get();
 
                 // 2. Get all other profiles in the same tenant and department
-                List<com.athena.attendance.entity.Profile> colleagues;
+                org.springframework.data.domain.Page<com.athena.attendance.entity.Profile> colleaguesPage;
                 boolean isSuperAdmin = me.getRole() != null && me.getRole().getId().equals(1L);
 
                 if (me.getTenantId() != null && me.getDepartmentId() != null) {
-                        colleagues = profileRepository.findByTenantIdAndDepartmentId(me.getTenantId(),
-                                        me.getDepartmentId());
+                        colleaguesPage = profileRepository.findByTenantIdAndDepartmentId(me.getTenantId(),
+                                        me.getDepartmentId(), pageable);
                 } else if (me.getTenantId() != null) {
-                        colleagues = profileRepository.findByTenantId(me.getTenantId());
+                        colleaguesPage = profileRepository.findByTenantId(me.getTenantId(), pageable);
                 } else if (isSuperAdmin) {
-                        colleagues = profileRepository.findAll();
+                        colleaguesPage = profileRepository.findAll(pageable);
                 } else {
                         // User without tenant and not Superadmin should see nothing
-                        return ResponseDTO.<List<com.athena.common.dto.TeamColleagueDTO>>builder()
+                        return ResponseDTO.<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>>builder()
                                         .message("Team overview retrieved successfully")
-                                        .payload(java.util.Collections.emptyList())
+                                        .payload(org.springframework.data.domain.Page.empty(pageable))
                                         .status(ResponseStatus.SUCCESS)
                                         .build();
                 }
 
+                List<com.athena.attendance.entity.Profile> colleagues = new java.util.ArrayList<>(colleaguesPage.getContent());
                 // Remove self
                 colleagues.removeIf(p -> p.getId().equals(userId));
 
@@ -422,9 +423,12 @@ public class AttendanceServiceImpl implements AttendanceService {
                         return matchesFilter && matchesSearch;
                 }).toList();
 
-                return ResponseDTO.<List<com.athena.common.dto.TeamColleagueDTO>>builder()
+                org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO> pageResult = 
+                        new org.springframework.data.domain.PageImpl<>(result, pageable, colleaguesPage.getTotalElements());
+
+                return ResponseDTO.<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>>builder()
                                 .message("Team overview retrieved successfully")
-                                .payload(result)
+                                .payload(pageResult)
                                 .status(ResponseStatus.SUCCESS)
                                 .build();
         }

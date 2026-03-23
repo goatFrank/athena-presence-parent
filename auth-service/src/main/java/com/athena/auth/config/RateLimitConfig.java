@@ -1,5 +1,6 @@
 package com.athena.auth.config;
 
+import io.github.bucket4j.distributed.ExpirationAfterWriteStrategy;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
 import io.github.bucket4j.redis.lettuce.cas.LettuceBasedProxyManager;
 import io.lettuce.core.RedisClient;
@@ -19,12 +20,19 @@ public class RateLimitConfig {
     @Bean(destroyMethod = "shutdown")
     public RedisClient redisClient(
             @Value("${spring.data.redis.host:localhost}") String redisHost,
-            @Value("${spring.data.redis.port:6379}") int redisPort) {
-        return RedisClient.create(RedisURI.builder()
+            @Value("${spring.data.redis.port:6379}") int redisPort,
+            @Value("${spring.data.redis.password:}") String redisPassword) {
+            
+        io.lettuce.core.RedisURI.Builder builder = io.lettuce.core.RedisURI.builder()
                 .withHost(redisHost)
                 .withPort(redisPort)
-                .withTimeout(Duration.ofSeconds(10))
-                .build());
+                .withTimeout(Duration.ofSeconds(10));
+                
+        if (redisPassword != null && !redisPassword.trim().isEmpty()) {
+            builder.withPassword(redisPassword.toCharArray());
+        }
+        
+        return RedisClient.create(builder.build());
     }
 
     @Bean
@@ -33,6 +41,7 @@ public class RateLimitConfig {
                 RedisCodec.of(ByteArrayCodec.INSTANCE, ByteArrayCodec.INSTANCE));
         
         return LettuceBasedProxyManager.builderFor(connection.async())
+                .withExpirationStrategy(ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(Duration.ofSeconds(10)))
                 .build();
     }
 }

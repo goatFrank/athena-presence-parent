@@ -22,6 +22,13 @@ const Team: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [page, setPage] = useState(0);
+    const pageSize = 12;
+
+    // Reset page to 0 when filters change
+    useEffect(() => {
+        setPage(0);
+    }, [filter, searchQuery, selectedDate]);
 
     // Date formatting and manipulation helpers
     const getFormattedDate = (date: Date) => {
@@ -81,7 +88,8 @@ const Team: React.FC = () => {
 
                     // The backend now returns a properly formatted list of TeamColleagueDTO
                     if (resData.payload) {
-                        const mappedColleagues = resData.payload.map((c: any) => ({
+                        const payloadData = Array.isArray(resData.payload) ? resData.payload : (resData.payload?.content || []);
+                        const mappedColleagues = payloadData.map((c: any) => ({
                             id: c.id,
                             full_name: c.fullName || 'Utente',
                             avatar_url: c.avatarUrl || '',
@@ -128,6 +136,8 @@ const Team: React.FC = () => {
     // Let's do a quick independent fetch for the counts to keep the UI perfect.
 
     const filteredColleagues = colleagues;
+    const displayedColleagues = filteredColleagues.slice(page * pageSize, (page + 1) * pageSize);
+    const totalPages = Math.ceil(filteredColleagues.length / pageSize) || 1;
 
     // Use a separate state for total counts so they don't break when filtered
     const [counts, setCounts] = useState({ office: 0, remote: 0, leave: 0, unmarked: 0, total: 1 });
@@ -364,7 +374,7 @@ const Team: React.FC = () => {
                                 <p className="text-sm text-[#4e6797] mt-1">{t('try_change_filters')}</p>
                             </div>
                         ) : (
-                            filteredColleagues.map(colleague => (
+                            displayedColleagues.map(colleague => (
                                 <div key={colleague.id} className={`group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-transparent 
                                     ${colleague.work_status === 'office' ? 'hover:border-purple-500/20' : colleague.work_status === 'remote' ? 'hover:border-sky-500/20' : colleague.work_status === 'leave' ? 'hover:border-red-500/20 opacity-80 hover:opacity-100' : 'hover:border-slate-300 dark:hover:border-slate-600'}`}>
 
@@ -431,7 +441,60 @@ const Team: React.FC = () => {
                             ))
                         )}
                     </div>
+                    
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="mt-8 flex justify-center items-center gap-2">
+                            <button
+                                onClick={() => setPage(p => Math.max(0, p - 1))}
+                                disabled={page === 0}
+                                className="p-2 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                            </button>
+                            
+                            <div className="flex gap-1 flex-wrap justify-center">
+                                {Array.from({ length: totalPages }, (_, i) => {
+                                    // Show first, last, and pages around current page
+                                    if (
+                                        i === 0 || 
+                                        i === totalPages - 1 || 
+                                        (i >= page - 1 && i <= page + 1)
+                                    ) {
+                                        return (
+                                            <button
+                                                key={i}
+                                                onClick={() => setPage(i)}
+                                                className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+                                                    page === i 
+                                                        ? 'bg-indigo-600 text-white shadow-md' 
+                                                        : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                }`}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        );
+                                    } else if (
+                                        i === page - 2 || 
+                                        i === page + 2
+                                    ) {
+                                        return <span key={i} className="w-10 h-10 flex items-center justify-center text-slate-400">...</span>;
+                                    }
+                                    return null;
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={page === totalPages - 1}
+                                className="p-2 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                            </button>
+                        </div>
+                    )}
                 </main>
+
                 <Footer />
             </div>
         </div>

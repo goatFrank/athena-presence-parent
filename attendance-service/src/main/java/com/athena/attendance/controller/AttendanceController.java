@@ -94,14 +94,15 @@ public class AttendanceController {
 
     @GetMapping("/team-overview")
     @Operation(summary = "Recupera la visualizzazione del team filtrata")
-    public ResponseEntity<ResponseDTO<List<com.athena.common.dto.TeamColleagueDTO>>> getTeamOverview(
+    public ResponseEntity<ResponseDTO<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>>> getTeamOverview(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false, defaultValue = "all") String filter,
             @RequestParam(required = false, defaultValue = "") String search,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @org.springframework.data.web.PageableDefault(size = 500) org.springframework.data.domain.Pageable pageable) {
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        ResponseDTO<List<com.athena.common.dto.TeamColleagueDTO>> response = attendanceService
-                .getTeamOverview(authenticatedUserId, filter, search, date);
+        ResponseDTO<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>> response = attendanceService
+                .getTeamOverview(authenticatedUserId, filter, search, date, pageable);
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 

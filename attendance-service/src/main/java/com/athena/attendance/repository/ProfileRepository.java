@@ -18,6 +18,8 @@ public interface ProfileRepository extends JpaRepository<Profile, UUID> {
 
     List<Profile> findByTenantId(Long tenantId);
 
+    Page<Profile> findByTenantIdAndDepartmentId(Long tenantId, Long departmentId, Pageable pageable);
+
     List<Profile> findByTenantIdAndDepartmentId(Long tenantId, Long departmentId);
 
     int countByTenantIdAndDepartmentId(Long tenantId, Long departmentId);
