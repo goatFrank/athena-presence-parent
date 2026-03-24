@@ -57,8 +57,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         if (adminProfile.getRole() == null || 
             (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L) && 
-             !adminProfile.getRole().getId().equals(3L))) {
+             !adminProfile.getRole().getId().equals(2L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono creare dipartimenti");
         }
@@ -80,8 +79,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         if (adminProfile.getRole() == null || 
             (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L) && 
-             !adminProfile.getRole().getId().equals(3L))) {
+             !adminProfile.getRole().getId().equals(2L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono rinominare dipartimenti");
         }
@@ -109,8 +107,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         if (adminProfile.getRole() == null || 
             (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L) && 
-             !adminProfile.getRole().getId().equals(3L))) {
+             !adminProfile.getRole().getId().equals(2L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono eliminare dipartimenti");
         }
@@ -142,8 +139,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         if (adminProfile.getRole() == null || 
             (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L) && 
-             !adminProfile.getRole().getId().equals(3L))) {
+             !adminProfile.getRole().getId().equals(2L))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono assegnare utenti");
         }

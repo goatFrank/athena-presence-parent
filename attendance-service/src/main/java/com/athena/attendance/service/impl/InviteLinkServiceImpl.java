@@ -112,8 +112,7 @@ public class InviteLinkServiceImpl implements InviteLinkService {
     private void validateAdminPrivileges(Profile adminProfile) {
         if (adminProfile.getRole() == null || 
             (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L) && 
-             !adminProfile.getRole().getId().equals(3L))) {
+             !adminProfile.getRole().getId().equals(2L))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non hai i permessi per generare link di invito");
         }
     }

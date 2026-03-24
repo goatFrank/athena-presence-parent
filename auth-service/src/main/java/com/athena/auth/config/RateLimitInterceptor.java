@@ -19,6 +19,9 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class RateLimitInterceptor implements HandlerInterceptor {
 
+    @org.springframework.beans.factory.annotation.Value("${app.rate-limit.trusted-proxies:127.0.0.1,0:0:0:0:0:0:0:1}")
+    private java.util.List<String> trustedProxies;
+
     private final ProxyManager<byte[]> proxyManager;
 
     private Supplier<BucketConfiguration> getBucketConfiguration() {
@@ -48,6 +51,19 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        return request.getRemoteAddr();
+        String remoteAddr = request.getRemoteAddr();
+        String xfHeader = request.getHeader("X-Forwarded-For");
+
+        String effectiveIp = remoteAddr;
+        if (xfHeader != null && !xfHeader.isEmpty() && isTrustedProxy(remoteAddr)) {
+            effectiveIp = xfHeader.split(",")[0].trim();
+        }
+
+        String principalName = request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "anon";
+        return effectiveIp + "-" + principalName;
+    }
+
+    private boolean isTrustedProxy(String ip) {
+        return trustedProxies.stream().anyMatch(proxy -> proxy.equals(ip) || proxy.equals("*"));
     }
 }

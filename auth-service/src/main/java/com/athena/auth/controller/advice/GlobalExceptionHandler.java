@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity
                 .status(exc.getStatusCode())
-                .body(Map.of("message", "Errore di autenticazione: " + exc.getStatusText()));
+                .body(Map.of("message", "Errore durante l'operazione richiesta. Riprovare."));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
