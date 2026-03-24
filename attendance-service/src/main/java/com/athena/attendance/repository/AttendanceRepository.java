@@ -17,6 +17,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         // (usato per decidere se fare insert o update)
         Optional<Attendance> findByUserIdAndWorkDate(UUID userId, LocalDate workDate);
 
+        List<Attendance> findByUserIdInAndWorkDate(java.util.Collection<UUID> userIds, LocalDate workDate);
+
         // Trova tutte le presenze di un'azienda per una data specifica
         List<Attendance> findByTenantIdAndWorkDate(Long tenantId, LocalDate workDate);
 

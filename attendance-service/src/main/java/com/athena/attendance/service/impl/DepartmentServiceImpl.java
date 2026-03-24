@@ -4,6 +4,7 @@ import com.athena.attendance.entity.Department;
 import com.athena.attendance.repository.DepartmentRepository;
 import com.athena.attendance.service.DepartmentService;
 import com.athena.common.dto.DepartmentDTO;
+import com.athena.common.constants.RoleConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +21,20 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public List<DepartmentDTO> getAllDepartments() {
-        return departmentRepository.findAll().stream()
-                .map(this::mapToDTO)
+        List<Department> depts = departmentRepository.findAll();
+        
+        // Batch fetch all tenants to avoid N+1
+        java.util.Set<Long> tenantIds = depts.stream()
+                .map(Department::getTenantId)
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+        
+        java.util.Map<Long, String> tenantNameMap = tenantRepository.findAllById(tenantIds).stream()
+                .collect(java.util.stream.Collectors.toMap(com.athena.attendance.entity.Tenant::getId, 
+                        com.athena.attendance.entity.Tenant::getName));
+
+        return depts.stream()
+                .map(dept -> mapToDTO(dept, tenantNameMap.get(dept.getTenantId())))
                 .collect(Collectors.toList());
     }
 
@@ -31,20 +44,24 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "User profile not found"));
 
-        // Se è Superadmin (Role ID: 1), può vedere tutto o filtrare per tenant passato
-        if (userProfile.getRole() != null && userProfile.getRole().getId().equals(1L)) {
+        if (userProfile.getRole() != null && userProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
             if (tenantId != null) {
+                String tenantName = tenantRepository.findById(tenantId)
+                        .map(com.athena.attendance.entity.Tenant::getName)
+                        .orElse("Unknown Tenant");
                 return departmentRepository.findByTenantId(tenantId).stream()
-                        .map(this::mapToDTO)
+                        .map(dept -> mapToDTO(dept, tenantName))
                         .collect(Collectors.toList());
             }
             return getAllDepartments();
         }
 
-        // Se non è Superadmin, vede SOLO i dipartimenti del proprio tenant
         Long effectiveTenantId = userProfile.getTenantId();
+        String tenantName = tenantRepository.findById(effectiveTenantId)
+                .map(com.athena.attendance.entity.Tenant::getName)
+                .orElse("Unknown Tenant");
         return departmentRepository.findByTenantId(effectiveTenantId).stream()
-                .map(this::mapToDTO)
+                .map(dept -> mapToDTO(dept, tenantName))
                 .collect(Collectors.toList());
     }
 
@@ -56,8 +73,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
         if (adminProfile.getRole() == null || 
-            (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L))) {
+            (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 
+             !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono creare dipartimenti");
         }
@@ -78,8 +95,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
         if (adminProfile.getRole() == null || 
-            (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L))) {
+            (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 
+             !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono rinominare dipartimenti");
         }
@@ -88,7 +105,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Department not found"));
 
-        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(1L)) {
+        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
         }
@@ -106,8 +123,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
         if (adminProfile.getRole() == null || 
-            (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L))) {
+            (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 
+             !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono eliminare dipartimenti");
         }
@@ -116,7 +133,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Department not found"));
 
-        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(1L)) {
+        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
         }
@@ -138,8 +155,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
 
         if (adminProfile.getRole() == null || 
-            (!adminProfile.getRole().getId().equals(1L) && 
-             !adminProfile.getRole().getId().equals(2L))) {
+            (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 
+             !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono assegnare utenti");
         }
@@ -148,7 +165,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Department not found"));
 
-        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(1L)) {
+        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
         }
@@ -175,7 +192,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         // Validate all requested profiles belong to the same tenant (unless superadmin)
-        boolean isSuperadmin = adminProfile.getRole().getId().equals(1L);
+        boolean isSuperadmin = adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN);
         for (com.athena.attendance.entity.Profile p : requestedProfiles) {
             if (!isSuperadmin && !p.getTenantId().equals(dept.getTenantId())) {
                 throw new org.springframework.web.server.ResponseStatusException(
@@ -203,11 +220,17 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     private DepartmentDTO mapToDTO(Department dept) {
-        String tenantName = "Unknown Tenant";
-        if (dept.getTenantId() != null) {
+        return mapToDTO(dept, null);
+    }
+
+    private DepartmentDTO mapToDTO(Department dept, String preFetchedTenantName) {
+        String tenantName = preFetchedTenantName;
+        if (tenantName == null && dept.getTenantId() != null) {
             tenantName = tenantRepository.findById(dept.getTenantId())
                     .map(com.athena.attendance.entity.Tenant::getName)
                     .orElse("Unknown Tenant");
+        } else if (tenantName == null) {
+            tenantName = "Unknown Tenant";
         }
 
         return DepartmentDTO.builder()

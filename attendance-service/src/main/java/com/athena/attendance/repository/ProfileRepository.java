@@ -22,6 +22,15 @@ public interface ProfileRepository extends JpaRepository<Profile, UUID> {
 
     List<Profile> findByTenantIdAndDepartmentId(Long tenantId, Long departmentId);
 
+    Page<Profile> findByTenantIdAndDepartmentIdAndIdNotAndFullNameContainingIgnoreCase(
+            Long tenantId, Long departmentId, UUID excludeId, String fullName, Pageable pageable);
+
+    Page<Profile> findByTenantIdAndIdNotAndFullNameContainingIgnoreCase(
+            Long tenantId, UUID excludeId, String fullName, Pageable pageable);
+
+    Page<Profile> findByIdNotAndFullNameContainingIgnoreCase(
+            UUID excludeId, String fullName, Pageable pageable);
+
     int countByTenantIdAndDepartmentId(Long tenantId, Long departmentId);
 
     @org.springframework.data.jpa.repository.Modifying

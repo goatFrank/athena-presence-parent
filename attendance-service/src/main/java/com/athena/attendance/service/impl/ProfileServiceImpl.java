@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import com.athena.common.constants.RoleConstants;
 
 import java.util.UUID;
 
@@ -28,6 +29,9 @@ public class ProfileServiceImpl implements ProfileService {
     private final AttendanceRepository attendanceRepository;
     private final InviteLinkRepository inviteLinkRepository;
 
+    private static final String ERR_PROFILE_NOT_FOUND = "Profile not found for user: ";
+    private static final String ERR_ADMIN_PROFILE_NOT_FOUND = "Admin profile not found";
+
     @org.springframework.beans.factory.annotation.Value("${supabase.url}")
     private String supabaseUrl;
 
@@ -35,7 +39,7 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileDTO getProfile(UUID userId) {
         Profile profile = profileRepository.findById(userId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "Profile not found for user: " + userId));
+                        org.springframework.http.HttpStatus.NOT_FOUND, ERR_PROFILE_NOT_FOUND + userId));
 
         return mapToDTO(profile);
     }
@@ -44,39 +48,70 @@ public class ProfileServiceImpl implements ProfileService {
     public Page<ProfileDTO> getProfilesByTenant(Long tenantId, UUID adminUserId, Pageable pageable) {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+                        org.springframework.http.HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
 
         if (adminProfile.getRole() == null
-                || (!adminProfile.getRole().getId().equals(1L)
-                        && !adminProfile.getRole().getId().equals(2L)
-                        && !adminProfile.getRole().getId().equals(3L))) {
+                || (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)
+                        && !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT)
+                        && !adminProfile.getRole().getId().equals(RoleConstants.MANAGER))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono vedere i profili del tenant");
         }
 
-        if (!adminProfile.getRole().getId().equals(1L) && !adminProfile.getTenantId().equals(tenantId)) {
+        if (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && !adminProfile.getTenantId().equals(tenantId)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Non puoi vedere i profili di un altro tenant");
         }
 
-        return profileRepository.findByTenantId(tenantId, pageable)
-                .map(this::mapToDTO);
+        Page<Profile> profiles = profileRepository.findByTenantId(tenantId, pageable);
+        return mapPageToDTO(profiles);
     }
 
     @Override
     public Page<ProfileDTO> getAllProfiles(java.util.UUID adminUserId, Pageable pageable) {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+                        org.springframework.http.HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
 
         if (adminProfile.getRole() == null || !adminProfile.getRole().getId().equals(1L)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo i superadmin possono vedere tutti i profili");
         }
 
-        return profileRepository.findAll(pageable)
-                .map(this::mapToDTO);
+        Page<Profile> profiles = profileRepository.findAll(pageable);
+        return mapPageToDTO(profiles);
+    }
+
+    private Page<ProfileDTO> mapPageToDTO(Page<Profile> profiles) {
+        // Collect all IDs needed for lookups
+        java.util.Set<Long> tenantIds = new java.util.HashSet<>();
+        java.util.Set<Long> deptIds = new java.util.HashSet<>();
+        java.util.Set<Long> locIds = new java.util.HashSet<>();
+
+        for (Profile p : profiles) {
+            if (p.getTenantId() != null) tenantIds.add(p.getTenantId());
+            if (p.getDepartmentId() != null) deptIds.add(p.getDepartmentId());
+            if (p.getLocationId() != null) locIds.add(p.getLocationId());
+        }
+
+        // Bulk fetch all relevant entities
+        java.util.Map<Long, Tenant> tenantMap = tenantIds.isEmpty() ? java.util.Collections.emptyMap() :
+                tenantRepository.findAllById(tenantIds).stream()
+                        .collect(java.util.stream.Collectors.toMap(Tenant::getId, java.util.function.Function.identity()));
+
+        java.util.Map<Long, Department> deptMap = deptIds.isEmpty() ? java.util.Collections.emptyMap() :
+                departmentRepository.findAllById(deptIds).stream()
+                        .collect(java.util.stream.Collectors.toMap(Department::getId, java.util.function.Function.identity()));
+
+        java.util.Map<Long, Location> locMap = locIds.isEmpty() ? java.util.Collections.emptyMap() :
+                locationRepository.findAllById(locIds).stream()
+                        .collect(java.util.stream.Collectors.toMap(Location::getId, java.util.function.Function.identity()));
+
+        return profiles.map(p -> mapToDTO(p, 
+                tenantMap.get(p.getTenantId()), 
+                deptMap.get(p.getDepartmentId()), 
+                locMap.get(p.getLocationId())));
     }
 
     @Override
@@ -84,11 +119,11 @@ public class ProfileServiceImpl implements ProfileService {
     public void deleteProfile(java.util.UUID profileId, java.util.UUID adminUserId) {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
+                        org.springframework.http.HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
 
         if (adminProfile.getRole() == null
                 || (!adminProfile.getRole().getId().equals(1L)
-                        && !adminProfile.getRole().getId().equals(2L))) {
+                        && !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono eliminare dipendenti");
@@ -119,28 +154,41 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     private ProfileDTO mapToDTO(Profile profile) {
+        return mapToDTO(profile, null, null, null);
+    }
+
+    private ProfileDTO mapToDTO(Profile profile, Tenant preFetchedTenant, Department preFetchedDept, Location preFetchedLoc) {
         String tenantName = "Unknown Tenant";
         String tenantStatus = null;
-        if (profile.getTenantId() != null) {
-            Tenant tenant = tenantRepository.findById(profile.getTenantId()).orElse(null);
-            if (tenant != null) {
-                tenantName = tenant.getName();
-                tenantStatus = tenant.getStatus() != null ? tenant.getStatus().name() : null;
-            }
+        
+        Tenant tenant = preFetchedTenant;
+        if (tenant == null && profile.getTenantId() != null) {
+            tenant = tenantRepository.findById(profile.getTenantId()).orElse(null);
+        }
+        
+        if (tenant != null) {
+            tenantName = tenant.getName();
+            tenantStatus = tenant.getStatus() != null ? tenant.getStatus().name() : null;
         }
 
         String departmentName = "Unknown Department";
-        if (profile.getDepartmentId() != null) {
-            departmentName = departmentRepository.findById(profile.getDepartmentId())
-                    .map(Department::getName)
-                    .orElse("Unknown Department");
+        Department dept = preFetchedDept;
+        if (dept == null && profile.getDepartmentId() != null) {
+            dept = departmentRepository.findById(profile.getDepartmentId()).orElse(null);
+        }
+        
+        if (dept != null) {
+            departmentName = dept.getName();
         }
 
         String locationName = "Unknown Location";
-        if (profile.getLocationId() != null) {
-            locationName = locationRepository.findById(profile.getLocationId())
-                    .map(com.athena.attendance.entity.Location::getName)
-                    .orElse("Unknown Location");
+        Location loc = preFetchedLoc;
+        if (loc == null && profile.getLocationId() != null) {
+            loc = locationRepository.findById(profile.getLocationId()).orElse(null);
+        }
+        
+        if (loc != null) {
+            locationName = loc.getName();
         }
 
         return ProfileDTO.builder()
@@ -168,7 +216,7 @@ public class ProfileServiceImpl implements ProfileService {
     public String updateAvatar(UUID userId, String avatarUrl) {
         Profile profile = profileRepository.findById(userId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "Profile not found for user: " + userId));
+                        org.springframework.http.HttpStatus.NOT_FOUND, ERR_PROFILE_NOT_FOUND + userId));
 
         // --- Security Check: SSRF & Redirect Prevention ---
         try {
@@ -201,7 +249,7 @@ public class ProfileServiceImpl implements ProfileService {
     public void updatePhone(UUID userId, String phone) {
         Profile profile = profileRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Profile not found for user: " + userId));
+                        HttpStatus.NOT_FOUND, ERR_PROFILE_NOT_FOUND + userId));
 
         profile.setProfileCellphone(phone == null || phone.isBlank() ? null : phone.trim());
         profileRepository.save(profile);
@@ -231,7 +279,7 @@ public class ProfileServiceImpl implements ProfileService {
             profile.setDepartmentId(invite.getDepartmentId());
 
             // Assign EMPLOYEE role (ID 4)
-            Role employeeRole = roleRepository.findById(4L)
+            Role employeeRole = roleRepository.findById(RoleConstants.EMPLOYEE)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                             "Role EMPLOYEE not found"));
             profile.setRole(employeeRole);
@@ -259,7 +307,7 @@ public class ProfileServiceImpl implements ProfileService {
             profile.setTenantId(tenant.getId());
 
             // Assign ADMIN_TENANT role (ID 2)
-            Role adminRole = roleRepository.findById(2L)
+            Role adminRole = roleRepository.findById(RoleConstants.ADMIN_TENANT)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                             "Role AMMINISTRATORE_TENANT not found"));
             profile.setRole(adminRole);

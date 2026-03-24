@@ -18,10 +18,7 @@ import java.util.UUID;
 public class AttendanceDTO {
     private Long id;
 
-    @NotNull
     private UUID userId;        // ID dell'utente (da Supabase Auth)
-
-    @NotNull
     private Long tenantId;      // ID dell'azienda/tenant
 
     private Long departmentId;  // ID del dipartimento
