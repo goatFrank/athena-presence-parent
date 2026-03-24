@@ -25,4 +25,7 @@ public class ProfileDTO {
     private String profileCellphone;
     private String tenantStatus;
     private UUID managerId;
+    private String avatarUrl;
+    private String roleDescription;
+    private Boolean allowOvertime;
 }

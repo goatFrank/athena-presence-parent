@@ -149,27 +149,14 @@ const Profile: React.FC = () => {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
 
-                // Fetch user profile
-                const { data: profileData, error: profileError } = await supabase
-                    .from('profiles')
-                    .select(`
-            id,
-            full_name,
-            avatar_url,
-            role_description,
-            profile_cellphone,
-            locations ( name ),
-            allow_overtime,
-            departments ( name )
-          `)
-                    .eq('id', user.id)
-                    .single();
-
-                if (profileError) {
-                    console.error("Error fetching profile:", profileError);
-                } else if (profileData) {
-                    const rawAvatarUrl = profileData.avatar_url;
-                    let finalAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.full_name || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`;
+                // Fetch user profile from Backend
+                const profileRes = await attendanceApi.get('/api/v1/profiles/me');
+                if (profileRes.status !== 200) {
+                    console.error("Error fetching profile from backend:", profileRes);
+                } else {
+                    const profileData = profileRes.data.payload;
+                    const rawAvatarUrl = profileData.avatarUrl;
+                    let finalAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.fullName || 'U')}&background=195de6&color=fff&rounded=true&bold=true&size=256`;
                     if (rawAvatarUrl) {
                         finalAvatarUrl = rawAvatarUrl.startsWith('http')
                             ? rawAvatarUrl
@@ -179,15 +166,15 @@ const Profile: React.FC = () => {
                     setProfile({
                         id: profileData.id,
                         email: user.email || '',
-                        fullName: profileData.full_name || user.email?.split('@')[0] || 'User',
+                        fullName: profileData.fullName || user.email?.split('@')[0] || 'User',
                         avatarUrl: finalAvatarUrl,
-                        department: (profileData.departments as any)?.name || 'Senza dipartimento',
-                        officeLocation: (profileData.locations as any)?.name || 'Senza sede assegnata',
-                        roleDescription: profileData.role_description || 'Team Member',
-                        phone: profileData.profile_cellphone || '',
-                        allowOvertime: !!profileData.allow_overtime
+                        department: profileData.departmentName || 'Senza dipartimento',
+                        officeLocation: profileData.locationName || 'Senza sede assegnata',
+                        roleDescription: profileData.roleDescription || 'Team Member',
+                        phone: profileData.profileCellphone || '',
+                        allowOvertime: !!profileData.allowOvertime
                     });
-                    setEditPhone(profileData.profile_cellphone || '');
+                    setEditPhone(profileData.profileCellphone || '');
                 }
 
                 // Fetch Work Statistics from backend

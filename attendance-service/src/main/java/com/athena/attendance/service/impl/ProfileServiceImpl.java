@@ -158,6 +158,9 @@ public class ProfileServiceImpl implements ProfileService {
                 .profileCellphone(profile.getProfileCellphone())
                 .tenantStatus(tenantStatus)
                 .managerId(profile.getManagerId())
+                .avatarUrl(profile.getAvatarUrl())
+                .roleDescription(profile.getRoleDescription())
+                .allowOvertime(profile.getAllowOvertime())
                 .build();
     }
 

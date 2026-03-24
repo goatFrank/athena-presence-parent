@@ -118,17 +118,18 @@ const Planning: React.FC = () => {
     // ── Fetch user profile (name, tenantId, departmentId) ──
     useEffect(() => {
         const fetchUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data } = await supabase.from('profiles').select('full_name, tenant_id, department_id, allow_overtime').eq('id', user.id);
-                if (data && data[0]) {
-                    setUserName(data[0].full_name || user.email?.split('@')[0] || 'User');
-                    setUserTenantId(data[0].tenant_id);
-                    setUserDeptId(data[0].department_id);
-                    setAllowOvertime(!!data[0].allow_overtime);
-                } else {
-                    setUserName(user.email?.split('@')[0] || 'User');
+            try {
+                const res = await attendanceApi.get('/api/v1/profiles/me');
+                if (res.data && res.data.payload) {
+                    const profile = res.data.payload;
+                    setUserName(profile.fullName || 'User');
+                    setUserTenantId(profile.tenantId);
+                    setUserDeptId(profile.departmentId);
+                    setAllowOvertime(!!profile.allowOvertime);
                 }
+            } catch (err) {
+                console.error("Failed to fetch profile", err);
+                setUserName('User');
             }
         };
         fetchUser();

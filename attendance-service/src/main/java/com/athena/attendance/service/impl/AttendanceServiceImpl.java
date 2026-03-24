@@ -81,8 +81,10 @@ public class AttendanceServiceImpl implements AttendanceService {
                 Attendance saved = repository.save(attendance);
 
                 // Invio dell'aggiornamento in tempo reale via WebSocket
-                String destination = String.format("/topic/team/%d/%d", saved.getTenantId(), saved.getDepartmentId());
-                messagingTemplate.convertAndSend(destination, toWebSocketDTO(saved));
+                if (saved.getDepartmentId() != null) {
+                    String destination = String.format("/topic/team/%d/%d", saved.getTenantId(), saved.getDepartmentId());
+                    messagingTemplate.convertAndSend(destination, toWebSocketDTO(saved));
+                }
 
                 return ResponseDTO.<Attendance>builder()
                                 .message("Attendance saved successfully")
@@ -331,16 +333,16 @@ public class AttendanceServiceImpl implements AttendanceService {
                 var me = meProfileOpt.get();
 
                 // 2. Get all other profiles in the same tenant and department
-                org.springframework.data.domain.Page<com.athena.attendance.entity.Profile> colleaguesPage;
+                List<com.athena.attendance.entity.Profile> colleagues;
                 boolean isSuperAdmin = me.getRole() != null && me.getRole().getId().equals(1L);
 
                 if (me.getTenantId() != null && me.getDepartmentId() != null) {
-                        colleaguesPage = profileRepository.findByTenantIdAndDepartmentId(me.getTenantId(),
-                                        me.getDepartmentId(), pageable);
+                        colleagues = profileRepository.findByTenantIdAndDepartmentId(me.getTenantId(),
+                                        me.getDepartmentId());
                 } else if (me.getTenantId() != null) {
-                        colleaguesPage = profileRepository.findByTenantId(me.getTenantId(), pageable);
+                        colleagues = profileRepository.findByTenantId(me.getTenantId());
                 } else if (isSuperAdmin) {
-                        colleaguesPage = profileRepository.findAll(pageable);
+                        colleagues = profileRepository.findAll();
                 } else {
                         // User without tenant and not Superadmin should see nothing
                         return ResponseDTO.<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>>builder()
@@ -350,8 +352,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         .build();
                 }
 
-                List<com.athena.attendance.entity.Profile> colleagues = new java.util.ArrayList<>(colleaguesPage.getContent());
                 // Remove self
+                colleagues = new java.util.ArrayList<>(colleagues);
                 colleagues.removeIf(p -> p.getId().equals(userId));
 
                 // 3. Get target date's attendances for everyone in the department
@@ -427,8 +429,17 @@ public class AttendanceServiceImpl implements AttendanceService {
                         return matchesFilter && matchesSearch;
                 }).toList();
 
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), result.size());
+                List<com.athena.common.dto.TeamColleagueDTO> pageContent;
+                if (start <= end) {
+                        pageContent = result.subList(start, end);
+                } else {
+                        pageContent = java.util.Collections.emptyList();
+                }
+
                 org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO> pageResult = 
-                        new org.springframework.data.domain.PageImpl<>(result, pageable, colleaguesPage.getTotalElements());
+                        new org.springframework.data.domain.PageImpl<>(pageContent, pageable, result.size());
 
                 return ResponseDTO.<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>>builder()
                                 .message("Team overview retrieved successfully")

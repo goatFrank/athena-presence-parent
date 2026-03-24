@@ -45,4 +45,7 @@ public class Profile {
 
     @Column(name = "manager_id")
     private UUID managerId;
+
+    @Column(name = "allow_overtime")
+    private Boolean allowOvertime;
 }
