@@ -83,7 +83,7 @@ public class ProfileController {
     public ResponseEntity<ResponseDTO<Page<ProfileDTO>>> getProfilesByTenant(
             @AuthenticationPrincipal Jwt jwt, 
             @org.springframework.web.bind.annotation.PathVariable Long tenantId,
-            Pageable pageable) {
+            @org.springframework.data.web.PageableDefault(size = 20) Pageable pageable) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         Page<ProfileDTO> profiles = profileService.getProfilesByTenant(tenantId, adminUserId, pageable);
         
@@ -98,7 +98,7 @@ public class ProfileController {
     @Operation(summary = "Recupera tutti i profili (solo superadmin)")
     public ResponseEntity<ResponseDTO<Page<ProfileDTO>>> getAllProfiles(
             @AuthenticationPrincipal Jwt jwt,
-            Pageable pageable) {
+            @org.springframework.data.web.PageableDefault(size = 20) Pageable pageable) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         Page<ProfileDTO> profiles = profileService.getAllProfiles(adminUserId, pageable);
 

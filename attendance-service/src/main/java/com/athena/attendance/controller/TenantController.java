@@ -29,7 +29,7 @@ public class TenantController {
     @Operation(summary = "Recupera la lista di tutti i tenant (solo superadmin)")
     public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getAllTenants(
             @AuthenticationPrincipal Jwt jwt,
-            Pageable pageable) {
+            @org.springframework.data.web.PageableDefault(size = 20) Pageable pageable) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         Page<TenantDTO> tenants = tenantService.getAllTenants(adminUserId, pageable);
         return ResponseEntity.ok(ResponseDTO.<Page<TenantDTO>>builder()
@@ -43,7 +43,7 @@ public class TenantController {
     @Operation(summary = "Recupera la lista dei tenant in attesa di approvazione (solo superadmin)")
     public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getPendingTenants(
             @AuthenticationPrincipal Jwt jwt,
-            Pageable pageable) {
+            @org.springframework.data.web.PageableDefault(size = 20) Pageable pageable) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         Page<TenantDTO> tenants = tenantService.getPendingTenants(adminUserId, pageable);
         return ResponseEntity.ok(ResponseDTO.<Page<TenantDTO>>builder()

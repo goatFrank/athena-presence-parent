@@ -62,7 +62,7 @@ public class AttendanceController {
     @Operation(summary = "Recupera lo storico delle presenze dell'utente loggato (paginato)")
     public ResponseEntity<ResponseDTO<org.springframework.data.domain.Page<Attendance>>> getMyHistory(
             @AuthenticationPrincipal Jwt jwt,
-            org.springframework.data.domain.Pageable pageable) {
+            @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
 
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
 
@@ -101,7 +101,7 @@ public class AttendanceController {
             @RequestParam(required = false, defaultValue = "all") String filter,
             @RequestParam(required = false, defaultValue = "") String search,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @org.springframework.data.web.PageableDefault(size = 500) org.springframework.data.domain.Pageable pageable) {
+            @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
         ResponseDTO<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>> response = attendanceService
                 .getTeamOverview(authenticatedUserId, filter, search, date, pageable);
