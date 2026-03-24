@@ -26,6 +26,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final com.athena.attendance.repository.RoleRepository roleRepository;
     private final com.athena.attendance.service.InviteLinkService inviteLinkService;
     private final AttendanceRepository attendanceRepository;
+    private final InviteLinkRepository inviteLinkRepository;
 
     @org.springframework.beans.factory.annotation.Value("${supabase.url}")
     private String supabaseUrl;
@@ -112,8 +113,9 @@ public class ProfileServiceImpl implements ProfileService {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.BAD_REQUEST, "Non puoi eliminare il tuo stesso profilo");
         }
-
         attendanceRepository.deleteByUserId(targetProfile.getId());
+        inviteLinkRepository.deleteBySenderIdOrManagerId(targetProfile.getId());
+        profileRepository.nullifyManagerId(targetProfile.getId());
         profileRepository.delete(targetProfile);
     }
 
@@ -190,6 +192,17 @@ public class ProfileServiceImpl implements ProfileService {
         profileRepository.save(profile);
 
         return avatarUrl;
+    }
+
+    @Override
+    @Transactional
+    public void updatePhone(UUID userId, String phone) {
+        Profile profile = profileRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Profile not found for user: " + userId));
+
+        profile.setProfileCellphone(phone == null || phone.isBlank() ? null : phone.trim());
+        profileRepository.save(profile);
     }
 
     @Override

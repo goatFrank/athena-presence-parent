@@ -50,8 +50,6 @@ const SuperadminManageTenants: React.FC = () => {
             fetchAllTenants();
         } catch (err: any) {
             console.error(`Error during status update:`, err);
-            const errorMessage = err.response?.data?.message || err.message || 'Server error';
-            alert(`Failed to update tenant status: ${errorMessage}`);
         }
     };
 

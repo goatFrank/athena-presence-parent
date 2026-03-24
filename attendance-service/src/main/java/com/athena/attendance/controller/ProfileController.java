@@ -52,6 +52,19 @@ public class ProfileController {
                 .build());
     }
 
+    @org.springframework.web.bind.annotation.PutMapping("/me/phone")
+    @Operation(summary = "Aggiorna il numero di telefono dell'utente loggato")
+    public ResponseEntity<ResponseDTO<Void>> updatePhone(
+            @AuthenticationPrincipal Jwt jwt,
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.PhoneUpdateRequest request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        profileService.updatePhone(userId, request.getPhone());
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("Phone number updated successfully")
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
     @org.springframework.web.bind.annotation.PostMapping("/setup")
     @Operation(summary = "Inizializza il profilo e il tenant dell'utente")
     public ResponseEntity<ResponseDTO<Void>> setupProfile(

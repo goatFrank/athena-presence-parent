@@ -13,5 +13,7 @@ public interface ProfileService {
 
     String updateAvatar(UUID userId, String avatarUrl);
 
+    void updatePhone(UUID userId, String phone);
+
     void createProfile(UUID userId, com.athena.common.dto.ProfileSetupRequest request);
 }

@@ -4,6 +4,7 @@ import com.athena.attendance.entity.Attendance;
 import com.athena.attendance.repository.AttendanceRepository;
 import com.athena.attendance.repository.ProfileRepository;
 import com.athena.attendance.service.AttendanceService;
+import com.athena.common.dto.AttendanceBroadcastDTO;
 import com.athena.common.dto.AttendanceDTO;
 import com.athena.common.dto.DashboardStatsDTO;
 import com.athena.common.dto.ResponseDTO;
@@ -81,7 +82,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
                 // Invio dell'aggiornamento in tempo reale via WebSocket
                 String destination = String.format("/topic/team/%d/%d", saved.getTenantId(), saved.getDepartmentId());
-                messagingTemplate.convertAndSend(destination, saved);
+                messagingTemplate.convertAndSend(destination, toWebSocketDTO(saved));
 
                 return ResponseDTO.<Attendance>builder()
                                 .message("Attendance saved successfully")
@@ -159,11 +160,11 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         @Override
-        public ResponseDTO<List<Attendance>> getUserHistory(UUID userId) {
-                List<Attendance> list = repository.findByUserIdOrderByWorkDateDesc(userId);
-                return ResponseDTO.<List<Attendance>>builder()
+        public ResponseDTO<org.springframework.data.domain.Page<Attendance>> getUserHistory(UUID userId, org.springframework.data.domain.Pageable pageable) {
+                org.springframework.data.domain.Page<Attendance> page = repository.findByUserIdOrderByWorkDateDesc(userId, pageable);
+                return ResponseDTO.<org.springframework.data.domain.Page<Attendance>>builder()
                                 .message("User history retrieved successfully")
-                                .payload(list)
+                                .payload(page)
                                 .status(ResponseStatus.SUCCESS)
                                 .build();
         }
@@ -294,17 +295,11 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         @Override
         @Transactional
-        public void deleteAttendance(Long id, UUID userId) {
-                Attendance attendance = repository.findById(id)
+        public void deleteAttendance(LocalDate workDate, UUID userId) {
+                Attendance attendance = repository.findByUserIdAndWorkDate(userId, workDate)
                                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                                                 org.springframework.http.HttpStatus.NOT_FOUND,
-                                                "Attendance not found with id: " + id));
-
-                if (!attendance.getUserId().equals(userId)) {
-                        throw new org.springframework.web.server.ResponseStatusException(
-                                        org.springframework.http.HttpStatus.FORBIDDEN,
-                                        "Unauthorized: You can only delete your own attendance records.");
-                }
+                                                "Nessuna prenotazione trovata per la data selezionata"));
 
                 // Cannot delete past days
                 if (attendance.getWorkDate().isBefore(LocalDate.now())) {
@@ -319,7 +314,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 repository.delete(attendance);
 
                 // Invio notifica di cancellazione via WebSocket solo dopo il successo
-                messagingTemplate.convertAndSend(destination, attendance);
+                messagingTemplate.convertAndSend(destination, toWebSocketDTO(attendance));
         }
 
         @Override
@@ -439,6 +434,21 @@ public class AttendanceServiceImpl implements AttendanceService {
                                 .message("Team overview retrieved successfully")
                                 .payload(pageResult)
                                 .status(ResponseStatus.SUCCESS)
+                                .build();
+        }
+
+        /**
+         * Maps an Attendance entity to a broadcast-safe DTO,
+         * stripping sensitive fields (note, createdAt) before WebSocket broadcast.
+         */
+        private AttendanceBroadcastDTO toWebSocketDTO(Attendance a) {
+                return AttendanceBroadcastDTO.builder()
+                                .id(a.getId())
+                                .userId(a.getUserId())
+                                .tenantId(a.getTenantId())
+                                .departmentId(a.getDepartmentId())
+                                .workDate(a.getWorkDate())
+                                .status(a.getStatus())
                                 .build();
         }
 }

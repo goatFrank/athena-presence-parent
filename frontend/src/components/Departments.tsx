@@ -205,7 +205,7 @@ const Departments: React.FC = () => {
         try {
             const response = await attendanceApi.put(
                 `/api/v1/departments/${selectedDepartment.id}/assign`,
-                selectedUserIds
+                { userIds: selectedUserIds }
             );
             if (response.status === 200) {
                 setProfiles(prev =>

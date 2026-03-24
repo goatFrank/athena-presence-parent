@@ -31,9 +31,9 @@ public interface AttendanceService {
     ResponseDTO<List<Attendance>> getTenantPresence(Long tenantId, LocalDate date, UUID authenticatedUserId);
 
     /**
-     * Recupera lo storico delle presenze di un singolo utente.
+     * Recupera lo storico delle presenze di un singolo utente (paginato).
      */
-    ResponseDTO<List<Attendance>> getUserHistory(UUID userId);
+    ResponseDTO<org.springframework.data.domain.Page<Attendance>> getUserHistory(UUID userId, org.springframework.data.domain.Pageable pageable);
 
     /**
      * Recupera le presenze di un singolo utente in un intervallo di date.
@@ -54,11 +54,10 @@ public interface AttendanceService {
             LocalDate date, Pageable pageable);
 
     /**
-     * Cancella una prenotazione specifica.
+     * Cancella la prenotazione dell'utente per una data specifica.
      * 
-     * @param id     L'ID della presenza da cancellare.
-     * @param userId L'ID dell'utente che richiede la cancellazione (per verifica
-     *               ownership).
+     * @param workDate La data della presenza da cancellare.
+     * @param userId   L'ID dell'utente autenticato (ownership implicita).
      */
-    void deleteAttendance(Long id, UUID userId);
+    void deleteAttendance(LocalDate workDate, UUID userId);
 }

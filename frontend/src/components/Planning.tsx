@@ -6,6 +6,7 @@ import { attendanceApi } from '../api/clients';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
+
 // ── Types ──────────────────────────────────────────────────────────
 interface AttendanceRecord {
     id?: number;
@@ -291,11 +292,9 @@ const Planning: React.FC = () => {
     // ── Delete attendance ──
     const handleDeleteAttendance = async (dateIso: string) => {
         setSelectedDay(null);
-        const dayInfo = days.find(d => d.dateIso === dateIso);
-        if (!dayInfo?.attendanceId) return;
 
         try {
-            await attendanceApi.delete(`/api/v1/attendance/${dayInfo.attendanceId}`);
+            await attendanceApi.delete('/api/v1/attendance', { params: { date: dateIso } });
             buildCalendar();
         } catch (err) {
             console.error('Error deleting attendance:', err);

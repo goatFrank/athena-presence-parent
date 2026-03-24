@@ -59,12 +59,14 @@ public class AttendanceController {
     }
 
     @GetMapping("/me")
-    @Operation(summary = "Recupera lo storico delle presenze dell'utente loggato")
-    public ResponseEntity<ResponseDTO<List<Attendance>>> getMyHistory(@AuthenticationPrincipal Jwt jwt) {
+    @Operation(summary = "Recupera lo storico delle presenze dell'utente loggato (paginato)")
+    public ResponseEntity<ResponseDTO<org.springframework.data.domain.Page<Attendance>>> getMyHistory(
+            @AuthenticationPrincipal Jwt jwt,
+            org.springframework.data.domain.Pageable pageable) {
 
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
 
-        ResponseDTO<List<Attendance>> response = attendanceService.getUserHistory(authenticatedUserId);
+        ResponseDTO<org.springframework.data.domain.Page<Attendance>> response = attendanceService.getUserHistory(authenticatedUserId, pageable);
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
@@ -114,11 +116,13 @@ public class AttendanceController {
         return ResponseEntity.status(response.getStatus().getHttpStatus()).body(response);
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Annulla una prenotazione")
-    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+    @DeleteMapping
+    @Operation(summary = "Annulla una prenotazione per data")
+    public ResponseEntity<Void> delete(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @AuthenticationPrincipal Jwt jwt) {
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        attendanceService.deleteAttendance(id, authenticatedUserId);
+        attendanceService.deleteAttendance(date, authenticatedUserId);
         return ResponseEntity.noContent().build();
     }
 }

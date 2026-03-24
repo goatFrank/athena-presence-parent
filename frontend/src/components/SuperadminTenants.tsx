@@ -45,8 +45,6 @@ const SuperadminTenants: React.FC = () => {
             fetchPendingTenants();
         } catch (err: any) {
             console.error(`Error during ${action}:`, err);
-            const errorMessage = err.response?.data?.message || err.message || 'Server error';
-            alert(`Failed to ${action} tenant: ${errorMessage}`);
         }
     };
 

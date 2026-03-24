@@ -13,9 +13,11 @@ import SuperadminManageTenants from './components/SuperadminManageTenants';
 import Departments from './components/Departments';
 import Employees from './components/Employees';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ToastProvider } from './components/Toast';
 
 function App() {
   return (
+    <ToastProvider>
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -73,6 +75,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
+    </ToastProvider>
   );
 }
 

@@ -13,4 +13,8 @@ public interface InviteLinkRepository extends JpaRepository<InviteLink, Long> {
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("SELECT i FROM InviteLink i WHERE i.token = :token")
     Optional<InviteLink> findWithLockByToken(String token);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM InviteLink i WHERE i.senderId = :userId OR i.managerId = :userId")
+    void deleteBySenderIdOrManagerId(@org.springframework.data.repository.query.Param("userId") java.util.UUID userId);
 }

@@ -131,12 +131,9 @@ const Employees: React.FC = () => {
                 const token = res.data.payload.token;
                 const link = `${window.location.origin}/register?token=${token}`;
                 setGeneratedLink(link);
-            } else {
-                alert("Errore durante la generazione del link. Riprova.");
             }
         } catch (err) {
             console.error("Error generating invite link:", err);
-            alert("Si è verificato un errore di rete o del server.");
         } finally {
             setIsGenerating(false);
         }

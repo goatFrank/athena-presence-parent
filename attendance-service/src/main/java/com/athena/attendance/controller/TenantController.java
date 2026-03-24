@@ -1,6 +1,7 @@
 package com.athena.attendance.controller;
 
 import com.athena.attendance.service.TenantService;
+import com.athena.attendance.entity.TenantStatus;
 import com.athena.common.dto.ResponseDTO;
 import com.athena.common.dto.TenantDTO;
 import com.athena.common.enums.ResponseStatus;
@@ -58,7 +59,7 @@ public class TenantController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
-        tenantService.updateTenantStatus(id, "ACTIVE", adminUserId);
+        tenantService.updateTenantStatus(id, TenantStatus.ACTIVE, adminUserId);
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
                 .message("Tenant approvato con successo")
                 .status(ResponseStatus.SUCCESS)
@@ -71,7 +72,7 @@ public class TenantController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
-        tenantService.updateTenantStatus(id, "REJECTED", adminUserId);
+        tenantService.updateTenantStatus(id, TenantStatus.REJECTED, adminUserId);
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
                 .message("Tenant rifiutato con successo")
                 .status(ResponseStatus.SUCCESS)
@@ -83,7 +84,7 @@ public class TenantController {
     public ResponseEntity<ResponseDTO<Void>> updateTenantStatus(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id,
-            @RequestParam String status) {
+            @RequestParam TenantStatus status) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         tenantService.updateTenantStatus(id, status, adminUserId);
         return ResponseEntity.ok(ResponseDTO.<Void>builder()

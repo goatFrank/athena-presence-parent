@@ -61,10 +61,10 @@ public class DepartmentController {
     public ResponseEntity<ResponseDTO<Void>> assignUsers(
             @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt,
             @org.springframework.web.bind.annotation.PathVariable Long departmentId,
-            @org.springframework.web.bind.annotation.RequestBody java.util.List<java.util.UUID> userIds) {
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.AssignUsersRequest request) {
         
         java.util.UUID adminUserId = java.util.UUID.fromString(jwt.getSubject());
-        departmentService.assignUsersToDepartment(departmentId, userIds, adminUserId);
+        departmentService.assignUsersToDepartment(departmentId, request.getUserIds(), adminUserId);
         
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
                 .status(ResponseStatus.SUCCESS)

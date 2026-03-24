@@ -157,19 +157,51 @@ public class DepartmentServiceImpl implements DepartmentService {
                     org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
         }
 
-        // Prima troviamo tutti i profili del tenant che attualmente hanno questo dipartimento e li resettiamo
-        List<com.athena.attendance.entity.Profile> currentProfiles = profileRepository.findByTenantIdAndDepartmentId(dept.getTenantId(), departmentId);
-        for (com.athena.attendance.entity.Profile p : currentProfiles) {
-            p.setDepartmentId(null);
+        // 1. Batch-fetch the requested profiles and validate all UUIDs exist
+        java.util.Set<java.util.UUID> requestedIds = userIds == null
+                ? java.util.Collections.emptySet()
+                : new java.util.HashSet<>(userIds);
+
+        List<com.athena.attendance.entity.Profile> requestedProfiles = requestedIds.isEmpty()
+                ? java.util.Collections.emptyList()
+                : profileRepository.findAllById(requestedIds);
+
+        // Fail-fast if any UUID was not found
+        if (requestedProfiles.size() != requestedIds.size()) {
+            java.util.Set<java.util.UUID> foundIds = requestedProfiles.stream()
+                    .map(com.athena.attendance.entity.Profile::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+            java.util.Set<java.util.UUID> missing = new java.util.HashSet<>(requestedIds);
+            missing.removeAll(foundIds);
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Profili non trovati: " + missing);
         }
 
-        // Poi assegniamo il dipartimento solo agli id passati
-        if (userIds != null && !userIds.isEmpty()) {
-            for (java.util.UUID uid : userIds) {
-                com.athena.attendance.entity.Profile p = profileRepository.findById(uid).orElse(null);
-                if (p != null && (p.getTenantId().equals(dept.getTenantId()) || adminProfile.getRole().getId().equals(1L))) {
-                    p.setDepartmentId(departmentId);
-                }
+        // Validate all requested profiles belong to the same tenant (unless superadmin)
+        boolean isSuperadmin = adminProfile.getRole().getId().equals(1L);
+        for (com.athena.attendance.entity.Profile p : requestedProfiles) {
+            if (!isSuperadmin && !p.getTenantId().equals(dept.getTenantId())) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST,
+                        "L'utente " + p.getId() + " non appartiene al tenant del dipartimento");
+            }
+        }
+
+        // 2. Diff-based update: only change what's needed
+        List<com.athena.attendance.entity.Profile> currentMembers = profileRepository.findByTenantIdAndDepartmentId(dept.getTenantId(), departmentId);
+
+        // Users to remove: currently assigned but NOT in the new list
+        for (com.athena.attendance.entity.Profile p : currentMembers) {
+            if (!requestedIds.contains(p.getId())) {
+                p.setDepartmentId(null);
+            }
+        }
+
+        // Users to add: in the new list but NOT currently assigned to this dept
+        for (com.athena.attendance.entity.Profile p : requestedProfiles) {
+            if (!departmentId.equals(p.getDepartmentId())) {
+                p.setDepartmentId(departmentId);
             }
         }
     }

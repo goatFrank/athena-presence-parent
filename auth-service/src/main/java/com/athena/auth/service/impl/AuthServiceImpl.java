@@ -26,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Object authenticate(LoginRequest loginRequest) {
+    public com.athena.common.dto.AuthResponse authenticate(LoginRequest loginRequest) {
         Map<String, String> body = Map.of(
                 "email", loginRequest.getEmail(),
                 "password", loginRequest.getPassword()
@@ -38,12 +38,12 @@ public class AuthServiceImpl implements AuthService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
-                .toEntity(Object.class)
+                .toEntity(com.athena.common.dto.AuthResponse.class)
                 .getBody();
     }
 
     @Override
-    public Object register(SignupRequest signupRequest) {
+    public com.athena.common.dto.AuthResponse register(SignupRequest signupRequest) {
         // Validazione manuale: deve esserci o il nome azienda (nuovo tenant) o un token invito
         if ((signupRequest.getCompanyName() == null || signupRequest.getCompanyName().isBlank()) &&
             (signupRequest.getInviteToken() == null || signupRequest.getInviteToken().isBlank())) {
@@ -59,9 +59,8 @@ public class AuthServiceImpl implements AuthService {
         if (signupRequest.getCompanyName() != null) {
             metadata.put("company_name", signupRequest.getCompanyName());
         }
-        if (signupRequest.getInviteToken() != null) {
-            metadata.put("invite_token", signupRequest.getInviteToken());
-        }
+        // NOTE: invite_token is NOT stored in Supabase metadata (credential leak risk).
+        // It is passed separately via /api/v1/profiles/setup and consumed there.
 
         Map<String, Object> body = Map.of(
                 "email", signupRequest.getEmail(),
@@ -75,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
-                .toEntity(Object.class)
+                .toEntity(com.athena.common.dto.AuthResponse.class)
                 .getBody();
     }
 }

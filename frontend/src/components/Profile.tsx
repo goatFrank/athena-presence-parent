@@ -213,18 +213,10 @@ const Profile: React.FC = () => {
         setIsSaving(true);
         setSaveSuccess(false);
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ profile_cellphone: editPhone })
-                .eq('id', profile.id);
-
-            if (error) {
-                console.error('Error saving profile:', error);
-            } else {
-                setProfile(prev => prev ? { ...prev, phone: editPhone } : null);
-                setSaveSuccess(true);
-                setTimeout(() => setSaveSuccess(false), 2000);
-            }
+            await attendanceApi.put('/api/v1/profiles/me/phone', { phone: editPhone });
+            setProfile(prev => prev ? { ...prev, phone: editPhone } : null);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 2000);
         } catch (e) {
             console.error('Exception saving profile:', e);
         } finally {

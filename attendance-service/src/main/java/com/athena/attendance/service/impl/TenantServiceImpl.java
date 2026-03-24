@@ -37,21 +37,14 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public void updateTenantStatus(Long tenantId, String status, UUID adminUserId) {
+    public void updateTenantStatus(Long tenantId, TenantStatus status, UUID adminUserId) {
         verificaSuperAdmin(adminUserId);
 
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Tenant non trovato: " + tenantId));
 
-        TenantStatus newStatus;
-        try {
-            newStatus = TenantStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stato non valido");
-        }
-
-        tenant.setStatus(newStatus);
+        tenant.setStatus(status);
         tenantRepository.save(tenant);
     }
 

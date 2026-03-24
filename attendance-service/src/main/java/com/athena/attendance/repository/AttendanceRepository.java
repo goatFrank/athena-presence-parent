@@ -25,6 +25,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         // Trova la cronologia di un singolo utente
         List<Attendance> findByUserIdOrderByWorkDateDesc(UUID userId);
 
+        // Trova la cronologia di un singolo utente (paginata)
+        org.springframework.data.domain.Page<Attendance> findByUserIdOrderByWorkDateDesc(UUID userId, org.springframework.data.domain.Pageable pageable);
+
         // Trova le presenze di un singolo utente in un intervallo di date
         List<Attendance> findByUserIdAndWorkDateBetweenOrderByWorkDateAsc(UUID userId, LocalDate startDate,
                         LocalDate endDate);

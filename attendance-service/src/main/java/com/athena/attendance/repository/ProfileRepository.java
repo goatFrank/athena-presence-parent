@@ -23,4 +23,8 @@ public interface ProfileRepository extends JpaRepository<Profile, UUID> {
     List<Profile> findByTenantIdAndDepartmentId(Long tenantId, Long departmentId);
 
     int countByTenantIdAndDepartmentId(Long tenantId, Long departmentId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE Profile p SET p.managerId = null WHERE p.managerId = :managerId")
+    void nullifyManagerId(@org.springframework.data.repository.query.Param("managerId") UUID managerId);
 }
