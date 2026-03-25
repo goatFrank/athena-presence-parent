@@ -263,7 +263,7 @@ const Profile: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-lg lg:max-w-none mx-auto w-full px-2">
 
                             {/* Personal Information Form */}
                             <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-8 shadow-[0_10px_40px_-10px_rgba(25,93,230,0.08)] border border-slate-100 dark:border-slate-700">
