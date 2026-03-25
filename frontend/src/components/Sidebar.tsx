@@ -72,9 +72,10 @@ const Sidebar: React.FC = () => {
             {/* Mobile Hamburger Button */}
             <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden fixed top-6 left-6 z-[60] p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300"
+                className="md:hidden fixed top-5 left-5 z-[60] p-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition-all duration-200 group"
+                aria-label="Open Menu"
             >
-                <span className="material-icons">menu</span>
+                <span className="material-icons text-[28px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">menu</span>
             </button>
 
             {/* Backdrop for Mobile */}
@@ -105,8 +106,12 @@ const Sidebar: React.FC = () => {
                             {i18n.language.toUpperCase()}
                         </button>
                         {/* Close button for mobile */}
-                        <button onClick={closeMobileMenu} className="md:hidden p-1 text-slate-400 hover:text-slate-600">
-                            <span className="material-icons">close</span>
+                        <button 
+                            onClick={closeMobileMenu} 
+                            className="md:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                            aria-label="Close Menu"
+                        >
+                            <span className="material-icons text-[24px]">close</span>
                         </button>
                     </div>
                 </div>

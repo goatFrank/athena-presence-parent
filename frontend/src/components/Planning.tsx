@@ -408,9 +408,9 @@ const Planning: React.FC = () => {
         >
             <Sidebar />
 
-            <div className="flex-1 ml-0 md:ml-80 overflow-y-auto h-screen scroll-smooth">
+            <div className="flex-1 ml-0 md:ml-80 overflow-y-auto scroll-smooth">
                 {/* ── Main Content ── */}
-                <main className="font-calendar antialiased max-w-7xl mx-auto w-full px-8 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10"
+                <main className="font-calendar antialiased max-w-7xl mx-auto w-full pt-20 px-4 pb-10 md:px-8 md:py-10 grid grid-cols-1 lg:grid-cols-12 gap-10"
                     onClick={(e) => e.stopPropagation()}>
 
                     {/* Block 1: Greeting Card (First on mobile, top of col-4 on lg) */}

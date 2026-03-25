@@ -177,8 +177,9 @@ const Team: React.FC = () => {
         <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
 
-            <div className="flex-1 flex flex-col ml-0 md:ml-80 overflow-y-auto scroll-smooth h-screen">
-                <main className="flex-1 w-full max-w-[1440px] mx-auto p-4 lg:p-10 flex flex-col gap-6 md:gap-8">
+            {/* Main Content wrapper */}
+            <div className="flex-1 flex flex-col ml-0 md:ml-80 lg:mr-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <main className="flex-1 w-full max-w-[1440px] mx-auto pt-20 px-4 pb-4 md:p-10 flex flex-col gap-6 md:gap-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="px-1 md:px-0">
                             <h1 className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white tracking-tight">{t('team_overview')}</h1>
@@ -187,7 +188,7 @@ const Team: React.FC = () => {
                     </div>
 
                     {/* Merged Dashboard Banner */}
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-center justify-between gap-10 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-8 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 relative overflow-hidden">
                         <div className="absolute -top-20 -right-20 w-60 h-60 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
                         <div className="absolute bottom-10 -left-10 w-40 h-40 bg-purple-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -201,10 +202,10 @@ const Team: React.FC = () => {
                                 </h2>
 
                                 {/* Date Navigation */}
-                                <div className="flex items-center bg-white dark:bg-slate-800 rounded-2xl p-1.5 shadow-sm border border-indigo-50 dark:border-slate-700">
+                                <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-1 shadow-sm border border-indigo-50 dark:border-slate-700 w-full sm:w-auto justify-between sm:justify-start">
                                     <button
                                         onClick={() => changeDate(-1)}
-                                        className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border-0"
+                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm border border-slate-100 dark:border-slate-700"
                                         title={t('previous_day')}
                                     >
                                         <span className="material-icons">chevron_left</span>
@@ -212,14 +213,14 @@ const Team: React.FC = () => {
 
                                     <button
                                         onClick={() => setSelectedDate(new Date())}
-                                        className="px-6 font-bold text-slate-600 dark:text-slate-300 select-none bg-transparent hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors border-0 capitalize"
+                                        className="px-4 md:px-6 font-bold text-sm md:text-base text-slate-700 dark:text-slate-200 select-none bg-transparent hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors border-0 capitalize"
                                     >
                                         {getDayName(selectedDate)}
                                     </button>
 
                                     <button
                                         onClick={() => changeDate(1)}
-                                        className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border-0"
+                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm border border-slate-100 dark:border-slate-700"
                                         title={t('next_day')}
                                     >
                                         <span className="material-icons">chevron_right</span>
@@ -227,15 +228,15 @@ const Team: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-6 sm:gap-8 lg:gap-12">
+                            <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-4 sm:gap-8 lg:gap-12 w-full">
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"></div>
                                         <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{t('in_office')}</span>
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-[#0e121b] dark:text-white">{inOfficeCount}</span>
-                                        <span className="text-sm text-purple-500 font-medium ml-1">{inOfficePct}%</span>
+                                    <div className="flex items-baseline gap-1.5 md:gap-2">
+                                        <span className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white">{inOfficeCount}</span>
+                                        <span className="text-xs md:text-sm text-purple-500 font-bold">{inOfficePct}%</span>
                                     </div>
                                 </div>
 
@@ -244,9 +245,9 @@ const Team: React.FC = () => {
                                         <div className="w-3 h-3 rounded-full bg-sky-400 dark:bg-sky-400"></div>
                                         <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{t('remote_label')}</span>
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-[#0e121b] dark:text-white">{remoteCount}</span>
-                                        <span className="text-sm text-sky-400 font-medium ml-1">{remotePct}%</span>
+                                    <div className="flex items-baseline gap-1.5 md:gap-2">
+                                        <span className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white">{remoteCount}</span>
+                                        <span className="text-xs md:text-sm text-sky-400 font-bold">{remotePct}%</span>
                                     </div>
                                 </div>
 
@@ -255,9 +256,9 @@ const Team: React.FC = () => {
                                         <div className="w-3 h-3 rounded-full bg-gradient-to-r from-red-400 to-red-500"></div>
                                         <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{t('absent')}</span>
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-[#0e121b] dark:text-white">{leaveCount}</span>
-                                        <span className="text-sm text-red-500 font-medium ml-1">{leavePct}%</span>
+                                    <div className="flex items-baseline gap-1.5 md:gap-2">
+                                        <span className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white">{leaveCount}</span>
+                                        <span className="text-xs md:text-sm text-red-500 font-bold">{leavePct}%</span>
                                     </div>
                                 </div>
 
@@ -266,9 +267,9 @@ const Team: React.FC = () => {
                                         <div className="w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-600"></div>
                                         <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{i18n.language === 'it' ? 'Non Inserita' : 'Unmarked'}</span>
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-[#0e121b] dark:text-white">{unmarkedCount}</span>
-                                        <span className="text-sm text-slate-500 font-medium ml-1">{unmarkedPct}%</span>
+                                    <div className="flex items-baseline gap-1.5 md:gap-2">
+                                        <span className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white">{unmarkedCount}</span>
+                                        <span className="text-xs md:text-sm text-slate-500 font-bold">{unmarkedPct}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -299,31 +300,31 @@ const Team: React.FC = () => {
                             />
                         </div>
                         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar items-center">
-                            <button
-                                onClick={() => setFilter('all')}
-                                className={`whitespace-nowrap px-5 py-3 rounded-xl font-semibold transition-all text-sm active:scale-95 border ${filter === 'all' ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-blue-500 border-slate-200 dark:border-slate-700 hover:border-blue-500/30'}`}>
-                                {t('all')}
-                            </button>
-                            <button
-                                onClick={() => setFilter('office')}
-                                className={`whitespace-nowrap flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all text-sm active:scale-95 border ${filter === 'office' ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md shadow-purple-500/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-purple-500 border-slate-200 dark:border-slate-700 hover:border-purple-500/30'}`}>
-                                {t('in_office')} <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'office' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{inOfficeCount}</span>
-                            </button>
-                            <button
-                                onClick={() => setFilter('remote')}
-                                className={`whitespace-nowrap flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all text-sm active:scale-95 border ${filter === 'remote' ? 'bg-sky-400 text-white shadow-md shadow-sky-400/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-sky-500 border-slate-200 dark:border-slate-700 hover:border-sky-500/30'}`}>
-                                {t('remote_label')} <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'remote' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{remoteCount}</span>
-                            </button>
-                            <button
-                                onClick={() => setFilter('leave')}
-                                className={`whitespace-nowrap flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all text-sm active:scale-95 border ${filter === 'leave' ? 'bg-gradient-to-r from-red-400 to-red-500 text-white shadow-md shadow-red-500/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-red-500 border-slate-200 dark:border-slate-700 hover:border-red-500/30'}`}>
-                                {t('absent')} <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'leave' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{leaveCount}</span>
-                            </button>
-                            <button
-                                onClick={() => setFilter('unmarked')}
-                                className={`whitespace-nowrap flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all text-sm active:scale-95 border ${filter === 'unmarked' ? 'bg-slate-200 text-slate-700 shadow-md shadow-slate-200/20 border-transparent dark:bg-slate-700 dark:text-white' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-500/30'}`}>
-                                {i18n.language === 'it' ? 'Non inserita' : 'Unmarked'} <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'unmarked' ? 'bg-black/10 dark:bg-white/20 text-current' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{unmarkedCount}</span>
-                            </button>
+                                <button
+                                    onClick={() => setFilter('all')}
+                                    className={`whitespace-nowrap px-4 md:px-5 py-2.5 md:py-3 rounded-xl font-bold transition-all text-xs md:text-sm active:scale-95 border ${filter === 'all' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-blue-500 border-slate-200 dark:border-slate-700 hover:border-blue-500/30'}`}>
+                                    {t('all')}
+                                </button>
+                                <button
+                                    onClick={() => setFilter('office')}
+                                    className={`whitespace-nowrap flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-xl font-bold transition-all text-xs md:text-sm active:scale-95 border ${filter === 'office' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-purple-500 border-slate-200 dark:border-slate-700 hover:border-purple-500/30'}`}>
+                                    {t('in_office')} <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs ${filter === 'office' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{inOfficeCount}</span>
+                                </button>
+                                <button
+                                    onClick={() => setFilter('remote')}
+                                    className={`whitespace-nowrap flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-xl font-bold transition-all text-xs md:text-sm active:scale-95 border ${filter === 'remote' ? 'bg-sky-500 text-white shadow-md shadow-sky-400/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-sky-500 border-slate-200 dark:border-slate-700 hover:border-sky-500/30'}`}>
+                                    {t('remote_label')} <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs ${filter === 'remote' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{remoteCount}</span>
+                                </button>
+                                <button
+                                    onClick={() => setFilter('leave')}
+                                    className={`whitespace-nowrap flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-xl font-bold transition-all text-xs md:text-sm active:scale-95 border ${filter === 'leave' ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md shadow-red-500/20 border-transparent' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-red-500 border-slate-200 dark:border-slate-700 hover:border-red-500/30'}`}>
+                                    {t('absent')} <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs ${filter === 'leave' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{leaveCount}</span>
+                                </button>
+                                <button
+                                    onClick={() => setFilter('unmarked')}
+                                    className={`whitespace-nowrap flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-xl font-bold transition-all text-xs md:text-sm active:scale-95 border ${filter === 'unmarked' ? 'bg-slate-200 text-slate-800 shadow-md shadow-slate-200/20 border-transparent dark:bg-slate-700 dark:text-white' : 'bg-white dark:bg-slate-800 text-[#4e6797] hover:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-500/30'}`}>
+                                    {i18n.language === 'it' ? 'Non inserita' : 'Unmarked'} <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs ${filter === 'unmarked' ? 'bg-black/10 dark:bg-white/20 text-current' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{unmarkedCount}</span>
+                                </button>
                         </div>
                     </div>
 
@@ -375,7 +376,7 @@ const Team: React.FC = () => {
                             </div>
                         ) : (
                             displayedColleagues.map(colleague => (
-                                <div key={colleague.id} className={`group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-transparent 
+                                <div key={colleague.id} className={`group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-transparent 
                                     ${colleague.work_status === 'office' ? 'hover:border-purple-500/20' : colleague.work_status === 'remote' ? 'hover:border-sky-500/20' : colleague.work_status === 'leave' ? 'hover:border-red-500/20 opacity-80 hover:opacity-100' : 'hover:border-slate-300 dark:hover:border-slate-600'}`}>
 
                                     <div className="flex flex-col items-center text-center pb-4 md:pb-5 border-b border-slate-100 dark:border-slate-700 relative">

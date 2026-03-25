@@ -231,8 +231,8 @@ const Departments: React.FC = () => {
         <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
 
-            <div className="flex-1 flex flex-col ml-0 md:ml-80 overflow-y-auto h-screen scroll-smooth">
-                <main className="flex-1 w-full max-w-[1440px] mx-auto p-4 lg:p-10 flex flex-col gap-6 md:gap-8">
+            <div className="flex-1 ml-0 md:ml-80 overflow-y-auto h-screen scroll-smooth">
+                <main className="flex-1 w-full max-w-[1440px] mx-auto pt-20 px-4 pb-4 md:p-10 flex flex-col gap-6 md:gap-8">
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="px-1 md:px-0">
