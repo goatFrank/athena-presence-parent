@@ -12,6 +12,7 @@ const resources = {
             "analytics": "Statistiche",
             "profile": "Profilo",
             "logout": "Esci",
+            "download_desktop": "App Desktop",
 
             // ── Office Map Page ──
             "office_map_subtitle": "Trova la strada per la nostra sede principale",
@@ -234,7 +235,19 @@ const resources = {
             "role_superadmin": "Superadmin",
             "role_amministratore_tenant": "Amministratore",
             "role_manager": "Manager",
-            "role_employee": "Dipendente"
+            "role_employee": "Dipendente",
+
+            // ── Downloads Page ──
+            "download_title": "Scarica Athena per Desktop",
+            "download_subtitle": "Porta la gestione del team sul tuo computer con la nostra app nativa.",
+            "download_windows": "Scarica per Windows",
+            "download_macos": "Scarica per macOS",
+            "recommended": "Consigliato",
+            "version": "Versione",
+            "installation_guide": "Guida all'installazione",
+            "windows_guide": "Esegui l'installer .msi e segui le istruzioni a video.",
+            "macos_guide": "Trascina l'icona di Athena nella cartella Applicazioni.",
+            "download_started": "Il download sta per iniziare..."
         }
     },
     en: {
@@ -247,6 +260,7 @@ const resources = {
             "analytics": "Analytics",
             "profile": "Profile",
             "logout": "Logout",
+            "download_desktop": "Desktop App",
 
             // ── Office Map Page ──
             "office_map_subtitle": "Find your way to our main headquarters",
@@ -469,7 +483,19 @@ const resources = {
             "role_superadmin": "Superadmin",
             "role_amministratore_tenant": "Admin",
             "role_manager": "Manager",
-            "role_employee": "Employee"
+            "role_employee": "Employee",
+
+            // ── Downloads Page ──
+            "download_title": "Download Athena for Desktop",
+            "download_subtitle": "Bring team management to your computer with our native app.",
+            "download_windows": "Download for Windows",
+            "download_macos": "Download for macOS",
+            "recommended": "Recommended",
+            "version": "Version",
+            "installation_guide": "Installation Guide",
+            "windows_guide": "Run the .msi installer and follow the on-screen instructions.",
+            "macos_guide": "Drag the Athena icon into your Applications folder.",
+            "download_started": "Your download is about to start..."
         }
     }
 };

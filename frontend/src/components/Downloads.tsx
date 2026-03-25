@@ -1,0 +1,158 @@
+import React, { useState, useEffect } from 'react';
+import Sidebar from './Sidebar';
+import { useTranslation } from 'react-i18next';
+import { useToast } from './Toast';
+
+const Downloads: React.FC = () => {
+    const { t } = useTranslation();
+    const { addToast } = useToast();
+    const [detectedOS, setDetectedOS] = useState<'windows' | 'macos' | 'linux' | 'other'>('other');
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    useEffect(() => {
+        const userAgent = globalThis.navigator.userAgent.toLowerCase();
+        if (userAgent.includes('win')) setDetectedOS('windows');
+        else if (userAgent.includes('mac')) setDetectedOS('macos');
+        else if (userAgent.includes('linux')) setDetectedOS('linux');
+    }, []);
+
+    const handleDownload = (platform: 'windows' | 'macos') => {
+        setIsDownloading(true);
+        
+        // In a real scenario, these URLs would point to your actual binaries
+        // e.g., /downloads/athena-setup.msi or /downloads/athena.dmg
+        console.log(`Starting download for ${platform}...`);
+
+        // Standard pattern for triggering a download
+        // const link = document.createElement('a');
+        // link.href = downloadUrls[platform];
+        // link.download = platform === 'windows' ? 'athena-setup.msi' : 'athena.dmg';
+        // document.body.appendChild(link);
+        // link.click();
+        // document.body.removeChild(link);
+
+        setTimeout(() => {
+            setIsDownloading(false);
+            addToast(t('download_started'), 'success');
+        }, 2000);
+    };
+
+    return (
+        <div className="bg-[#f8fafc] dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 min-h-screen flex w-full overflow-hidden font-display">
+            <Sidebar />
+            <div className="flex-1 ml-0 md:ml-80 flex flex-col h-screen overflow-y-auto scroll-smooth">
+                <main className="flex-1 pt-20 px-4 pb-12 md:p-8 lg:p-12">
+                    <div className="max-w-5xl mx-auto space-y-12">
+                        
+                        {/* Header Section */}
+                        <div className="text-center space-y-4">
+                            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-xs font-bold tracking-widest uppercase mb-2">
+                                Desktop Experience
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                {t('download_title')}
+                            </h1>
+                            <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+                                {t('download_subtitle')}
+                            </p>
+                        </div>
+
+                        {/* Download Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Windows Card */}
+                            <div className={`relative group p-8 rounded-[2.5rem] bg-white dark:bg-slate-800 border transition-all duration-500 ${detectedOS === 'windows' ? 'border-blue-500 shadow-2xl shadow-blue-500/10 scale-[1.02] z-10' : 'border-slate-100 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 shadow-soft'}`}>
+                                {detectedOS === 'windows' && (
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                                        {t('recommended')}
+                                    </div>
+                                )}
+                                <div className="flex flex-col items-center text-center space-y-6">
+                                    <div className="w-20 h-20 rounded-3xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                                        <span className="material-icons text-4xl text-blue-600 dark:text-blue-400">window</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Windows</h3>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">Windows 10, 11 (64-bit)</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => handleDownload('windows')}
+                                        disabled={isDownloading}
+                                        className="w-full py-4 px-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                    >
+                                        <span className="material-icons">download</span>
+                                        {isDownloading ? t('download_started') : t('download_windows')}
+                                    </button>
+                                    <div className="pt-4 border-t border-slate-50 dark:border-slate-700/50 w-full text-left">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('installation_guide')}</p>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 flex gap-2">
+                                            <span className="material-icons text-blue-500 text-sm">info</span>
+                                            {t('windows_guide')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* macOS Card */}
+                            <div className={`relative group p-8 rounded-[2.5rem] bg-white dark:bg-slate-800 border transition-all duration-500 ${detectedOS === 'macos' ? 'border-blue-500 shadow-2xl shadow-blue-500/10 scale-[1.02] z-10' : 'border-slate-100 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 shadow-soft'}`}>
+                                {detectedOS === 'macos' && (
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                                        {t('recommended')}
+                                    </div>
+                                )}
+                                <div className="flex flex-col items-center text-center space-y-6">
+                                    <div className="w-20 h-20 rounded-3xl bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                                        <span className="material-icons text-4xl text-slate-900 dark:text-white">apple</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white">macOS</h3>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">Intel & Apple Silicon (Universal)</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => handleDownload('macos')}
+                                        disabled={isDownloading}
+                                        className="w-full py-4 px-6 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                    >
+                                        <span className="material-icons">download</span>
+                                        {isDownloading ? t('download_started') : t('download_macos')}
+                                    </button>
+                                    <div className="pt-4 border-t border-slate-50 dark:border-slate-700/50 w-full text-left">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('installation_guide')}</p>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 flex gap-2">
+                                            <span className="material-icons text-blue-500 text-sm">info</span>
+                                            {t('macos_guide')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Additional Info Footer */}
+                        <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white dark:border-slate-700 rounded-[2rem] p-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+                            <div className="space-y-1">
+                                <h4 className="font-bold text-slate-900 dark:text-white">{t('version')} 1.2.4</h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Stable Build • Released Mar 2026</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className="material-icons text-blue-500">verified_user</span>
+                                <span className="text-sm font-medium text-slate-600 dark:text-slate-300 italic">Digitally Signed & Secure</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </main>
+            </div>
+
+            {isDownloading && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/20 dark:bg-slate-900/20 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col items-center space-y-4 max-w-sm text-center">
+                        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">{t('download_started')}</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 tracking-tight leading-relaxed">Verifica la cartella dei download del tuo computer tra pochi istanti.</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default Downloads;

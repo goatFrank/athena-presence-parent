@@ -127,6 +127,35 @@ export default function LandingPage() {
           </div>
         </div>
       </nav>
+      
+      {/* Mobile Menu Overlay */}
+      <div className={`fixed inset-0 z-[100] transition-all duration-500 lg:hidden ${mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl transition-all duration-500" onClick={() => setMobileMenuOpen(false)}></div>
+        <div className={`absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-500 ease-out border-l border-slate-200 dark:border-slate-800 flex flex-col ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <img src={athenaLogo} alt="Athena" className="w-8 h-8" />
+              <span className="font-bold text-xl text-slate-900 dark:text-white">Athena</span>
+            </div>
+            <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-slate-500 hover:text-slate-900 transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-8 space-y-8">
+            <nav className="flex flex-col space-y-6">
+              <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors">Come funziona</a>
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors">Features</a>
+              <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors">Prezzi</a>
+            </nav>
+            <div className="pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="w-full py-4 text-center font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-colors border border-slate-200 dark:border-slate-700 rounded-2xl">Accedi</Link>
+              <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="w-full py-4 text-center font-bold text-white bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+                Inizia gratis <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* --- HERO SECTION --- */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
