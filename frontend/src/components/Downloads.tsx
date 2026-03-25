@@ -19,22 +19,25 @@ const Downloads: React.FC = () => {
     const handleDownload = (platform: 'windows' | 'macos') => {
         setIsDownloading(true);
         
-        // In a real scenario, these URLs would point to your actual binaries
-        // e.g., /downloads/athena-setup.msi or /downloads/athena.dmg
-        console.log(`Starting download for ${platform}...`);
+        // These paths point to the 'public' folder of the React app
+        const downloadUrls = {
+            windows: '/downloads/Athena_0.1.0_x64_en-US.msi',
+            macos: '/downloads/Athena_0.1.0_x64.dmg'
+        };
 
-        // Standard pattern for triggering a download
-        // const link = document.createElement('a');
-        // link.href = downloadUrls[platform];
-        // link.download = platform === 'windows' ? 'athena-setup.msi' : 'athena.dmg';
-        // document.body.appendChild(link);
-        // link.click();
-        // document.body.removeChild(link);
-
+        // Create a hidden link to trigger the download
+        const link = document.createElement('a');
+        link.href = downloadUrls[platform];
+        // The 'download' attribute helps hint the browser to save the file
+        link.setAttribute('download', platform === 'windows' ? 'Athena-Setup.msi' : 'Athena.dmg');
+        document.body.appendChild(link);
+        
         setTimeout(() => {
+            link.click();
+            link.remove();
             setIsDownloading(false);
             addToast(t('download_started'), 'success');
-        }, 2000);
+        }, 1500);
     };
 
     return (
