@@ -18,7 +18,7 @@ const Downloads: React.FC = () => {
 
     const handleDownload = (platform: 'windows' | 'macos') => {
         setIsDownloading(true);
-        
+
         // These paths point to the 'public' folder of the React app
         const downloadUrls = {
             windows: '/downloads/Athena_0.1.0_x64_en-US.msi',
@@ -31,7 +31,7 @@ const Downloads: React.FC = () => {
         // The 'download' attribute helps hint the browser to save the file
         link.setAttribute('download', platform === 'windows' ? 'Athena-Setup.msi' : 'Athena.dmg');
         document.body.appendChild(link);
-        
+
         setTimeout(() => {
             link.click();
             link.remove();
@@ -46,7 +46,7 @@ const Downloads: React.FC = () => {
             <div className="flex-1 ml-0 md:ml-80 flex flex-col h-screen overflow-y-auto scroll-smooth">
                 <main className="flex-1 pt-20 px-4 pb-12 md:p-8 lg:p-12">
                     <div className="max-w-5xl mx-auto space-y-12">
-                        
+
                         {/* Header Section */}
                         <div className="text-center space-y-4">
                             <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-xs font-bold tracking-widest uppercase mb-2">
@@ -77,7 +77,7 @@ const Downloads: React.FC = () => {
                                         <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Windows</h3>
                                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Windows 10, 11 (64-bit)</p>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => handleDownload('windows')}
                                         disabled={isDownloading}
                                         className="w-full sm:w-auto py-3 px-4 sm:px-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 sm:gap-3 disabled:opacity-50 mx-auto"
@@ -112,7 +112,7 @@ const Downloads: React.FC = () => {
                                         <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">macOS</h3>
                                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Intel & Apple Silicon (Universal)</p>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => handleDownload('macos')}
                                         disabled={isDownloading}
                                         className="w-full sm:w-auto py-3 px-4 sm:px-8 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 sm:gap-3 disabled:opacity-50 mx-auto"
@@ -136,7 +136,7 @@ const Downloads: React.FC = () => {
                         {/* Additional Info Footer */}
                         <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white dark:border-slate-700 rounded-[2rem] p-6 sm:p-8 text-center lg:text-left flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm">
                             <div className="space-y-1">
-                                <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">{t('version')} 1.2.4</h4>
+                                <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">{t('version')} 0.1.0</h4>
                                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Stable Build • Released Mar 2026</p>
                             </div>
                             <div className="flex items-center gap-3 sm:gap-4">
