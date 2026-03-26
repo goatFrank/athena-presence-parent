@@ -14,19 +14,19 @@ const OfficeMap: React.FC = () => {
                 <div className="flex-1 flex flex-col ml-0 md:ml-80 pt-20 px-0 pb-0 md:mr-8 md:pt-0 md:px-0 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <main className="max-w-5xl mx-auto w-full px-4 md:px-10 py-10 flex-1">
                         {/* Title and Breadcrumbs */}
-                        <div className="mb-8 mt-4 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="mb-8 mt-4 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                             <div>
-                                <h1 className="text-[#0e121b] dark:text-white text-3xl md:text-4xl font-bold leading-tight flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-                                        <span className="material-symbols-outlined text-[24px]">map</span>
+                                <h1 className="text-[#0e121b] dark:text-white text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight flex items-center gap-3">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                                        <span className="material-symbols-outlined text-[20px] sm:text-[24px]">map</span>
                                     </div>
-                                    {t('office_map', 'Athena Office Location')}
+                                    <span className="truncate">{t('office_map', 'Athena Office Location')}</span>
                                 </h1>
-                                <p className="text-[#4e6797] dark:text-slate-400 mt-2 font-medium">
+                                <p className="text-[#4e6797] dark:text-slate-400 mt-2 font-medium text-sm sm:text-base">
                                     {t('office_map_subtitle', 'Find your way to our main headquarters')}
                                 </p>
                             </div>
-                            <div className="hidden md:flex flex-shrink-0">
+                            <div className="hidden lg:flex flex-shrink-0">
                                 <img 
                                     src={mapIllustration} 
                                     alt="Remote Working Illustration" 
@@ -42,7 +42,7 @@ const OfficeMap: React.FC = () => {
                         
                         {/* Interactive Google Map Section */}
                         <div className="relative group mb-10">
-                            <div className="w-full h-[450px] rounded-[2rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-[#e2e8f0] dark:border-slate-700 relative bg-slate-200 dark:bg-slate-800">
+                            <div className="w-full h-[300px] sm:h-[450px] rounded-[2rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-[#e2e8f0] dark:border-slate-700 relative bg-slate-200 dark:bg-slate-800">
                                 <iframe
                                     title="Google Map"
                                     width="100%"
@@ -57,15 +57,15 @@ const OfficeMap: React.FC = () => {
                         </div>
 
                         {/* Address Card */}
-                        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 w-full mb-10 group hover:border-blue-200 dark:hover:border-blue-900/50 transition-all">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <div className="flex gap-5 items-center">
-                                    <div className="bg-blue-50 dark:bg-slate-700 p-4 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                                        <span className="material-icons text-3xl">apartment</span>
+                        <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-[2rem] shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 w-full mb-10 group hover:border-blue-200 dark:hover:border-blue-900/50 transition-all">
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                <div className="flex gap-4 sm:gap-5 items-center">
+                                    <div className="bg-blue-50 dark:bg-slate-700 p-3 sm:p-4 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                                        <span className="material-icons text-2xl sm:text-3xl">apartment</span>
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-[#0e121b] dark:text-white mb-1.5">{t('main_headquarters', 'Main Headquarters')}</h3>
-                                        <p className="text-[#4e6797] dark:text-slate-400 text-[15px] font-medium leading-relaxed">
+                                        <h3 className="text-lg sm:text-xl font-bold text-[#0e121b] dark:text-white mb-1.5">{t('main_headquarters', 'Main Headquarters')}</h3>
+                                        <p className="text-[#4e6797] dark:text-slate-400 text-sm sm:text-[15px] font-medium leading-relaxed">
                                             123 Athena Tech Plaza, Floor 12-16<br/>
                                             San Francisco, CA 94105
                                         </p>
@@ -75,7 +75,7 @@ const OfficeMap: React.FC = () => {
                                     href="https://maps.google.com/?q=San+Francisco,+CA" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-3.5 rounded-full font-bold shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2"
+                                    className="w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-3.5 rounded-full font-bold shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
                                 >
                                     <span className="material-icons text-[20px]">directions</span>
                                     {t('get_directions', 'Get Directions')}

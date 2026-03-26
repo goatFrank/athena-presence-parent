@@ -436,28 +436,28 @@ const Planning: React.FC = () => {
                     {/* Block 2: Calendar Area (Second on mobile, first block on lg) */}
                     <div className="order-2 lg:order-1 lg:col-span-8 lg:row-span-2 space-y-8">
                         {/* Month Header */}
-                        <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-soft-glow border border-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                        <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-soft-glow border border-white p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
                                 <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600">
                                     <span className="material-icons text-3xl">calendar_month</span>
                                 </div>
-                                <div>
-                                    <h2 className="text-3xl font-extrabold text-slate-800">
+                                <div className="truncate">
+                                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 truncate">
                                         {monthNames[currentMonth]} <span className="text-indigo-400">{currentYear}</span>
                                     </h2>
-                                    <p className="text-slate-500 font-medium">
+                                    <p className="text-slate-500 font-medium text-sm md:text-base">
                                         {t('where_create_magic')}
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center bg-white rounded-2xl p-1.5 shadow-sm border border-indigo-50">
-                                <button onClick={goToPrevMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
+                            <div className="flex items-center bg-white rounded-2xl p-1 shadow-sm border border-indigo-50 w-full lg:w-auto justify-between lg:justify-start">
+                                <button onClick={goToPrevMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0 shrink-0">
                                     <span className="material-icons">chevron_left</span>
                                 </button>
-                                <button onClick={goToToday} className="px-6 font-bold text-slate-600 select-none bg-transparent hover:text-indigo-600 transition-colors border-0">
+                                <button onClick={goToToday} className="flex-1 lg:flex-none px-4 md:px-6 font-bold text-slate-600 select-none bg-transparent hover:text-indigo-600 transition-colors border-0 text-center text-sm md:text-base">
                                     {t('today')}
                                 </button>
-                                <button onClick={goToNextMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0">
+                                <button onClick={goToNextMonth} className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-indigo-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border-0 shrink-0">
                                     <span className="material-icons">chevron_right</span>
                                 </button>
                             </div>

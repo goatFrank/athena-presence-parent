@@ -178,7 +178,7 @@ const Team: React.FC = () => {
             <Sidebar />
 
             {/* Main Content wrapper */}
-            <div className="flex-1 flex flex-col ml-0 md:ml-80 lg:mr-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="flex-1 flex flex-col ml-0 md:ml-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 <main className="flex-1 w-full max-w-[1440px] mx-auto pt-20 px-4 pb-4 md:p-10 flex flex-col gap-6 md:gap-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="px-1 md:px-0">
@@ -188,105 +188,107 @@ const Team: React.FC = () => {
                     </div>
 
                     {/* Merged Dashboard Banner */}
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-8 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 md:p-8 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-10 relative overflow-hidden">
                         <div className="absolute -top-20 -right-20 w-60 h-60 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
                         <div className="absolute bottom-10 -left-10 w-40 h-40 bg-purple-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
                         <div className="flex-1 w-full relative z-10">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                                <h2 className="text-xl font-bold text-[#0e121b] dark:text-white flex items-center gap-3">
-                                    <span className="material-symbols-outlined text-purple-500">calendar_month</span>
-                                    {i18n.language === 'it'
-                                        ? `Riepilogo presenze del ${getFormattedDate(selectedDate)}`
-                                        : t('presence_summary_for', { date: getFormattedDate(selectedDate) })}
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                                <h2 className="text-lg md:text-xl font-bold text-[#0e121b] dark:text-white flex items-center gap-3 min-w-0">
+                                    <span className="material-symbols-outlined text-purple-500 flex-shrink-0">calendar_month</span>
+                                    <span className="truncate">
+                                        {i18n.language === 'it'
+                                            ? `Riepilogo presenze del ${getFormattedDate(selectedDate)}`
+                                            : t('presence_summary_for', { date: getFormattedDate(selectedDate) })}
+                                    </span>
                                 </h2>
 
                                 {/* Date Navigation */}
-                                <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-1 shadow-sm border border-indigo-50 dark:border-slate-700 w-full sm:w-auto justify-between sm:justify-start">
+                                <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-1 shadow-sm border border-indigo-50 dark:border-slate-700 w-full lg:w-auto justify-between lg:justify-start shrink-0">
                                     <button
                                         onClick={() => changeDate(-1)}
-                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm border border-slate-100 dark:border-slate-700"
+                                        className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm border border-slate-100 dark:border-slate-700"
                                         title={t('previous_day')}
                                     >
-                                        <span className="material-icons">chevron_left</span>
+                                        <span className="material-icons text-xl">chevron_left</span>
                                     </button>
 
                                     <button
                                         onClick={() => setSelectedDate(new Date())}
-                                        className="px-4 md:px-6 font-bold text-sm md:text-base text-slate-700 dark:text-slate-200 select-none bg-transparent hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors border-0 capitalize"
+                                        className="px-3 md:px-6 font-bold text-xs md:text-sm text-slate-700 dark:text-slate-200 select-none bg-transparent hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors border-0 capitalize truncate text-center flex-1 lg:flex-none"
                                     >
                                         {getDayName(selectedDate)}
                                     </button>
 
                                     <button
                                         onClick={() => changeDate(1)}
-                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm border border-slate-100 dark:border-slate-700"
+                                        className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm border border-slate-100 dark:border-slate-700"
                                         title={t('next_day')}
                                     >
-                                        <span className="material-icons">chevron_right</span>
+                                        <span className="material-icons text-xl">chevron_right</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-4 sm:gap-8 lg:gap-12 w-full">
-                                <div className="flex flex-col gap-1">
+                            <div className="grid grid-cols-2 min-[1100px]:flex min-[1100px]:flex-wrap gap-4 sm:gap-6 lg:gap-10 w-full">
+                                <div className="flex flex-col gap-0.5 md:gap-1">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"></div>
-                                        <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{t('in_office')}</span>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+                                        <span className="text-[10px] md:text-xs font-bold text-[#4e6797] dark:text-slate-400 uppercase tracking-widest">{t('in_office')}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1.5 md:gap-2">
-                                        <span className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white">{inOfficeCount}</span>
-                                        <span className="text-xs md:text-sm text-purple-500 font-bold">{inOfficePct}%</span>
+                                        <span className="text-xl md:text-2xl font-black text-[#0e121b] dark:text-white">{inOfficeCount}</span>
+                                        <span className="text-[10px] md:text-xs text-purple-500 font-bold">{inOfficePct}%</span>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-1">
+                                <div className="flex flex-col gap-0.5 md:gap-1">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-sky-400 dark:bg-sky-400"></div>
-                                        <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{t('remote_label')}</span>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-sky-400"></div>
+                                        <span className="text-[10px] md:text-xs font-bold text-[#4e6797] dark:text-slate-400 uppercase tracking-widest">{t('remote_label')}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1.5 md:gap-2">
-                                        <span className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white">{remoteCount}</span>
-                                        <span className="text-xs md:text-sm text-sky-400 font-bold">{remotePct}%</span>
+                                        <span className="text-xl md:text-2xl font-black text-[#0e121b] dark:text-white">{remoteCount}</span>
+                                        <span className="text-[10px] md:text-xs text-sky-400 font-bold">{remotePct}%</span>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-1">
+                                <div className="flex flex-col gap-0.5 md:gap-1">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-gradient-to-r from-red-400 to-red-500"></div>
-                                        <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{t('absent')}</span>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-red-400 to-red-500"></div>
+                                        <span className="text-[10px] md:text-xs font-bold text-[#4e6797] dark:text-slate-400 uppercase tracking-widest">{t('absent')}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1.5 md:gap-2">
-                                        <span className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white">{leaveCount}</span>
-                                        <span className="text-xs md:text-sm text-red-500 font-bold">{leavePct}%</span>
+                                        <span className="text-xl md:text-2xl font-black text-[#0e121b] dark:text-white">{leaveCount}</span>
+                                        <span className="text-[10px] md:text-xs text-red-500 font-bold">{leavePct}%</span>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-1">
+                                <div className="flex flex-col gap-0.5 md:gap-1">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-600"></div>
-                                        <span className="text-sm font-medium text-[#4e6797] dark:text-slate-400 uppercase tracking-wide">{i18n.language === 'it' ? 'Non Inserita' : 'Unmarked'}</span>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-600"></div>
+                                        <span className="text-[10px] md:text-xs font-bold text-[#4e6797] dark:text-slate-400 uppercase tracking-widest truncate max-w-[80px]">{i18n.language === 'it' ? 'Extra' : 'Unmarked'}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1.5 md:gap-2">
-                                        <span className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white">{unmarkedCount}</span>
-                                        <span className="text-xs md:text-sm text-slate-500 font-bold">{unmarkedPct}%</span>
+                                        <span className="text-xl md:text-2xl font-black text-[#0e121b] dark:text-white">{unmarkedCount}</span>
+                                        <span className="text-[10px] md:text-xs text-slate-500 font-bold">{unmarkedPct}%</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="shrink-0 relative z-10 hidden sm:flex pr-4">
-                            <div className="w-32 h-32 rounded-full relative flex items-center justify-center transition-transform duration-500 hover:scale-105 shadow-xl shadow-purple-500/10" style={isWeekendEmpty ? {background: '#e2e8f0'} : { background: dynamicGradient }}>
-                                <div className="w-24 h-24 rounded-full bg-white dark:bg-slate-800 flex flex-col items-center justify-center shadow-inner">
-                                    <span className="text-3xl font-black text-[#0e121b] dark:text-white">{isWeekendEmpty ? 0 : colleagues.length}</span>
-                                    <span className="text-[10px] text-[#4e6797] font-bold uppercase tracking-widest mt-0.5">{t('totals')}</span>
+                        <div className="shrink-0 relative z-10 hidden sm:flex lg:pr-4">
+                            <div className="w-28 h-28 md:w-32 md:h-32 rounded-full relative flex items-center justify-center transition-transform duration-500 hover:scale-105 shadow-xl shadow-purple-500/10" style={isWeekendEmpty ? {background: '#e2e8f0'} : { background: dynamicGradient }}>
+                                <div className="w-20 md:w-24 h-20 md:h-24 rounded-full bg-white dark:bg-slate-800 flex flex-col items-center justify-center shadow-inner">
+                                    <span className="text-2xl md:text-3xl font-black text-[#0e121b] dark:text-white">{isWeekendEmpty ? 0 : colleagues.length}</span>
+                                    <span className="text-[9px] md:text-[10px] text-[#4e6797] font-bold uppercase tracking-widest mt-0.5">{t('totals')}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Filters & Search */}
-                    <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
                         <div className="relative flex-1 group">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#4e6797] group-focus-within:text-blue-500 transition-colors">
                                 <span className="material-symbols-outlined">search</span>
@@ -329,7 +331,7 @@ const Team: React.FC = () => {
                     </div>
 
                     {/* Team Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-1 min-[900px]:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
                         {isLoading ? (
                             <div className="col-span-full py-12 flex justify-center items-center">
                                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>

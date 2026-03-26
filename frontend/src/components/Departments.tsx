@@ -231,15 +231,18 @@ const Departments: React.FC = () => {
         <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
 
-            <div className="flex-1 ml-0 md:ml-80 overflow-y-auto h-screen scroll-smooth">
+            <div className="flex-1 ml-0 md:ml-80 flex flex-col overflow-y-auto h-screen scroll-smooth">
                 <main className="flex-1 w-full max-w-[1440px] mx-auto pt-20 px-4 pb-4 md:p-10 flex flex-col gap-6 md:gap-8">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                         <div className="px-1 md:px-0">
-                            <h1 className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white tracking-tight">
+                            <h1 className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white tracking-tight flex items-center gap-3">
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                                    <span className="material-icons text-[20px] md:text-[24px]">domain</span>
+                                </div>
                                 {t('departments', 'Dipartimenti')}
                             </h1>
-                            <p className="text-sm md:text-base text-[#4e6797] dark:text-slate-400 mt-1">
+                            <p className="text-sm md:text-base text-[#4e6797] dark:text-slate-400 mt-2 font-medium">
                                 {t('manage_departments', 'Gestisci i dipartimenti e i membri')}
                             </p>
                         </div>
