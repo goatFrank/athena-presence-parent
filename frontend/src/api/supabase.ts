@@ -7,6 +7,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Supabase URL and Anon Key must be defined in .env.local');
 }
 
+// Fix for Tauri/Desktop LockManager timeout
+// Some environments like Tauri on Mac have issues with Navigator LockManager
+if (typeof window !== 'undefined' && window.navigator && (window.navigator as any).locks) {
+    const locks = (window.navigator as any).locks;
+    const originalRequest = locks.request.bind(locks);
+    locks.request = async (name: string, options: any, callback: any) => {
+        if (name && typeof name === 'string' && name.includes('auth-token')) {
+            // Bypass lock for auth tokens to prevent 10s timeout
+            if (typeof options === 'function') return options();
+            if (typeof callback === 'function') return callback();
+            return;
+        }
+        return originalRequest(name, options, callback);
+    };
+}
+
 /**
  * Custom storage adapter that supports "Remember me" functionality.
  * - When "Remember me" is ON  → session is stored in localStorage (persists across browser close)
@@ -42,7 +58,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         storage: customStorage,
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: true,
+        detectSessionInUrl: false, // Disabled for desktop/Tauri environments
+        // @ts-ignore - lockType is a valid but sometimes untyped property in some supabase-js versions
+        lockType: 'null', // Fix for Tauri/Desktop lock timeout
     },
 });
 
