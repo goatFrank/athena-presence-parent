@@ -19,10 +19,10 @@ const Downloads: React.FC = () => {
     const handleDownload = (platform: 'windows' | 'macos') => {
         setIsDownloading(true);
 
-        // These paths point to the 'public' folder of the React app
+        // These paths point to the GitHub Release assets
         const downloadUrls = {
-            windows: '/downloads/Athena_0.1.0_x64_en-US.msi',
-            macos: '/downloads/Athena_0.1.0_x64.dmg'
+            windows: 'https://github.com/goatFrank/athena-presence-parent/releases/download/v1.0.1/Athena_1.0.1_x64_en-US.msi',
+            macos: 'https://github.com/goatFrank/athena-presence-parent/releases/download/v1.0.1/Athena_1.0.1_x64.dmg'
         };
 
         // Create a hidden link to trigger the download
@@ -136,7 +136,7 @@ const Downloads: React.FC = () => {
                         {/* Additional Info Footer */}
                         <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white dark:border-slate-700 rounded-[2rem] p-6 sm:p-8 text-center lg:text-left flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm">
                             <div className="space-y-1">
-                                <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">{t('version')} 0.1.0</h4>
+                                <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">{t('version')} 1.0.1</h4>
                                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Stable Build • Released Mar 2026</p>
                             </div>
                             <div className="flex items-center gap-3 sm:gap-4">
