@@ -62,7 +62,7 @@ const Downloads: React.FC = () => {
     return (
         <div className="bg-[#f8fafc] dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 min-h-screen flex w-full overflow-hidden font-display">
             <Sidebar />
-            <div className="flex-1 ml-0 md:ml-80 flex flex-col h-screen overflow-y-auto scroll-smooth">
+            <div className="flex-1 lg:ml-80 flex flex-col h-screen overflow-y-auto scroll-smooth">
                 <main className="flex-1 pt-20 px-4 pb-12 md:p-8 lg:p-12">
                     <div className="max-w-5xl mx-auto space-y-12">
 

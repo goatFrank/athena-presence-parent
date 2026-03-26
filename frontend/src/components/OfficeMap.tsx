@@ -11,7 +11,7 @@ const OfficeMap: React.FC = () => {
         <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen">
             <div className="flex w-full overflow-hidden">
                 <Sidebar />
-                <div className="flex-1 flex flex-col ml-0 md:ml-80 pt-20 px-0 pb-0 md:mr-8 md:pt-0 md:px-0 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div className="flex-1 flex flex-col lg:ml-80 pt-20 px-0 pb-0 md:mr-8 md:pt-0 md:px-0 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <main className="max-w-5xl mx-auto w-full px-4 md:px-10 py-10 flex-1">
                         {/* Title and Breadcrumbs */}
                         <div className="mb-8 mt-4 flex flex-col lg:flex-row lg:items-center justify-between gap-6">

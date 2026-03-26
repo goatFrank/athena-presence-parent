@@ -178,7 +178,7 @@ const Team: React.FC = () => {
             <Sidebar />
 
             {/* Main Content wrapper */}
-            <div className="flex-1 flex flex-col ml-0 md:ml-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="flex-1 flex flex-col lg:ml-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 <main className="flex-1 w-full max-w-[1440px] mx-auto pt-20 px-4 pb-4 md:p-10 flex flex-col gap-6 md:gap-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="px-1 md:px-0">
