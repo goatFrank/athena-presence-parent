@@ -32,8 +32,8 @@ const Downloads: React.FC = () => {
 
             // Find the correct asset based on platform and standard naming
             const assetPatterns = {
-                windows: /Athena_.*_x64_en-US\.msi$/,
-                macos: /Athena_.*_x64\.dmg$/
+                windows: /Athena_.*_(x64|x86_64|en-US)\.msi$/,
+                macos: /Athena_.*_(x64|aarch64|arm64|universal)\.dmg$/
             };
 
             const targetAsset = assets.find((a: any) => assetPatterns[platform].test(a.name));
