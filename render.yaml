@@ -1,0 +1,79 @@
+services:
+  # Attendance Service
+  - type: web
+    name: attendance-service
+    env: docker
+    dockerfilePath: attendance-service/Dockerfile
+    plan: free
+    region: frankfurt # Or your preferred region
+    envVars:
+      - key: SERVER_PORT
+        value: 8081
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        sync: false # Set manually in Render UI or from Supabase
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_ISSUER
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: athena-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: athena-redis
+          property: port
+      - key: REDIS_PASSWORD
+        fromService:
+          type: redis
+          name: athena-redis
+          property: password
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://*.vercel.app" # Allows all Vercel subdomains
+
+  # Auth Service
+  - type: web
+    name: auth-service
+    env: docker
+    dockerfilePath: auth-service/Dockerfile
+    plan: free
+    region: frankfurt
+    envVars:
+      - key: SERVER_PORT
+        value: 8082
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: athena-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: athena-redis
+          property: port
+      - key: REDIS_PASSWORD
+        fromService:
+          type: redis
+          name: athena-redis
+          property: password
+
+  # Redis instance
+  - type: redis
+    name: athena-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: [] # Only allow internal Render services

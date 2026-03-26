@@ -41,6 +41,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_ATTENDANCE_API_URL: ${{ secrets.VITE_ATTENDANCE_API_URL || 'http://localhost:8081' }}
         with:
           tagName: v__VERSION__
           releaseName: "Athena v__VERSION__"
