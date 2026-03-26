@@ -108,11 +108,21 @@ const Sidebar: React.FC = () => {
             )}
 
             <aside className={`
-                font-display w-72 bg-surface-light/90 dark:bg-surface-dark/95 backdrop-blur-md border-r border-blue-100 dark:border-slate-800 
-                flex flex-col h-screen fixed left-0 top-0 z-[80] shadow-[4px_0_24px_rgba(0,0,0,0.02)] rounded-r-3xl my-4 ml-4 h-[calc(100vh-2rem)]
-                transition-transform duration-300 ease-in-out
-                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-[calc(100%+2rem)] lg:translate-x-0'}
+                font-display bg-surface-light/95 dark:bg-surface-dark/98 backdrop-blur-xl border-blue-100 dark:border-slate-800 
+                flex flex-col fixed z-[80] shadow-[0_-8px_32px_rgba(0,0,0,0.1)] lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)]
+                transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
+                
+                /* Desktop: Sidebar fixed on left */
+                lg:w-72 lg:h-[calc(100vh-2rem)] lg:left-4 lg:top-4 lg:rounded-3xl lg:border-r lg:translate-x-0
+                
+                /* Mobile: Bottom Sheet */
+                xs:w-full lg:w-72 bottom-0 left-0 right-0 h-auto max-h-[85vh] rounded-t-[2.5rem] border-t
+                ${isMobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-full lg:translate-y-0 opacity-0 lg:opacity-100'}
             `}>
+                {/* Bottom Sheet Handle (Mobile only) */}
+                <div className="lg:hidden flex justify-center p-3 pt-4">
+                    <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full opacity-50" />
+                </div>
                 <div className="p-8 pb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <img src={athenaLogo} alt="Athena" className="w-10 h-10 rounded-2xl shadow-lg" />
@@ -137,8 +147,8 @@ const Sidebar: React.FC = () => {
                     </div>
                 </div>
 
-                <nav ref={navRef} className="flex-1 px-6 space-y-3 mt-6 overflow-y-auto scroll-smooth">
-                    <Link to="/dashboard" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/dashboard' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
+                <nav ref={navRef} className="flex-1 px-6 space-y-2 mt-2 lg:mt-6 overflow-y-auto scroll-smooth pb-10 lg:pb-0">
+                    <Link to="/dashboard" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-4 lg:py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/dashboard' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
                         <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/dashboard' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>dashboard</span>
                         {t('dashboard_title')}
                     </Link>
@@ -178,7 +188,7 @@ const Sidebar: React.FC = () => {
                             </Link>
                         </>
                     )}
-                    <a className="flex items-center gap-4 px-5 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#analytics">
+                    <a className="flex items-center gap-4 px-5 py-4 lg:py-3.5 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 transition-all rounded-2xl font-medium group hover:shadow-soft" href="#analytics">
                         <span className="material-icons text-[22px] group-hover:text-blue-500 transition-colors">bar_chart</span>
                         {t('analytics')}
                     </a>
