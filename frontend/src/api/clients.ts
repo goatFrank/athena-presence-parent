@@ -4,7 +4,7 @@ import { supabase } from './supabase';
 
 // Istanza per Attendance Service (8081)
 export const attendanceApi = axios.create({
-    baseURL: import.meta.env.VITE_ATTENDANCE_API_URL,
+    baseURL: import.meta.env.VITE_ATTENDANCE_API_URL || 'http://localhost:8081',
 });
 
 // INTERCEPTOR: Inserisce automaticamente il token JWT in ogni chiamata alle presenze
