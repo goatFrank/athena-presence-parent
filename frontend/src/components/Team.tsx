@@ -179,7 +179,9 @@ const Team: React.FC = () => {
 
             {/* Main Content wrapper */}
             <div className="flex-1 flex flex-col lg:ml-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <main className="flex-1 w-full max-w-[1440px] mx-auto pt-20 px-4 pb-4 md:p-10 flex flex-col gap-6 md:gap-8">
+                {/* Mobile top bar spacer */}
+                <div className="lg:hidden h-16 shrink-0" />
+                <main className="flex-1 w-full max-w-[1440px] mx-auto pt-4 px-4 pb-4 md:p-10 flex flex-col gap-6 md:gap-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="px-1 md:px-0">
                             <h1 className="text-2xl md:text-3xl font-bold text-[#0e121b] dark:text-white tracking-tight">{t('team_overview')}</h1>

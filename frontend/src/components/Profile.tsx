@@ -215,7 +215,9 @@ const Profile: React.FC = () => {
         return (
             <div className="bg-[#f8fafc] dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
-            <main className="flex-1 lg:ml-80 pt-20 px-4 pb-4 md:p-8 lg:p-12 overflow-y-auto scroll-smooth flex items-center justify-center">
+            <main className="flex-1 lg:ml-80 px-4 pb-4 md:p-8 lg:p-12 overflow-y-auto scroll-smooth flex items-center justify-center">
+                {/* Mobile top bar spacer */}
+                <div className="lg:hidden h-16 shrink-0" />
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </main>
             </div>
@@ -233,7 +235,9 @@ const Profile: React.FC = () => {
         <div className="bg-[#f8fafc] dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 min-h-screen flex w-full overflow-hidden font-display">
             <Sidebar />
             <div className="flex-1 lg:ml-80 flex flex-col h-screen overflow-y-auto scroll-smooth overflow-x-hidden">
-                <main className="flex-1 pt-20 px-4 pb-4 md:p-8 lg:p-12">
+                {/* Mobile top bar spacer */}
+                <div className="lg:hidden h-16 shrink-0" />
+                <main className="flex-1 pt-4 px-4 pb-4 md:p-8 lg:p-12">
                     <div className="max-w-5xl mx-auto space-y-8">
 
                         {/* Header Area */}

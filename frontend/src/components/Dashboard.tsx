@@ -326,7 +326,9 @@ const Dashboard: React.FC = () => {
 
                 {/* Main Content wrapper */}
                 <div className="flex-1 flex flex-col lg:ml-80 lg:mr-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    <main className="flex-1 pt-20 px-4 pb-4 md:p-10 flex flex-col">
+                    {/* Mobile top bar spacer */}
+                    <div className="lg:hidden h-16 shrink-0" />
+                    <main className="flex-1 pt-4 px-4 pb-4 md:p-10 flex flex-col">
                         <header className="mb-6 md:mb-10 relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] min-h-[180px] md:min-h-[220px]">
                             <div className="relative z-10 p-6 md:p-10 flex items-center justify-between w-full h-full">
                                 <div className="max-w-lg">

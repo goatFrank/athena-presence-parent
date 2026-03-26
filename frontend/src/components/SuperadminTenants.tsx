@@ -54,8 +54,10 @@ const SuperadminTenants: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#f0f4f8] dark:bg-slate-900 flex">
             <Sidebar />
-            <main className="flex-1 lg:ml-80 mr-0 md:mr-4 md:my-0 md:my-4 pt-20 px-4 pb-4 md:p-8 md:pt-12 rounded-none md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/50 md:dark:bg-slate-800/50 md:backdrop-blur-sm shadow-soft overflow-y-auto scroll-smooth h-screen md:h-[calc(100vh-2rem)]">
-                <div className="max-w-5xl mx-auto">
+            <main className="flex-1 lg:ml-80 mr-0 md:mr-4 md:my-0 md:my-4 px-4 pb-4 md:p-8 md:pt-12 rounded-none md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/50 md:dark:bg-slate-800/50 md:backdrop-blur-sm shadow-soft overflow-y-auto scroll-smooth h-screen md:h-[calc(100vh-2rem)]">
+                {/* Mobile top bar spacer */}
+                <div className="lg:hidden h-16 shrink-0" />
+                <div className="max-w-5xl mx-auto pt-4 md:pt-0">
                     <header className="mb-8 md:mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="px-1 md:px-0">
                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">

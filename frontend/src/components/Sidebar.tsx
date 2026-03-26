@@ -86,18 +86,41 @@ const Sidebar: React.FC = () => {
         globalThis.location.href = '/';
     };
 
+    const getPageTitle = () => {
+        const path = location.pathname;
+        if (path === '/dashboard') return t('dashboard_title');
+        if (path === '/planning') return t('my_schedule');
+        if (path === '/team') return t('team');
+        if (path === '/office-map') return t('office_map');
+        if (path === '/profile') return t('profile');
+        if (path === '/departments') return t('departments', 'Dipartimenti');
+        if (path === '/employees') return t('employees', 'Dipendenti');
+        if (path === '/downloads') return t('download_desktop');
+        if (path === '/superadmin/tenants') return t('tenant_approvals');
+        if (path === '/superadmin/manage-tenants') return t('manage_tenants');
+        return 'Athena';
+    };
+
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
     return (
         <>
-            {/* Mobile Hamburger Button */}
-            <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden fixed top-5 left-5 z-[60] p-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition-all duration-200 group"
-                aria-label="Open Menu"
-            >
-                <span className="material-icons text-[28px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">menu</span>
-            </button>
+            {/* Mobile Header Bar */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 z-[60] flex items-center px-4">
+                <button
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                    aria-label="Open Menu"
+                >
+                    <span className="material-icons text-[28px]">menu</span>
+                </button>
+                <div className="flex-1 text-center">
+                    <h1 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                        {getPageTitle()}
+                    </h1>
+                </div>
+                <div className="w-10"></div> {/* Spacer for symmetry */}
+            </div>
 
             {/* Backdrop for Mobile */}
             {isMobileMenuOpen && (
@@ -113,10 +136,10 @@ const Sidebar: React.FC = () => {
                 transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
                 
                 /* Desktop: Sidebar fixed on left */
-                lg:w-72 lg:h-[calc(100vh-2rem)] lg:left-4 lg:top-4 lg:rounded-3xl lg:border-r lg:translate-x-0
+                lg:w-72 lg:h-screen lg:left-0 lg:top-0 lg:rounded-none lg:border-r lg:translate-x-0 lg:max-h-none
                 
                 /* Mobile: Bottom Sheet */
-                xs:w-full lg:w-72 bottom-0 left-0 right-0 h-auto max-h-[85vh] rounded-t-[2.5rem] border-t
+                xs:w-full bottom-0 left-0 right-0 h-auto max-h-[85vh] rounded-t-[2.5rem] border-t
                 ${isMobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-full lg:translate-y-0 opacity-0 lg:opacity-100'}
             `}>
                 {/* Bottom Sheet Handle (Mobile only) */}
