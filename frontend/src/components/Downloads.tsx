@@ -16,28 +16,47 @@ const Downloads: React.FC = () => {
         else if (userAgent.includes('linux')) setDetectedOS('linux');
     }, []);
 
-    const handleDownload = (platform: 'windows' | 'macos') => {
+    const handleDownload = async (platform: 'windows' | 'macos') => {
         setIsDownloading(true);
 
-        // These paths point to the GitHub Release assets
-        const downloadUrls = {
-            windows: 'https://github.com/goatFrank/athena-presence-parent/releases/download/v1.0.1/Athena_1.0.1_x64_en-US.msi',
-            macos: 'https://github.com/goatFrank/athena-presence-parent/releases/download/v1.0.1/Athena_1.0.1_x64.dmg'
-        };
+        try {
+            // Fetch the latest release information to get the actual asset URLs
+            const response = await fetch('https://api.github.com/repos/goatFrank/athena-presence-parent/releases/tags/v1.0.1');
+            
+            if (!response.ok) {
+                throw new Error('Release not found');
+            }
 
-        // Create a hidden link to trigger the download
-        const link = document.createElement('a');
-        link.href = downloadUrls[platform];
-        // The 'download' attribute helps hint the browser to save the file
-        link.setAttribute('download', platform === 'windows' ? 'Athena-Setup.msi' : 'Athena.dmg');
-        document.body.appendChild(link);
+            const releaseData = await response.json();
+            const assets = releaseData.assets || [];
 
-        setTimeout(() => {
-            link.click();
-            link.remove();
-            setIsDownloading(false);
+            // Find the correct asset based on platform and standard naming
+            const assetPatterns = {
+                windows: /Athena_.*_x64_en-US\.msi$/,
+                macos: /Athena_.*_x64\.dmg$/
+            };
+
+            const targetAsset = assets.find((a: any) => assetPatterns[platform].test(a.name));
+
+            if (!targetAsset) {
+                // Check if the release exists but assets are still building
+                throw new Error('BUILDING');
+            }
+
+            // Trigger the download using the browser's native download behavior
+            globalThis.location.href = targetAsset.browser_download_url;
+            
             addToast(t('download_started'), 'success');
-        }, 1500);
+        } catch (error: any) {
+            console.error('Download error:', error);
+            if (error.message === 'BUILDING') {
+                addToast(t('download_building', 'La build è ancora in corso su GitHub. Riprova tra circa 10-15 minuti.'), 'info');
+            } else {
+                addToast(t('download_error', 'Errore nel download: la versione v1.0.1 non è ancora pronta. Verifica lo stato su GitHub.'), 'error');
+            }
+        } finally {
+            setIsDownloading(false);
+        }
     };
 
     return (

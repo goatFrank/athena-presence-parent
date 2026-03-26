@@ -40,9 +40,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__ # tauri-action replaces this with the app version
+          tagName: v__VERSION__
           releaseName: "Athena v__VERSION__"
-          releaseBody: "Vedi gli asset allegati per scaricare l'installer."
-          releaseDraft: true
+          releaseBody: "Versione __VERSION__ - Installer per Windows e macOS."
+          releaseDraft: false
           prerelease: false
           projectPath: frontend
