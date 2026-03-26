@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../api/supabase';
@@ -14,6 +14,27 @@ const Sidebar: React.FC = () => {
     const [userAvatar, setUserAvatar] = useState<string>('');
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const navRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        const scrollToActive = () => {
+            if (navRef.current) {
+                const path = location.pathname;
+                const activeLink = navRef.current.querySelector(`a[href="${path}"]`) as HTMLElement;
+                
+                if (activeLink) {
+                    activeLink.scrollIntoView({ block: 'nearest', behavior: 'instant' as any });
+                }
+            }
+        };
+
+        // Run immediately
+        scrollToActive();
+        
+        // Also run after a short delay to handle cases where layout might still be settling
+        const timer = setTimeout(scrollToActive, 100);
+        return () => clearTimeout(timer);
+    }, [location.pathname, isSuperadmin, isTenantAdmin]);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -72,7 +93,7 @@ const Sidebar: React.FC = () => {
             {/* Mobile Hamburger Button */}
             <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden fixed top-5 left-5 z-[60] p-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition-all duration-200 group"
+                className="lg:hidden fixed top-5 left-5 z-[60] p-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition-all duration-200 group"
                 aria-label="Open Menu"
             >
                 <span className="material-icons text-[28px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">menu</span>
@@ -81,7 +102,7 @@ const Sidebar: React.FC = () => {
             {/* Backdrop for Mobile */}
             {isMobileMenuOpen && (
                 <div 
-                    className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[70] transition-opacity"
+                    className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[70] transition-opacity"
                     onClick={closeMobileMenu}
                 />
             )}
@@ -90,7 +111,7 @@ const Sidebar: React.FC = () => {
                 font-display w-72 bg-surface-light/90 dark:bg-surface-dark/95 backdrop-blur-md border-r border-blue-100 dark:border-slate-800 
                 flex flex-col h-screen fixed left-0 top-0 z-[80] shadow-[4px_0_24px_rgba(0,0,0,0.02)] rounded-r-3xl my-4 ml-4 h-[calc(100vh-2rem)]
                 transition-transform duration-300 ease-in-out
-                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-[calc(100%+2rem)] md:translate-x-0'}
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-[calc(100%+2rem)] lg:translate-x-0'}
             `}>
                 <div className="p-8 pb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -108,7 +129,7 @@ const Sidebar: React.FC = () => {
                         {/* Close button for mobile */}
                         <button 
                             onClick={closeMobileMenu} 
-                            className="md:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                            className="lg:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                             aria-label="Close Menu"
                         >
                             <span className="material-icons text-[24px]">close</span>
@@ -116,7 +137,7 @@ const Sidebar: React.FC = () => {
                     </div>
                 </div>
 
-                <nav className="flex-1 px-6 space-y-3 mt-6 overflow-y-auto scroll-smooth">
+                <nav ref={navRef} className="flex-1 px-6 space-y-3 mt-6 overflow-y-auto scroll-smooth">
                     <Link to="/dashboard" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/dashboard' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
                         <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/dashboard' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>dashboard</span>
                         {t('dashboard_title')}

@@ -75,7 +75,7 @@ const SuperadminManageTenants: React.FC = () => {
     return (
         <div className="flex h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto scroll-smooth pt-20 px-4 pb-4 md:p-8 ml-0 md:ml-80 mr-0 md:mr-4 md:my-0 md:my-4 rounded-none md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/50 md:dark:bg-slate-800/50 md:backdrop-blur-sm shadow-soft">
+            <main className="flex-1 overflow-y-auto scroll-smooth pt-20 px-4 pb-4 md:p-8 ml-0 lg:ml-80 mr-0 md:mr-4 md:my-0 md:my-4 rounded-none md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/50 md:dark:bg-slate-800/50 md:backdrop-blur-sm shadow-soft">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -93,14 +93,14 @@ const SuperadminManageTenants: React.FC = () => {
                                 <input 
                                     type="text"
                                     placeholder={t('search_tenants', 'Cerca...')}
-                                    className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none w-full md:w-64 text-sm md:text-base"
+                                    className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64 text-sm md:text-base transition-all"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
                             <button 
                                 onClick={fetchAllTenants}
-                                className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 transition-colors"
+                                className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 hover:border-blue-200 dark:hover:border-blue-900 transition-all"
                                 title={t('refresh', 'Aggiorna')}
                             >
                                 <span className="material-icons text-[20px]">refresh</span>
@@ -116,80 +116,95 @@ const SuperadminManageTenants: React.FC = () => {
                     )}
 
                     {/* Table Section */}
-                    <div className="bg-white dark:bg-slate-800 rounded-[32px] shadow-deep dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-x-auto">
-                        <table className="w-full text-left min-w-[800px]">
-                                <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
-                                    <tr>
-                                        <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider uppercase">{t('company_id', 'ID')}</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider uppercase">{t('company_name', 'Nome Azienda')}</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider uppercase">{t('status', 'Stato')}</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider uppercase text-right">{t('actions', 'Azioni')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                    {loading ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
-                                                <div className="flex flex-col items-center gap-3">
-                                                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                                    <span>{t('loading_tenants', 'Caricamento aziende...')}</span>
-                                                </div>
-                                            </td>
+                    <div className="bg-white dark:bg-slate-800 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[800px] border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
+                                            <th className="px-8 py-5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] w-24">{t('company_id', 'ID')}</th>
+                                            <th className="px-8 py-5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">{t('company_name', 'Nome Azienda')}</th>
+                                            <th className="px-8 py-5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] w-48">{t('status', 'Stato')}</th>
+                                            <th className="px-8 py-5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] w-48">{t('actions', 'Azioni')}</th>
                                         </tr>
-                                    ) : filteredTenants.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center text-slate-500 italic">
-                                                {t('no_tenants_found', 'Nessuna azienda trovata')}
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        filteredTenants.map((tenant) => (
-                                            <tr key={tenant.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <span className="text-slate-400 dark:text-slate-500 font-mono text-sm">#{tenant.id}</span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="font-semibold text-slate-900 dark:text-white">{tenant.name}</span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(tenant.status)} uppercase`}>
-                                                        {t(`status_${tenant.status.toLowerCase()}`, tenant.status)}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        {tenant.status === 'ACTIVE' ? (
-                                                            <button 
-                                                                onClick={() => handleUpdateStatus(tenant.id, tenant.name, 'ACTIVE')}
-                                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-lg transition-all text-xs font-bold group border border-slate-200 hover:border-red-100"
-                                                            >
-                                                                <span className="material-icons text-sm">block</span>
-                                                                {t('deactivate', 'Disattiva')}
-                                                            </button>
-                                                        ) : (
-                                                            tenant.status !== 'PENDING' && (
-                                                                <button 
-                                                                    onClick={() => handleUpdateStatus(tenant.id, tenant.name, tenant.status)}
-                                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all text-xs font-bold border border-blue-100"
-                                                                >
-                                                                    <span className="material-icons text-sm">check_circle</span>
-                                                                    {t('activate', 'Attiva')}
-                                                                </button>
-                                                            )
-                                                        )}
-                                                        
-                                                        {tenant.status === 'PENDING' && (
-                                                            <span className="text-xs text-slate-400 italic">
-                                                                {t('approve_on_other_page', 'Richiede approvazione')}
-                                                            </span>
-                                                        )}
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan={4} className="px-8 py-20 text-center text-slate-500">
+                                                    <div className="flex flex-col items-center gap-4">
+                                                        <div className="w-10 h-10 border-[3px] border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+                                                        <span className="text-sm font-medium animate-pulse">{t('loading_tenants', 'Caricamento aziende...')}</span>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                        </table>
+                                        ) : filteredTenants.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={4} className="px-8 py-20 text-center text-slate-400 italic font-medium">
+                                                    <div className="flex flex-col items-center gap-2 opacity-60">
+                                                        <span className="material-icons text-4xl mb-2">search_off</span>
+                                                        {t('no_tenants_found', 'Nessuna azienda trovata')}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredTenants.map((tenant) => (
+                                                <tr key={tenant.id} className="group hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all duration-200">
+                                                    <td className="px-8 py-5">
+                                                        <span className="text-slate-400 dark:text-slate-500 font-mono text-xs bg-slate-100 dark:bg-slate-700/50 px-2 py-1 rounded-md">#{tenant.id}</span>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-200 font-bold shadow-sm group-hover:scale-110 transition-transform">
+                                                                <img 
+                                                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(tenant.name)}&background=3B82F6&color=fff&rounded=false&bold=true&size=80`} 
+                                                                    alt="" 
+                                                                    className="w-full h-full rounded-xl object-cover"
+                                                                />
+                                                            </div>
+                                                            <span className="font-bold text-slate-800 dark:text-white text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{tenant.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-extrabold border shadow-sm ${getStatusColor(tenant.status)} uppercase tracking-wider`}>
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-current mr-2 animate-pulse"></span>
+                                                            {t(`status_${tenant.status.toLowerCase()}`, tenant.status)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-left">
+                                                        <div className="flex items-center justify-start gap-3 transition-opacity">
+                                                            {tenant.status === 'ACTIVE' ? (
+                                                                <button 
+                                                                    onClick={() => handleUpdateStatus(tenant.id, tenant.name, 'ACTIVE')}
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 rounded-xl transition-all text-xs font-bold border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-900 shadow-sm"
+                                                                >
+                                                                    <span className="material-icons text-sm">block</span>
+                                                                    {t('deactivate', 'Disattiva')}
+                                                                </button>
+                                                            ) : (
+                                                                tenant.status !== 'PENDING' && (
+                                                                    <button 
+                                                                        onClick={() => handleUpdateStatus(tenant.id, tenant.name, tenant.status)}
+                                                                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all text-xs font-bold shadow-md shadow-blue-200 dark:shadow-none hover:-translate-y-0.5"
+                                                                    >
+                                                                        <span className="material-icons text-sm">check_circle</span>
+                                                                        {t('activate', 'Attiva')}
+                                                                    </button>
+                                                                )
+                                                            )}
+                                                            
+                                                            {tenant.status === 'PENDING' && (
+                                                                <span className="text-xs text-slate-400 dark:text-slate-500 font-medium italic bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                                    {t('approve_on_other_page', 'Richiede approvazione')}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </main>

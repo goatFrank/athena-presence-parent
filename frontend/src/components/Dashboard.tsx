@@ -304,7 +304,7 @@ const Dashboard: React.FC = () => {
         return (
             <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
                 <Sidebar />
-                <div className="flex-1 flex flex-col ml-0 md:ml-80 lg:mr-80 items-center justify-center h-screen">
+                <div className="flex-1 flex flex-col ml-0 lg:ml-80 lg:mr-80 items-center justify-center h-screen">
                     <div className="flex flex-col items-center justify-center">
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
                         <p className="text-sm font-medium text-[#4e6797] dark:text-slate-400">
@@ -325,7 +325,7 @@ const Dashboard: React.FC = () => {
                 <Sidebar />
 
                 {/* Main Content wrapper */}
-                <div className="flex-1 flex flex-col ml-0 md:ml-80 lg:mr-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div className="flex-1 flex flex-col ml-0 lg:ml-80 lg:mr-80 overflow-y-auto h-screen scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <main className="flex-1 pt-20 px-4 pb-4 md:p-10 flex flex-col">
                         <header className="mb-6 md:mb-10 relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] min-h-[180px] md:min-h-[220px]">
                             <div className="relative z-10 p-6 md:p-10 flex items-center justify-between w-full h-full">
