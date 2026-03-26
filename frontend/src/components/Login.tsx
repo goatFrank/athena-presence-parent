@@ -14,6 +14,7 @@ const Login: React.FC = () => {
     const [magicLinkSent, setMagicLinkSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
+    const [showServerWarning, setShowServerWarning] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -43,6 +44,14 @@ const Login: React.FC = () => {
         };
         checkExistingSession();
     }, [navigate, t]);
+
+    useEffect(() => {
+        const hasShownWarning = sessionStorage.getItem('athena_server_warning_shown');
+        if (!hasShownWarning) {
+            setShowServerWarning(true);
+            sessionStorage.setItem('athena_server_warning_shown', 'true');
+        }
+    }, []);
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -372,6 +381,43 @@ const Login: React.FC = () => {
                     © 2024 Athena Inc. Internal System.
                 </p>
             </div>
+
+            {/* Server Cold Start Warning Modal */}
+            {showServerWarning && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-8 animate-in fade-in duration-300">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowServerWarning(false)}></div>
+                    
+                    {/* Modal Content */}
+                    <div className="relative bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+                        {/* Decorative background element */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full -ml-12 -mb-12 blur-2xl"></div>
+
+                        <div className="relative z-10 p-8 md:p-10 flex flex-col items-center text-center">
+                            {/* Warning Icon Container */}
+                            <div className="w-20 h-20 rounded-3xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mb-8 shadow-inner">
+                                <span className="material-icons text-4xl text-amber-500 animate-pulse">timer</span>
+                            </div>
+
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
+                                {t('attention', 'Attenzione')}
+                            </h3>
+                            
+                            <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed mb-10">
+                                {t('server_cold_start_warning', 'Il login potrebbe richiedere dai 30 ai 60 secondi se il portale è rimasto inutilizzato per un lungo periodo.')}
+                            </p>
+
+                            <button
+                                onClick={() => setShowServerWarning(false)}
+                                className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/25 transition-all duration-200 transform hover:-translate-y-0.5 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-500/20 outline-none"
+                            >
+                                {t('understand_close', 'Ho capito, chiudi')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 };
