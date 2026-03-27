@@ -211,6 +211,9 @@ const resources = {
             "reject": "Rifiuta",
             "company_name_label": "Nome Azienda",
             "status_label": "Stato",
+            "no_department_assigned": "Dipartimento non assegnato",
+            "no_location_assigned": "Sede non specificata",
+            "no_tenant_assigned": "Azienda non assegnata",
 
             // ── Invite Links ──
             "invite_employee": "Invita Dipendente",
@@ -459,6 +462,9 @@ const resources = {
             "reject": "Reject",
             "company_name_label": "Company Name",
             "status_label": "Status",
+            "no_department_assigned": "Unassigned Department",
+            "no_location_assigned": "Location not specified",
+            "no_tenant_assigned": "Unassigned Company",
 
             // ── Invite Links ──
             "invite_employee": "Invite Employee",
