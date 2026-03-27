@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +17,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final com.athena.attendance.repository.ProfileRepository profileRepository;
     private final com.athena.attendance.repository.TenantRepository tenantRepository;
+    private final com.athena.attendance.repository.LocationRepository locationRepository;
+    
+    private static final String UNKNOWN_TENANT = "Unknown Tenant";
+    private static final String ADMIN_NOT_FOUND = "Admin profile not found";
+    private static final String DEPT_NOT_FOUND = "Department not found";
 
     @Override
     public List<DepartmentDTO> getAllDepartments() {
@@ -35,7 +39,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         return depts.stream()
                 .map(dept -> mapToDTO(dept, tenantNameMap.get(dept.getTenantId())))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -48,10 +52,10 @@ public class DepartmentServiceImpl implements DepartmentService {
             if (tenantId != null) {
                 String tenantName = tenantRepository.findById(tenantId)
                         .map(com.athena.attendance.entity.Tenant::getName)
-                        .orElse("Unknown Tenant");
+                        .orElse(UNKNOWN_TENANT);
                 return departmentRepository.findByTenantId(tenantId).stream()
                         .map(dept -> mapToDTO(dept, tenantName))
-                        .collect(Collectors.toList());
+                        .toList();
             }
             return getAllDepartments();
         }
@@ -62,12 +66,12 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElse("Unknown Tenant");
         return departmentRepository.findByTenantId(effectiveTenantId).stream()
                 .map(dept -> mapToDTO(dept, tenantName))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public DepartmentDTO createDepartment(String name, java.util.UUID adminUserId) {
+    public DepartmentDTO createDepartment(String name, Long locationId, String locationName, String locationAddress, java.util.UUID adminUserId) {
         com.athena.attendance.entity.Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
@@ -79,17 +83,48 @@ public class DepartmentServiceImpl implements DepartmentService {
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono creare dipartimenti");
         }
 
+        Long finalLocationId = locationId;
+        if (finalLocationId == null && locationName != null && !locationName.trim().isEmpty()) {
+            finalLocationId = locationRepository.findByTenantIdAndName(adminProfile.getTenantId(), locationName.trim())
+                    .map(com.athena.attendance.entity.Location::getId)
+                    .orElseGet(() -> {
+                        com.athena.attendance.entity.Location newLoc = new com.athena.attendance.entity.Location();
+                        newLoc.setTenantId(adminProfile.getTenantId());
+                        newLoc.setName(locationName.trim());
+                        newLoc.setAddress(locationAddress);
+                        return locationRepository.save(newLoc).getId();
+                    });
+        } else if (finalLocationId != null && (locationName != null || locationAddress != null)) {
+            locationRepository.findById(finalLocationId).ifPresent(loc -> {
+                if (locationName != null && !locationName.trim().isEmpty()) loc.setName(locationName.trim());
+                if (locationAddress != null) loc.setAddress(locationAddress);
+                locationRepository.save(loc);
+            });
+        }
+
         Department dept = new Department();
         dept.setName(name);
         dept.setTenantId(adminProfile.getTenantId());
+        dept.setLocationId(finalLocationId);
         
         Department saved = departmentRepository.save(dept);
+        
+        // Associate location back to department if missing
+        if (finalLocationId != null) {
+            locationRepository.findById(finalLocationId).ifPresent(loc -> {
+                if (loc.getDepartmentId() == null) {
+                    loc.setDepartmentId(saved.getId());
+                    locationRepository.save(loc);
+                }
+            });
+        }
+
         return mapToDTO(saved);
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public DepartmentDTO renameDepartment(Long departmentId, String newName, java.util.UUID adminUserId) {
+    public DepartmentDTO updateDepartment(Long departmentId, String name, Long locationId, String locationName, String locationAddress, java.util.UUID adminUserId) {
         com.athena.attendance.entity.Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
@@ -98,7 +133,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 
              !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
             throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono rinominare dipartimenti");
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono modificare dipartimenti");
         }
 
         Department dept = departmentRepository.findById(departmentId)
@@ -110,10 +145,36 @@ public class DepartmentServiceImpl implements DepartmentService {
                     org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
         }
 
-        dept.setName(newName);
+        if (name != null) dept.setName(name);
+        
+        Long finalLocationId = locationId;
+        if (finalLocationId == null && locationName != null && !locationName.trim().isEmpty()) {
+            finalLocationId = locationRepository.findByTenantIdAndName(adminProfile.getTenantId(), locationName.trim())
+                    .map(com.athena.attendance.entity.Location::getId)
+                    .orElseGet(() -> {
+                        com.athena.attendance.entity.Location newLoc = new com.athena.attendance.entity.Location();
+                        newLoc.setTenantId(adminProfile.getTenantId());
+                        newLoc.setName(locationName.trim());
+                        newLoc.setAddress(locationAddress);
+                        newLoc.setDepartmentId(departmentId);
+                        return locationRepository.save(newLoc).getId();
+                    });
+        } else if (finalLocationId != null) {
+            final Long locId = finalLocationId;
+            locationRepository.findById(locId).ifPresent(loc -> {
+                if (locationName != null && !locationName.trim().isEmpty()) loc.setName(locationName.trim());
+                if (locationAddress != null) loc.setAddress(locationAddress);
+                if (loc.getDepartmentId() == null) loc.setDepartmentId(departmentId);
+                locationRepository.save(loc);
+            });
+        }
+
+        dept.setLocationId(finalLocationId);
+        
         Department saved = departmentRepository.save(dept);
         return mapToDTO(saved);
     }
+
 
     @Override
     @org.springframework.transaction.annotation.Transactional
@@ -233,11 +294,24 @@ public class DepartmentServiceImpl implements DepartmentService {
             tenantName = "Unknown Tenant";
         }
 
+        String locationName = null;
+        String locationAddress = null;
+        if (dept.getLocationId() != null) {
+            com.athena.attendance.entity.Location loc = locationRepository.findById(dept.getLocationId()).orElse(null);
+            if (loc != null) {
+                locationName = loc.getName();
+                locationAddress = loc.getAddress();
+            }
+        }
+
         return DepartmentDTO.builder()
                 .id(dept.getId())
                 .name(dept.getName())
                 .tenantId(dept.getTenantId())
                 .tenantName(tenantName)
+                .locationId(dept.getLocationId())
+                .locationName(locationName)
+                .locationAddress(locationAddress)
                 .build();
     }
 }

@@ -261,7 +261,7 @@ const Employees: React.FC = () => {
 
                                         {/* Department */}
                                         <span className="text-sm text-slate-600 dark:text-slate-400 truncate">
-                                            {p.departmentName && p.departmentName !== 'Unknown Department' ? p.departmentName : '—'}
+                                            {p.departmentName && p.departmentName !== 'Unknown Department' ? p.departmentName : t('no_department_assigned')}
                                         </span>
 
                                         {/* Tenant (superadmin only) */}

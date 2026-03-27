@@ -94,7 +94,7 @@ const Team: React.FC = () => {
                             full_name: c.fullName || 'Utente',
                             avatar_url: c.avatarUrl || '',
                             work_status: c.workStatus || 'unmarked',
-                            location_details: c.locationDetails || '',
+                            location_details: (c.locationDetails && c.locationDetails !== 'Unknown Location') ? c.locationDetails : (i18n.language === 'it' ? 'Sede non specificata' : 'Location not specified'),
                             role_description: c.roleDescription || ''
                         })).sort((a: any, b: any) => {
                             const statusWeight = (status: string) => {

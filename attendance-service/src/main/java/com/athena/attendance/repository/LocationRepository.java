@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long> {
     List<Location> findByTenantId(Long tenantId);
+    java.util.Optional<Location> findByTenantIdAndName(Long tenantId, String name);
+    java.util.Optional<Location> findByDepartmentId(Long departmentId);
 }

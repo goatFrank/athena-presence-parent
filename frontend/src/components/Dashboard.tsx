@@ -231,7 +231,7 @@ const Dashboard: React.FC = () => {
                                 full_name: p.full_name || 'Utente',
                                 avatar_url: p.avatar_url || '',
                                 work_status: workStatus,
-                                location_details: p.departments?.name || 'Senza Dipartimento'
+                                location_details: (p.departments?.name && p.departments?.name !== 'Unknown Department') ? p.departments.name : t('no_department_assigned')
                             };
                         })
                         .sort((a: any, b: any) => {

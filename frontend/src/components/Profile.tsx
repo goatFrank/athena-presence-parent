@@ -175,8 +175,8 @@ const Profile: React.FC = () => {
                         email: user.email || '',
                         fullName: profileData.fullName || user.email?.split('@')[0] || 'User',
                         avatarUrl: finalAvatarUrl,
-                        department: profileData.departmentName || 'Senza dipartimento',
-                        officeLocation: profileData.locationName || 'Senza sede assegnata',
+                        department: (profileData.departmentName && profileData.departmentName !== 'Unknown Department') ? profileData.departmentName : t('no_department_assigned'),
+                        officeLocation: (profileData.locationName && profileData.locationName !== 'Unknown Location') ? profileData.locationName : t('no_location_assigned'),
                         roleDescription: profileData.roleDescription || 'Team Member',
                         phone: profileData.profileCellphone || '',
                         allowOvertime: !!profileData.allowOvertime

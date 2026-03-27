@@ -18,5 +18,8 @@ public class DepartmentDTO {
     private String name;
     private Long tenantId;
     private String tenantName;
+    private Long locationId;
+    private String locationName;
+    private String locationAddress;
 }
 

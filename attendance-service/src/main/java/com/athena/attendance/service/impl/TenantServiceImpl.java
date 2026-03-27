@@ -1,16 +1,19 @@
 package com.athena.attendance.service.impl;
 
+import com.athena.attendance.entity.Profile;
 import com.athena.attendance.entity.Tenant;
 import com.athena.attendance.entity.TenantStatus;
 import com.athena.attendance.repository.ProfileRepository;
 import com.athena.attendance.repository.TenantRepository;
 import com.athena.attendance.service.TenantService;
+import com.athena.common.constants.RoleConstants;
 import com.athena.common.dto.TenantDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
@@ -37,6 +40,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
+    @Transactional
     public void updateTenantStatus(Long tenantId, TenantStatus status, UUID adminUserId) {
         verificaSuperAdmin(adminUserId);
 
@@ -48,14 +52,36 @@ public class TenantServiceImpl implements TenantService {
         tenantRepository.save(tenant);
     }
 
+    @Override
+    @Transactional
+    public void updateTenantName(String name, UUID adminUserId) {
+        Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Profilo admin non trovato"));
+
+        if (adminProfile.getRole() == null || 
+            (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 
+             !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Solo gli amministratori possono modificare il nome dell'azienda");
+        }
+
+        Tenant tenant = tenantRepository.findById(adminProfile.getTenantId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Tenant non trovato"));
+
+        tenant.setName(name);
+        tenantRepository.save(tenant);
+    }
+
     // --- Helper privato ---
 
     private void verificaSuperAdmin(UUID userId) {
-        com.athena.attendance.entity.Profile profile = profileRepository.findById(userId)
+        Profile profile = profileRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Profilo non trovato"));
 
-        if (profile.getRole() == null || !profile.getRole().getId().equals(1L)) {
+        if (profile.getRole() == null || !profile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Accesso negato: solo i superadmin possono gestire i tenant");

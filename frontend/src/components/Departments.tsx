@@ -11,6 +11,15 @@ interface Department {
     name: string;
     tenantId: number;
     tenantName?: string;
+    locationId?: number;
+    locationName?: string;
+    locationAddress?: string;
+}
+
+interface Location {
+    id: number;
+    name: string;
+    address?: string;
 }
 
 interface Profile {
@@ -27,14 +36,19 @@ const Departments: React.FC = () => {
     const [departments, setDepartments] = useState<Department[]>([]);
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [, setTenantId] = useState<number | null>(null);
+    const [tenantId, setTenantId] = useState<number | null>(null);
+    console.debug('Active tenantId:', tenantId);
     const [isSuperadmin, setIsSuperadmin] = useState(false);
     const [isDemo, setIsDemo] = useState(false);
+    const [locations, setLocations] = useState<Location[]>([]);
     const { addToast } = useToast();
 
     // Modal state
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [newDeptName, setNewDeptName] = useState('');
+    const [newDeptLocationId, setNewDeptLocationId] = useState<string>('');
+    const [newDeptLocationName, setNewDeptLocationName] = useState('');
+    const [newDeptLocationAddress, setNewDeptLocationAddress] = useState('');
     const [isCreating, setIsCreating] = useState(false);
 
     // Assignment state
@@ -46,6 +60,9 @@ const Departments: React.FC = () => {
     // Rename state
     const [renameDept, setRenameDept] = useState<Department | null>(null);
     const [renameValue, setRenameValue] = useState('');
+    const [renameLocationId, setRenameLocationId] = useState<string>('');
+    const [renameLocationName, setRenameLocationName] = useState('');
+    const [renameLocationAddress, setRenameLocationAddress] = useState('');
     const [isRenaming, setIsRenaming] = useState(false);
 
     // Delete state
@@ -54,6 +71,18 @@ const Departments: React.FC = () => {
 
     // Expanded department cards to show members
     const [expandedDepts, setExpandedDepts] = useState<Set<number>>(new Set());
+
+    const fetchLocations = async (isSA: boolean, tId: number | null) => {
+        try {
+            const locationsUrl = isSA ? '/api/v1/locations' : `/api/v1/locations?tenantId=${tId}`;
+            const locationsResponse = await attendanceApi.get(locationsUrl);
+            if (locationsResponse.status === 200 && locationsResponse.data.payload) {
+                setLocations(locationsResponse.data.payload);
+            }
+        } catch (error_) {
+            console.error("Error fetching locations:", error_);
+        }
+    };
 
     const toggleExpand = (deptId: number) => {
         setExpandedDepts(prev => {
@@ -67,6 +96,9 @@ const Departments: React.FC = () => {
     const openRenameModal = (dept: Department) => {
         setRenameDept(dept);
         setRenameValue(dept.name);
+        setRenameLocationId(dept.locationId ? dept.locationId.toString() : '');
+        setRenameLocationName(dept.locationName || '');
+        setRenameLocationAddress(dept.locationAddress || '');
     };
 
     const handleRenameDepartment = async (e: React.FormEvent) => {
@@ -74,9 +106,15 @@ const Departments: React.FC = () => {
         if (!renameDept || !renameValue.trim()) return;
         setIsRenaming(true);
         try {
-            const res = await attendanceApi.put(`/api/v1/departments/${renameDept.id}`, { name: renameValue.trim() });
+            const res = await attendanceApi.put(`/api/v1/departments/${renameDept.id}`, { 
+                name: renameValue.trim(),
+                locationId: renameLocationId ? Number.parseInt(renameLocationId) : null,
+                locationName: renameLocationName.trim() || null,
+                locationAddress: renameLocationAddress.trim() || null
+            });
             if (res.status === 200 && res.data.payload) {
                 setDepartments(prev => prev.map(d => d.id === renameDept.id ? { ...d, ...res.data.payload } : d));
+                await fetchLocations(isSuperadmin, tenantId);
                 setRenameDept(null);
             }
         } catch (err) {
@@ -160,6 +198,9 @@ const Departments: React.FC = () => {
                 } catch (profileErr) {
                     console.error("Error fetching profiles:", profileErr);
                 }
+
+                // 5. Fetch locations
+                await fetchLocations(isSA, currentTenantId);
             } catch (err) {
                 console.error("Error fetching data:", err);
             } finally {
@@ -175,11 +216,20 @@ const Departments: React.FC = () => {
         if (!newDeptName.trim()) return;
         setIsCreating(true);
         try {
-            const response = await attendanceApi.post('/api/v1/departments', { name: newDeptName.trim() });
+            const response = await attendanceApi.post('/api/v1/departments', { 
+                name: newDeptName.trim(),
+                locationId: newDeptLocationId ? Number.parseInt(newDeptLocationId) : null,
+                locationName: newDeptLocationName.trim() || null,
+                locationAddress: newDeptLocationAddress.trim() || null
+            });
             if (response.status === 200 && response.data.payload) {
                 setDepartments(prev => [...prev, response.data.payload]);
+                await fetchLocations(isSuperadmin, tenantId);
                 setIsCreateModalOpen(false);
                 setNewDeptName('');
+                setNewDeptLocationId('');
+                setNewDeptLocationName('');
+                setNewDeptLocationAddress('');
             }
         } catch (err) {
             console.error("Error creating department:", err);
@@ -297,13 +347,20 @@ const Departments: React.FC = () => {
                                                     <span className="material-icons text-[24px]">domain</span>
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h3 className="text-lg font-bold text-[#0e121b] dark:text-white truncate">
-                                                        {dept.name}
-                                                    </h3>
+                                                     <h3 className="text-lg font-bold text-[#0e121b] dark:text-white truncate">
+                                                         {dept.name}
+                                                     </h3>
+                                                     {dept.locationName && (
+                                                         <div className="flex items-center gap-1 text-blue-500 dark:text-blue-400 mt-0.5">
+                                                             <span className="material-icons text-[14px]">location_on</span>
+                                                             <span className="text-xs font-bold uppercase tracking-wider">{dept.locationName}</span>
+                                                         </div>
+                                                     )}
                                                     {(dept.tenantName || isSuperadmin) && (
                                                         <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                                                             {(() => {
                                                                 if (dept.tenantName && dept.tenantName !== 'Unknown Tenant') return dept.tenantName;
+                                                                return t('no_tenant_assigned');
                                                                 const p = profiles.find(prof => prof.tenantId === dept.tenantId);
                                                                 return p?.tenantName || (isSuperadmin ? `Tenant #${dept.tenantId}` : '');
                                                             })()}
@@ -446,6 +503,55 @@ const Departments: React.FC = () => {
                                     placeholder={t('department_name_placeholder', 'Es. Risorse Umane')}
                                 />
                             </div>
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                    {t('location', 'Sede di lavoro (opzionale)')}
+                                </label>
+                                <select
+                                    value={newDeptLocationId}
+                                    onChange={(e) => setNewDeptLocationId(e.target.value)}
+                                    className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white"
+                                >
+                                    <option value="">{t('select_location', 'Seleziona sede')}</option>
+                                    {locations.map(loc => (
+                                        <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="mb-6">
+                                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2">
+                                    <span className="w-8 h-[1px] bg-slate-200 dark:bg-slate-700"></span>
+                                    {t('or_create_new_location', 'Altrimenti inserisci una nuova sede:')}
+                                    <span className="flex-1 h-[1px] bg-slate-200 dark:bg-slate-700"></span>
+                                </p>
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                    {t('location_name', 'Nome Sede (opzionale)')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newDeptLocationName}
+                                    onChange={(e) => setNewDeptLocationName(e.target.value)}
+                                    disabled={!!newDeptLocationId}
+                                    className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${newDeptLocationId ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : ''}`}
+                                    placeholder={t('location_name_placeholder', 'Es. Sede Centrale')}
+                                />
+                                <p className="text-[10px] text-slate-400 mt-1 italic">{t('location_name_hint', 'Se selezioni una sede sopra, questa verrà aggiornata con i nuovi dati.')}</p>
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                    {t('location_address', 'Indirizzo Sede (opzionale)')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newDeptLocationAddress}
+                                    onChange={(e) => setNewDeptLocationAddress(e.target.value)}
+                                    disabled={!!newDeptLocationId}
+                                    className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${newDeptLocationId ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : ''}`}
+                                    placeholder={t('location_address_placeholder', 'Via Roma 1, Milano')}
+                                />
+                            </div>
                             <div className="flex justify-end gap-3">
                                 <button
                                     type="button"
@@ -505,24 +611,24 @@ const Departments: React.FC = () => {
                                                     </div>
                                                     <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xs font-bold shrink-0">
                                                         {(p.fullName || '?').charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="flex flex-col flex-1 min-w-0">
-                                                        <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.fullName || 'Utente sconosciuto'}</span>
-                                                        <span className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                                                            {p.role || 'Membro'}
-                                                            {p.departmentId && p.departmentId !== selectedDepartment.id && (
-                                                                <span className="ml-2 text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-1.5 py-0.5 rounded-md text-[10px]">
-                                                                    {departments.find(d => d.id === p.departmentId)?.name || `Dept #${p.departmentId}`}
+                                                            </div>
+                                                            <div className="flex flex-col flex-1 min-w-0">
+                                                                <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.fullName || 'Utente sconosciuto'}</span>
+                                                                <span className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                                                    {p.role || 'Membro'}
+                                                                    {p.departmentId && p.departmentId !== selectedDepartment.id && (
+                                                                        <span className="ml-2 text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-1.5 py-0.5 rounded-md text-[10px]">
+                                                                            {departments.find(d => d.id === p.departmentId)?.name || `Dept #${p.departmentId}`}
+                                                                        </span>
+                                                                    )}
                                                                 </span>
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                </label>
-                                            </li>
-                                        ))}
-                                </ul>
-                            )}
-                        </div>
+                                                            </div>
+                                                        </label>
+                                                    </li>
+                                                ))}
+                                        </ul>
+                                    )}
+                                </div>
                         <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex justify-end gap-3 mt-auto">
                             <button
                                 type="button"
@@ -569,11 +675,60 @@ const Departments: React.FC = () => {
                                 <input
                                     type="text"
                                     required
-                                    value={renameValue}
-                                    onChange={(e) => setRenameValue(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white"
-                                />
-                            </div>
+                                     value={renameValue}
+                                     onChange={(e) => setRenameValue(e.target.value)}
+                                     className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white"
+                                 />
+                             </div>
+                             <div className="mb-6">
+                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                     {t('location', 'Sede di lavoro (opzionale)')}
+                                 </label>
+                                 <select
+                                     value={renameLocationId}
+                                     onChange={(e) => setRenameLocationId(e.target.value)}
+                                     className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white"
+                                 >
+                                     <option value="">{t('select_location', 'Seleziona sede')}</option>
+                                     {locations.map(loc => (
+                                         <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                     ))}
+                                 </select>
+                             </div>
+
+                             <div className="mb-6">
+                                 <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2">
+                                     <span className="w-8 h-[1px] bg-slate-200 dark:bg-slate-700"></span>
+                                     {t('or_create_new_location', 'Altrimenti inserisci una nuova sede:')}
+                                     <span className="flex-1 h-[1px] bg-slate-200 dark:bg-slate-700"></span>
+                                 </p>
+                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                     {t('location_name', 'Nome Sede (opzionale)')}
+                                 </label>
+                                 <input
+                                     type="text"
+                                     value={renameLocationName}
+                                     onChange={(e) => setRenameLocationName(e.target.value)}
+                                     disabled={!!renameLocationId}
+                                     className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${renameLocationId ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : ''}`}
+                                     placeholder={t('location_name_placeholder', 'Es. Sede Centrale')}
+                                 />
+                                 <p className="text-[10px] text-slate-400 mt-1 italic">{t('location_name_hint_edit', 'Modifica il nome della sede esistente o creane una nuova lasciando vuoto il selettore sopra.')}</p>
+                             </div>
+
+                             <div className="mb-6">
+                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                     {t('location_address', 'Indirizzo Sede (opzionale)')}
+                                 </label>
+                                 <input
+                                     type="text"
+                                     value={renameLocationAddress}
+                                     onChange={(e) => setRenameLocationAddress(e.target.value)}
+                                     disabled={!!renameLocationId}
+                                     className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${renameLocationId ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : ''}`}
+                                     placeholder={t('location_address_placeholder', 'Via Roma 1, Milano')}
+                                 />
+                             </div>
                             <div className="flex justify-end gap-3">
                                 <button
                                     type="button"

@@ -98,6 +98,7 @@ const Sidebar: React.FC = () => {
         if (path === '/downloads') return t('download_desktop');
         if (path === '/superadmin/tenants') return t('tenant_approvals');
         if (path === '/superadmin/manage-tenants') return t('manage_tenants');
+        if (path === '/settings') return t('settings', 'Impostazioni');
         return 'Athena';
     };
 
@@ -197,6 +198,12 @@ const Sidebar: React.FC = () => {
                         <Link to="/employees" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/employees' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
                             <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/employees' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>badge</span>
                             {t('employees', 'Dipendenti')}
+                        </Link>
+                    )}
+                    {(isSuperadmin || isTenantAdmin) && (
+                        <Link to="/settings" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/settings' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
+                            <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/settings' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>settings</span>
+                            {t('settings', 'Impostazioni')}
                         </Link>
                     )}
                     {isSuperadmin && (

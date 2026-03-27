@@ -122,5 +122,21 @@ public class ProfileController {
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
+
+    @org.springframework.web.bind.annotation.PutMapping("/{profileId}/role")
+    @Operation(summary = "Aggiorna il ruolo di un utente (solo per ADMIN_TENANT o SUPERADMIN)")
+    public ResponseEntity<ResponseDTO<Void>> updateProfileRole(
+            @AuthenticationPrincipal Jwt jwt,
+            @org.springframework.web.bind.annotation.PathVariable UUID profileId,
+            @org.springframework.web.bind.annotation.RequestParam Long roleId) {
+        
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        profileService.updateProfileRole(profileId, roleId, adminUserId);
+        
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("User role updated successfully")
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
 }
 

@@ -10,4 +10,5 @@ public interface TenantService {
     Page<TenantDTO> getAllTenants(UUID adminUserId, Pageable pageable);
     Page<TenantDTO> getPendingTenants(UUID adminUserId, Pageable pageable);
     void updateTenantStatus(Long tenantId, TenantStatus status, UUID adminUserId);
+    void updateTenantName(String name, UUID adminUserId);
 }

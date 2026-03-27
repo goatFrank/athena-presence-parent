@@ -26,6 +26,9 @@ public class Location {
     @Column(name = "address")
     private String address;
 
+    @Column(name = "department_id")
+    private Long departmentId;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 }

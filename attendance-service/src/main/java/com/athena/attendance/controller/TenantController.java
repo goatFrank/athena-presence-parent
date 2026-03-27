@@ -1,10 +1,10 @@
 package com.athena.attendance.controller;
 
 import com.athena.attendance.service.TenantService;
-import com.athena.attendance.entity.TenantStatus;
 import com.athena.common.dto.ResponseDTO;
-import com.athena.common.dto.TenantDTO;
 import com.athena.common.enums.ResponseStatus;
+import com.athena.common.dto.TenantDTO;
+import com.athena.attendance.entity.TenantStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -20,36 +20,55 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/tenants")
 @RequiredArgsConstructor
-@Tag(name = "Tenants", description = "API per la gestione dei Tenant")
+@Tag(name = "Tenant Management", description = "Endpoints per la gestione dei tenant (aziende)")
 public class TenantController {
 
     private final TenantService tenantService;
+
+    @Operation(summary = "Aggiorna il nome dell'azienda (solo per ADMIN_TENANT o SUPERADMIN)")
+    @PutMapping("/me")
+    public ResponseEntity<ResponseDTO<Void>> updateMyTenantName(
+            @AuthenticationPrincipal Jwt jwt,
+            @jakarta.validation.Valid @RequestBody TenantDTO request) {
+        
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        tenantService.updateTenantName(request.getName(), adminUserId);
+        
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .status(ResponseStatus.SUCCESS)
+                .message("Company name updated successfully")
+                .build());
+    }
 
     @GetMapping("/all")
     @Operation(summary = "Recupera la lista di tutti i tenant (solo superadmin)")
     public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getAllTenants(
             @AuthenticationPrincipal Jwt jwt,
-            @org.springframework.data.web.PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
+        
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         Page<TenantDTO> tenants = tenantService.getAllTenants(adminUserId, pageable);
+        
         return ResponseEntity.ok(ResponseDTO.<Page<TenantDTO>>builder()
-                .message("Lista tenant recuperata con successo")
-                .payload(tenants)
                 .status(ResponseStatus.SUCCESS)
+                .payload(tenants)
+                .message("Tenants retrieved successfully")
                 .build());
     }
- 
+
     @GetMapping("/pending")
     @Operation(summary = "Recupera la lista dei tenant in attesa di approvazione (solo superadmin)")
     public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getPendingTenants(
             @AuthenticationPrincipal Jwt jwt,
-            @org.springframework.data.web.PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
+        
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         Page<TenantDTO> tenants = tenantService.getPendingTenants(adminUserId, pageable);
+        
         return ResponseEntity.ok(ResponseDTO.<Page<TenantDTO>>builder()
-                .message("Lista tenant in attesa recuperata con successo")
-                .payload(tenants)
                 .status(ResponseStatus.SUCCESS)
+                .payload(tenants)
+                .message("Pending tenants retrieved successfully")
                 .build());
     }
 
@@ -58,11 +77,13 @@ public class TenantController {
     public ResponseEntity<ResponseDTO<Void>> approveTenant(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id) {
+        
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         tenantService.updateTenantStatus(id, TenantStatus.ACTIVE, adminUserId);
+        
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
-                .message("Tenant approvato con successo")
                 .status(ResponseStatus.SUCCESS)
+                .message("Tenant approved successfully")
                 .build());
     }
 
@@ -71,26 +92,13 @@ public class TenantController {
     public ResponseEntity<ResponseDTO<Void>> rejectTenant(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id) {
+        
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         tenantService.updateTenantStatus(id, TenantStatus.REJECTED, adminUserId);
+        
         return ResponseEntity.ok(ResponseDTO.<Void>builder()
-                .message("Tenant rifiutato con successo")
                 .status(ResponseStatus.SUCCESS)
-                .build());
-    }
-
-    @PutMapping("/{id}/status")
-    @Operation(summary = "Aggiorna lo stato di un tenant (solo superadmin)")
-    public ResponseEntity<ResponseDTO<Void>> updateTenantStatus(
-            @AuthenticationPrincipal Jwt jwt,
-            @PathVariable Long id,
-            @RequestParam TenantStatus status) {
-        UUID adminUserId = UUID.fromString(jwt.getSubject());
-        tenantService.updateTenantStatus(id, status, adminUserId);
-        return ResponseEntity.ok(ResponseDTO.<Void>builder()
-                .message("Stato del tenant aggiornato con successo")
-                .status(ResponseStatus.SUCCESS)
+                .message("Tenant rejected successfully")
                 .build());
     }
 }
-

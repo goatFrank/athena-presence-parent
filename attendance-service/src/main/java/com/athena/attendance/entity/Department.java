@@ -23,6 +23,9 @@ public class Department {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "location_id")
+    private Long locationId;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 }

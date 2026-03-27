@@ -47,21 +47,21 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public Page<ProfileDTO> getProfilesByTenant(Long tenantId, UUID adminUserId, Pageable pageable) {
         Profile adminProfile = profileRepository.findById(adminUserId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
 
         if (adminProfile.getRole() == null
                 || (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)
                         && !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT)
                         && !adminProfile.getRole().getId().equals(RoleConstants.MANAGER))) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN,
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono vedere i profili del tenant");
         }
 
-        if (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && !adminProfile.getTenantId().equals(tenantId)) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN, "Non puoi vedere i profili di un altro tenant");
+        if (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && !java.util.Objects.equals(adminProfile.getTenantId(), tenantId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Non puoi vedere i profili di un altro tenant");
         }
 
         Page<Profile> profiles = profileRepository.findByTenantId(tenantId, pageable);
@@ -69,14 +69,14 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public Page<ProfileDTO> getAllProfiles(java.util.UUID adminUserId, Pageable pageable) {
+    public Page<ProfileDTO> getAllProfiles(UUID adminUserId, Pageable pageable) {
         Profile adminProfile = profileRepository.findById(adminUserId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
 
-        if (adminProfile.getRole() == null || !adminProfile.getRole().getId().equals(1L)) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo i superadmin possono vedere tutti i profili");
+        if (adminProfile.getRole() == null || !adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Solo i superadmin possono vedere tutti i profili");
         }
 
         Page<Profile> profiles = profileRepository.findAll(pageable);
@@ -115,38 +115,70 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
-    public void deleteProfile(java.util.UUID profileId, java.util.UUID adminUserId) {
+    @Transactional
+    public void updateProfileRole(UUID profileId, Long roleId, UUID adminUserId) {
         Profile adminProfile = profileRepository.findById(adminUserId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Admin profile not found"));
+
+        if (adminProfile.getRole() == null || 
+            (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 
+             !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Access denied");
+        }
+
+        Profile targetProfile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Target profile not found"));
+
+        if (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 
+            !java.util.Objects.equals(targetProfile.getTenantId(), adminProfile.getTenantId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "User does not belong to your tenant");
+        }
+
+        Role newRole = roleRepository.findById(roleId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Role not found"));
+
+        targetProfile.setRole(newRole);
+        profileRepository.save(targetProfile);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProfile(UUID profileId, UUID adminUserId) {
+        Profile adminProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
 
         if (adminProfile.getRole() == null
-                || (!adminProfile.getRole().getId().equals(1L)
+                || (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)
                         && !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT))) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN,
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono eliminare dipendenti");
         }
 
         Profile targetProfile = profileRepository.findById(profileId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "Profilo non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Profilo non trovato"));
 
-        // Tenant admin can only delete profiles in own tenant; superadmin can delete
-        // any
-        if (!adminProfile.getRole().getId().equals(1L)
-                && !adminProfile.getTenantId().equals(targetProfile.getTenantId())) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN,
+        // Tenant admin can only delete profiles in own tenant; superadmin can delete any
+        if (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)
+                && !java.util.Objects.equals(adminProfile.getTenantId(), targetProfile.getTenantId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
                     "Non puoi eliminare un dipendente di un altro tenant");
         }
 
         // Prevent self-deletion
         if (adminUserId.equals(profileId)) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "Non puoi eliminare il tuo stesso profilo");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Non puoi eliminare il tuo stesso profilo");
         }
+        
         attendanceRepository.deleteByUserId(targetProfile.getId());
         inviteLinkRepository.deleteBySenderIdOrManagerId(targetProfile.getId());
         profileRepository.nullifyManagerId(targetProfile.getId());
@@ -171,7 +203,7 @@ public class ProfileServiceImpl implements ProfileService {
             tenantStatus = tenant.getStatus() != null ? tenant.getStatus().name() : null;
         }
 
-        String departmentName = "Unknown Department";
+        String departmentName = null;
         Department dept = preFetchedDept;
         if (dept == null && profile.getDepartmentId() != null) {
             dept = departmentRepository.findById(profile.getDepartmentId()).orElse(null);
@@ -181,7 +213,7 @@ public class ProfileServiceImpl implements ProfileService {
             departmentName = dept.getName();
         }
 
-        String locationName = "Unknown Location";
+        String locationName = null;
         Location loc = preFetchedLoc;
         if (loc == null && profile.getLocationId() != null) {
             loc = locationRepository.findById(profile.getLocationId()).orElse(null);
