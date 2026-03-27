@@ -360,23 +360,23 @@ const Profile: React.FC = () => {
                                         <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full border-[8px] md:border-[10px] border-slate-50 dark:border-slate-700/50 flex items-center justify-center drop-shadow-sm shrink-0">
                                             {/* SVG Circular Progress Bar representing Remote/Office distribution */}
                                             <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                                {/* Background Track (Remote = Blue 500) */}
-                                                <path
-                                                    className="text-blue-500 dark:text-blue-500"
-                                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeDasharray="100, 100"
-                                                    strokeWidth="4"
+                                                {/* Base circle background */}
+                                                <circle cx="18" cy="18" r="15.9155" fill="none" className="stroke-slate-100 dark:stroke-slate-700" strokeWidth="4" />
+                                                
+                                                {/* Remote status (Sky) */}
+                                                <circle 
+                                                    cx="18" cy="18" r="15.9155" fill="none" 
+                                                    className="stroke-sky-500" strokeWidth="4" 
+                                                    strokeDasharray={`${remotePercent} 100`}
+                                                    style={{ transition: 'stroke-dasharray 1s ease-out' }}
                                                 />
-                                                {/* Foreground Track (Office = Amber 400) */}
-                                                <path
-                                                    className="text-amber-400 dark:text-amber-500"
-                                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeDasharray={`${officePercent}, 100`}
-                                                    strokeWidth="4"
+
+                                                {/* Office status (Indigo) - overlapping or offset */}
+                                                <circle 
+                                                    cx="18" cy="18" r="15.9155" fill="none" 
+                                                    className="stroke-indigo-600" strokeWidth="4" 
+                                                    strokeDasharray={`${officePercent} 100`}
+                                                    strokeDashoffset={-remotePercent}
                                                     style={{ transition: 'stroke-dasharray 1s ease-out' }}
                                                 />
                                             </svg>
@@ -385,14 +385,14 @@ const Profile: React.FC = () => {
                                         <div className="space-y-4 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                                             <div className="flex justify-between items-center">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></div>
+                                                    <div className="w-3 h-3 rounded-full bg-sky-500 shadow-sm shadow-sky-500/50"></div>
                                                     <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('remote_work')}</span>
                                                 </div>
                                                 <span className="text-sm font-bold text-slate-800 dark:text-white">{remotePercent}% <span className="text-slate-400 font-medium ml-1">({stats?.remoteDays || 0}d)</span></span>
                                             </div>
                                             <div className="flex justify-between items-center">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-3 h-3 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></div>
+                                                    <div className="w-3 h-3 rounded-full bg-indigo-600 shadow-sm shadow-indigo-600/50"></div>
                                                     <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('office')}</span>
                                                 </div>
                                                 <span className="text-sm font-bold text-slate-800 dark:text-white">{officePercent}% <span className="text-slate-400 font-medium ml-1">({stats?.officeDays || 0}d)</span></span>
