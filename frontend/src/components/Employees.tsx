@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import Footer from './Footer';
+import { useToast } from './Toast';
 
 interface Profile {
     id: string;
@@ -27,6 +28,8 @@ const Employees: React.FC = () => {
     const [departments, setDepartments] = useState<Department[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSuperadmin, setIsSuperadmin] = useState(false);
+    const [isDemo, setIsDemo] = useState(false);
+    const { addToast } = useToast();
     const [searchQuery, setSearchQuery] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -69,6 +72,7 @@ const Employees: React.FC = () => {
                     .single();
                 const isSA = roleData?.role_id === 1;
                 setIsSuperadmin(isSA);
+                setIsDemo(roleData?.role_id === 5 || roleData?.role_id === 6);
 
                 const meResponse = await attendanceApi.get('/api/v1/profiles/me');
                 if (meResponse.status !== 200 || !meResponse.data.payload) return;
@@ -119,6 +123,17 @@ const Employees: React.FC = () => {
     };
 
     const handleGenerateInviteLink = async () => {
+        if (isDemo) {
+            setIsGenerating(true);
+            setTimeout(() => {
+                const fakeToken = "demo-token-" + Math.random().toString(36).substring(7);
+                const link = `${globalThis.location.origin}/register?token=${fakeToken}`;
+                setGeneratedLink(link);
+                setIsGenerating(false);
+                addToast(t('demo_mode_invite_info', 'Simulazione: in un account reale verrebbe generato un link valido.'), 'info');
+            }, 800);
+            return;
+        }
         setIsGenerating(true);
         try {
             const res = await attendanceApi.post('/api/v1/invites/generate', {
@@ -127,9 +142,9 @@ const Employees: React.FC = () => {
                 managerId: inviteConfig.managerId || null,
                 departmentId: inviteConfig.departmentId ? Number.parseInt(inviteConfig.departmentId) : null
             });
-            if (res.status === 200 && res.data.payload) {
-                const token = res.data.payload.token;
-                const link = `${window.location.origin}/register?token=${token}`;
+            if (res.status === 200 && res.data?.payload) {
+                const { token } = res.data.payload;
+                const link = `${globalThis.location.origin}/register?token=${token}`;
                 setGeneratedLink(link);
             }
         } catch (err) {
@@ -160,7 +175,7 @@ const Employees: React.FC = () => {
         <div className="bg-[#f0f4f8] dark:bg-[#0f172a] text-[#0e121b] dark:text-slate-100 min-h-screen flex w-full overflow-hidden">
             <Sidebar />
 
-            <div className="flex-1 lg:ml-80 overflow-y-auto h-screen scroll-smooth">
+            <div className="flex-1 lg:ml-80 flex flex-col overflow-y-auto h-screen scroll-smooth">
                 {/* Mobile top bar spacer */}
                 <div className="lg:hidden h-16 shrink-0" />
                 <main className="flex-1 w-full max-w-[1440px] mx-auto pt-4 px-4 pb-4 md:p-10 flex flex-col gap-6 md:gap-8">

@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import Footer from './Footer';
+import { useToast } from './Toast';
 
 interface Department {
     id: number;
@@ -28,6 +29,8 @@ const Departments: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [, setTenantId] = useState<number | null>(null);
     const [isSuperadmin, setIsSuperadmin] = useState(false);
+    const [isDemo, setIsDemo] = useState(false);
+    const { addToast } = useToast();
 
     // Modal state
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -118,6 +121,7 @@ const Departments: React.FC = () => {
                     .single();
                 const isSA = roleData?.role_id === 1;
                 setIsSuperadmin(isSA);
+                setIsDemo(roleData?.role_id === 5 || roleData?.role_id === 6);
 
                 // 2. Get current user profile to find tenantId
                 const meResponse = await attendanceApi.get('/api/v1/profiles/me');
@@ -247,7 +251,13 @@ const Departments: React.FC = () => {
                             </p>
                         </div>
                         <button
-                            onClick={() => setIsCreateModalOpen(true)}
+                            onClick={() => {
+                                if (isDemo) {
+                                    addToast(t('demo_mode_create_dept', 'Questo è un account demo, creazione dipartimento disabilitata'), 'info');
+                                    return;
+                                }
+                                setIsCreateModalOpen(true);
+                            }}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm shadow-blue-500/20"
                         >
                             <span className="material-icons text-sm">add</span>
@@ -303,14 +313,28 @@ const Departments: React.FC = () => {
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0">
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); openRenameModal(dept); }}
+                                                    onClick={(e) => { 
+                                                        e.stopPropagation(); 
+                                                        if (isDemo) {
+                                                            addToast(t('demo_mode_edit_dept', 'Questo è un account demo, modifica dipartimento disabilitata'), 'info');
+                                                            return;
+                                                        }
+                                                        openRenameModal(dept); 
+                                                    }}
                                                     className="p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                                                     title={t('rename', 'Rinomina')}
                                                 >
                                                     <span className="material-icons text-lg">edit</span>
                                                 </button>
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); setDeleteDept(dept); }}
+                                                    onClick={(e) => { 
+                                                        e.stopPropagation(); 
+                                                        if (isDemo) {
+                                                            addToast(t('demo_mode_delete_dept', 'Questo è un account demo, eliminazione dipartimento disabilitata'), 'info');
+                                                            return;
+                                                        }
+                                                        setDeleteDept(dept); 
+                                                    }}
                                                     className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                                     title={t('delete_department', 'Elimina dipartimento')}
                                                 >
@@ -373,7 +397,13 @@ const Departments: React.FC = () => {
                                         {/* Action bar */}
                                         <div className="p-6 pt-4 mt-auto">
                                             <button
-                                                onClick={() => openAssignModal(dept)}
+                                                onClick={() => {
+                                                    if (isDemo) {
+                                                        addToast(t('demo_mode_assign_users', 'Questo è un account demo, assegnazione utenti disabilitata'), 'info');
+                                                        return;
+                                                    }
+                                                    openAssignModal(dept);
+                                                }}
                                                 className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
                                             >
                                                 <span className="material-icons text-sm">person_add</span>

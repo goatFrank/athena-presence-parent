@@ -58,7 +58,7 @@ const Sidebar: React.FC = () => {
                         setIsSuperadmin(true);
                     }
                     
-                    if (profile.role_id === 3 || roleName === 'AMMINISTRATORE_TENANT') {
+                    if (profile.role_id === 3 || profile.role_id === 5 || roleName === 'AMMINISTRATORE_TENANT') {
                         setIsTenantAdmin(true);
                     }
                     

@@ -28,8 +28,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
                 const { tenantStatus, roleId } = profile;
                 
                 const isSuperAdmin = roleId === 1;
+                const isDemo = roleId === 5 || roleId === 6;
                 const isActive = tenantStatus === 'ACTIVE';
-                const isInvitedUser = roleId === 3 || roleId === 4;
+                const isInvitedUser = roleId === 3 || roleId === 4 || isDemo;
                 const isPending = tenantStatus === 'PENDING';
 
                 if (isSuperAdmin || isActive || (isPending && isInvitedUser)) {

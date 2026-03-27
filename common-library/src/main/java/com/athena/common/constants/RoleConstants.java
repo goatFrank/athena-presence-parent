@@ -12,6 +12,8 @@ public class RoleConstants {
     public static final Long ADMIN_TENANT = 2L;
     public static final Long MANAGER = 3L;
     public static final Long EMPLOYEE = 4L;
+    public static final Long MANAGER_DEMO = 5L;
+    public static final Long EMPLOYEE_DEMO = 6L;
 
     private RoleConstants() {
         // Prevent instantiation

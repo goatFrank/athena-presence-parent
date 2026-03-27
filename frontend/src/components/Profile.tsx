@@ -4,6 +4,7 @@ import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import { useToast } from './Toast';
 
 interface UserProfile {
     id: string;
@@ -31,6 +32,8 @@ const Profile: React.FC = () => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isDemo, setIsDemo] = useState(false);
+    const { addToast } = useToast();
 
     // Settings mock state
     const [emailNotifications, setEmailNotifications] = useState(true);
@@ -84,6 +87,10 @@ const Profile: React.FC = () => {
 
     const handleAvatarUpload = async () => {
         if (!avatarFile || !profile) return;
+        if (isDemo) {
+            addToast(t('demo_mode_avatar_error', 'Questo è un account demo, aggiornamento avatar disabilitato'), 'info');
+            return;
+        }
 
         setIsUploading(true);
         setUploadError(null);
@@ -175,6 +182,7 @@ const Profile: React.FC = () => {
                         allowOvertime: !!profileData.allowOvertime
                     });
                     setEditPhone(profileData.profileCellphone || '');
+                    setIsDemo(profileData.roleId === 5 || profileData.roleId === 6);
                 }
 
                 // Fetch Work Statistics from backend
@@ -197,6 +205,10 @@ const Profile: React.FC = () => {
 
     const handleSaveProfile = async () => {
         if (!profile) return;
+        if (isDemo) {
+            addToast(t('demo_mode_profile_save', 'Questo è un account demo, salvataggio impostazioni disabilitato'), 'info');
+            return;
+        }
         setIsSaving(true);
         setSaveSuccess(false);
         try {

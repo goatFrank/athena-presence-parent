@@ -10,10 +10,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final RateLimitInterceptor rateLimitInterceptor;
+    private final com.athena.attendance.config.interceptor.ReadOnlyInterceptor readOnlyInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(rateLimitInterceptor)
                 .addPathPatterns("/api/v1/invites/validate/**", "/api/v1/profiles/setup", "/api/v1/profiles/me/avatar");
+
+        registry.addInterceptor(readOnlyInterceptor)
+                .addPathPatterns("/api/v1/**");
     }
 }

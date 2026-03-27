@@ -5,6 +5,7 @@ import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import { useToast } from './Toast';
 
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -104,6 +105,8 @@ const Planning: React.FC = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); // 0-indexed
     const [days, setDays] = useState<DayInfo[]>([]);
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
+    const [isDemo, setIsDemo] = useState(false);
+    const { addToast } = useToast();
     const [loading, setLoading] = useState(false);
 
     // Stats
@@ -120,12 +123,13 @@ const Planning: React.FC = () => {
         const fetchUser = async () => {
             try {
                 const res = await attendanceApi.get('/api/v1/profiles/me');
-                if (res.data && res.data.payload) {
+                if (res.data?.payload) {
                     const profile = res.data.payload;
                     setUserName(profile.fullName || 'User');
                     setUserTenantId(profile.tenantId);
                     setUserDeptId(profile.departmentId);
                     setAllowOvertime(!!profile.allowOvertime);
+                    setIsDemo(profile.roleId === 5 || profile.roleId === 6);
                 }
             } catch (err) {
                 console.error("Failed to fetch profile", err);
@@ -268,6 +272,10 @@ const Planning: React.FC = () => {
     // ── Save attendance ──
     const handleSelectStatus = async (dateIso: string, status: StatusType) => {
         setSelectedDay(null);
+        if (isDemo) {
+            addToast(t('demo_mode_planning_save', 'Questo è un account demo, salvataggio pianificazione disabilitato'), 'info');
+            return;
+        }
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
@@ -293,7 +301,10 @@ const Planning: React.FC = () => {
     // ── Delete attendance ──
     const handleDeleteAttendance = async (dateIso: string) => {
         setSelectedDay(null);
-
+        if (isDemo) {
+            addToast(t('demo_mode_planning_delete', 'Questo è un account demo, rimozione pianificazione disabilitata'), 'info');
+            return;
+        }
         try {
             await attendanceApi.delete('/api/v1/attendance', { params: { date: dateIso } });
             buildCalendar();
@@ -408,7 +419,7 @@ const Planning: React.FC = () => {
         >
             <Sidebar />
 
-            <div className="flex-1 lg:ml-80 overflow-y-auto scroll-smooth">
+            <div className="flex-1 lg:ml-80 flex flex-col overflow-y-auto scroll-smooth">
                 {/* Mobile top bar spacer */}
                 <div className="lg:hidden h-16 shrink-0" />
                 {/* ── Main Content ── */}
