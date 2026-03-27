@@ -509,7 +509,20 @@ const Departments: React.FC = () => {
                                 </label>
                                 <select
                                     value={newDeptLocationId}
-                                    onChange={(e) => setNewDeptLocationId(e.target.value)}
+                                    onChange={(e) => {
+                                        const locId = e.target.value;
+                                        setNewDeptLocationId(locId);
+                                        if (locId) {
+                                            const selectedLoc = locations.find(l => l.id.toString() === locId);
+                                            if (selectedLoc) {
+                                                setNewDeptLocationName(selectedLoc.name);
+                                                setNewDeptLocationAddress(selectedLoc.address || '');
+                                            }
+                                        } else {
+                                            setNewDeptLocationName('');
+                                            setNewDeptLocationAddress('');
+                                        }
+                                    }}
                                     className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white"
                                 >
                                     <option value="">{t('select_location', 'Seleziona sede')}</option>
@@ -531,9 +544,11 @@ const Departments: React.FC = () => {
                                 <input
                                     type="text"
                                     value={newDeptLocationName}
-                                    onChange={(e) => setNewDeptLocationName(e.target.value)}
-                                    disabled={!!newDeptLocationId}
-                                    className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${newDeptLocationId ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : ''}`}
+                                    onChange={(e) => {
+                                        setNewDeptLocationName(e.target.value);
+                                        if (newDeptLocationId) setNewDeptLocationId('');
+                                    }}
+                                    className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${newDeptLocationId ? 'opacity-70 bg-slate-50 dark:bg-slate-800' : ''}`}
                                     placeholder={t('location_name_placeholder', 'Es. Sede Centrale')}
                                 />
                                 <p className="text-[10px] text-slate-400 mt-1 italic">{t('location_name_hint', 'Se selezioni una sede sopra, questa verrà aggiornata con i nuovi dati.')}</p>
@@ -546,9 +561,11 @@ const Departments: React.FC = () => {
                                 <input
                                     type="text"
                                     value={newDeptLocationAddress}
-                                    onChange={(e) => setNewDeptLocationAddress(e.target.value)}
-                                    disabled={!!newDeptLocationId}
-                                    className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${newDeptLocationId ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : ''}`}
+                                    onChange={(e) => {
+                                        setNewDeptLocationAddress(e.target.value);
+                                        if (newDeptLocationId) setNewDeptLocationId('');
+                                    }}
+                                    className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${newDeptLocationId ? 'opacity-70 bg-slate-50 dark:bg-slate-800' : ''}`}
                                     placeholder={t('location_address_placeholder', 'Via Roma 1, Milano')}
                                 />
                             </div>
@@ -686,7 +703,20 @@ const Departments: React.FC = () => {
                                  </label>
                                  <select
                                      value={renameLocationId}
-                                     onChange={(e) => setRenameLocationId(e.target.value)}
+                                     onChange={(e) => {
+                                         const locId = e.target.value;
+                                         setRenameLocationId(locId);
+                                         if (locId) {
+                                             const selectedLoc = locations.find(l => l.id.toString() === locId);
+                                             if (selectedLoc) {
+                                                 setRenameLocationName(selectedLoc.name);
+                                                 setRenameLocationAddress(selectedLoc.address || '');
+                                             }
+                                         } else {
+                                             setRenameLocationName('');
+                                             setRenameLocationAddress('');
+                                         }
+                                     }}
                                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white"
                                  >
                                      <option value="">{t('select_location', 'Seleziona sede')}</option>
@@ -708,9 +738,11 @@ const Departments: React.FC = () => {
                                  <input
                                      type="text"
                                      value={renameLocationName}
-                                     onChange={(e) => setRenameLocationName(e.target.value)}
-                                     disabled={!!renameLocationId}
-                                     className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${renameLocationId ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : ''}`}
+                                     onChange={(e) => {
+                                         setRenameLocationName(e.target.value);
+                                         if (renameLocationId) setRenameLocationId('');
+                                     }}
+                                     className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${renameLocationId ? 'opacity-70 bg-slate-50 dark:bg-slate-800' : ''}`}
                                      placeholder={t('location_name_placeholder', 'Es. Sede Centrale')}
                                  />
                                  <p className="text-[10px] text-slate-400 mt-1 italic">{t('location_name_hint_edit', 'Modifica il nome della sede esistente o creane una nuova lasciando vuoto il selettore sopra.')}</p>
@@ -723,9 +755,11 @@ const Departments: React.FC = () => {
                                  <input
                                      type="text"
                                      value={renameLocationAddress}
-                                     onChange={(e) => setRenameLocationAddress(e.target.value)}
-                                     disabled={!!renameLocationId}
-                                     className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${renameLocationId ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : ''}`}
+                                     onChange={(e) => {
+                                         setRenameLocationAddress(e.target.value);
+                                         if (renameLocationId) setRenameLocationId('');
+                                     }}
+                                     className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${renameLocationId ? 'opacity-70 bg-slate-50 dark:bg-slate-800' : ''}`}
                                      placeholder={t('location_address_placeholder', 'Via Roma 1, Milano')}
                                  />
                              </div>
