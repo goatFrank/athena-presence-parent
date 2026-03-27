@@ -18,6 +18,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final com.athena.attendance.repository.ProfileRepository profileRepository;
     private final com.athena.attendance.repository.TenantRepository tenantRepository;
     private final com.athena.attendance.repository.LocationRepository locationRepository;
+    private final com.athena.attendance.repository.AttendanceRepository attendanceRepository;
     
     private static final String UNKNOWN_TENANT = "Unknown Tenant";
     private static final String ADMIN_NOT_FOUND = "Admin profile not found";
@@ -63,7 +64,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Long effectiveTenantId = userProfile.getTenantId();
         String tenantName = tenantRepository.findById(effectiveTenantId)
                 .map(com.athena.attendance.entity.Tenant::getName)
-                .orElse("Unknown Tenant");
+                .orElse(UNKNOWN_TENANT);
         return departmentRepository.findByTenantId(effectiveTenantId).stream()
                 .map(dept -> mapToDTO(dept, tenantName))
                 .toList();
@@ -205,6 +206,18 @@ public class DepartmentServiceImpl implements DepartmentService {
             p.setDepartmentId(null);
         }
 
+        // Remove department association from any linked location
+        locationRepository.findByDepartmentId(departmentId).ifPresent(loc -> {
+            loc.setDepartmentId(null);
+            locationRepository.save(loc);
+        });
+
+        // Remove department association from all attendance records
+        attendanceRepository.findByDepartmentId(departmentId).forEach(att -> {
+            att.setDepartmentId(null);
+            attendanceRepository.save(att);
+        });
+
         departmentRepository.delete(dept);
     }
 
@@ -289,9 +302,9 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (tenantName == null && dept.getTenantId() != null) {
             tenantName = tenantRepository.findById(dept.getTenantId())
                     .map(com.athena.attendance.entity.Tenant::getName)
-                    .orElse("Unknown Tenant");
+                    .orElse(UNKNOWN_TENANT);
         } else if (tenantName == null) {
-            tenantName = "Unknown Tenant";
+            tenantName = UNKNOWN_TENANT;
         }
 
         String locationName = null;

@@ -47,4 +47,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
         // Elimina tutte le presenze di un utente specifico
         void deleteByUserId(UUID userId);
+
+        List<Attendance> findByDepartmentId(Long departmentId);
 }
