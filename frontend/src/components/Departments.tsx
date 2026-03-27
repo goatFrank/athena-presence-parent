@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import Footer from './Footer';
 import { useToast } from './Toast';
+import axios from 'axios';
 
 interface Department {
     id: number;
@@ -68,6 +69,13 @@ const Departments: React.FC = () => {
     // Delete state
     const [deleteDept, setDeleteDept] = useState<Department | null>(null);
     const [isDeletingDept, setIsDeletingDept] = useState(false);
+    
+    // Address autocomplete state
+    const [newAddressSuggestions, setNewAddressSuggestions] = useState<string[]>([]);
+    const [renameAddressSuggestions, setRenameAddressSuggestions] = useState<string[]>([]);
+    const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+    const skipNewAddressSearch = useRef(false);
+    const skipRenameAddressSearch = useRef(false);
 
     // Expanded department cards to show members
     const [expandedDepts, setExpandedDepts] = useState<Set<number>>(new Set());
@@ -140,6 +148,74 @@ const Departments: React.FC = () => {
             setIsDeletingDept(false);
         }
     };
+
+    // Address search effect for NEW department
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (!isCreateModalOpen || skipNewAddressSearch.current) {
+                skipNewAddressSearch.current = false;
+                return;
+            }
+
+            if (newDeptLocationAddress.length < 4) {
+                setNewAddressSuggestions([]);
+                return;
+            }
+
+            setIsSearchingAddress(true);
+            try {
+                const res = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(newDeptLocationAddress)}&limit=5`);
+                const suggestions = res.data.features.map((f: any) => {
+                    const p = f.properties;
+                    return [p.name, p.street, p.housenumber, p.postcode, p.city, p.country].filter(Boolean).join(', ');
+                });
+                setNewAddressSuggestions(suggestions);
+            } catch (err) {
+                console.error('Error fetching new address suggestions:', err);
+            } finally {
+                setIsSearchingAddress(false);
+            }
+        };
+
+        const timer = setTimeout(() => {
+            fetchSuggestions();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [newDeptLocationAddress, newDeptLocationId, isCreateModalOpen]);
+
+    // Address search effect for RENAME department
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (!renameDept || skipRenameAddressSearch.current) {
+                skipRenameAddressSearch.current = false;
+                return;
+            }
+
+            if (renameLocationAddress.length < 4) {
+                setRenameAddressSuggestions([]);
+                return;
+            }
+
+            setIsSearchingAddress(true);
+            try {
+                const res = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(renameLocationAddress)}&limit=5`);
+                const suggestions = res.data.features.map((f: any) => {
+                    const p = f.properties;
+                    return [p.name, p.street, p.housenumber, p.postcode, p.city, p.country].filter(Boolean).join(', ');
+                });
+                setRenameAddressSuggestions(suggestions);
+            } catch (err) {
+                console.error('Error fetching rename address suggestions:', err);
+            } finally {
+                setIsSearchingAddress(false);
+            }
+        };
+
+        const timer = setTimeout(() => {
+            fetchSuggestions();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [renameLocationAddress, renameLocationId, renameDept]);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -479,8 +555,8 @@ const Departments: React.FC = () => {
             {/* Create Department Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80 rounded-t-3xl">
                             <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                 <span className="material-icons text-blue-600">domain_add</span>
                                 {t('create_department', 'Crea Dipartimento')}
@@ -489,7 +565,8 @@ const Departments: React.FC = () => {
                                 <span className="material-icons">close</span>
                             </button>
                         </div>
-                        <form onSubmit={handleCreateDepartment} className="p-6">
+                        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+                            <form onSubmit={handleCreateDepartment} className="p-6">
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                     {t('department_name', 'Nome Dipartimento')}
@@ -558,17 +635,47 @@ const Departments: React.FC = () => {
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                     {t('location_address', 'Indirizzo Sede (opzionale)')}
                                 </label>
-                                <input
-                                    type="text"
-                                    value={newDeptLocationAddress}
-                                    onChange={(e) => {
-                                        setNewDeptLocationAddress(e.target.value);
-                                        if (newDeptLocationId) setNewDeptLocationId('');
-                                    }}
-                                    className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${newDeptLocationId ? 'opacity-70 bg-slate-50 dark:bg-slate-800' : ''}`}
-                                    placeholder={t('location_address_placeholder', 'Via Roma 1, Milano')}
-                                />
+                                <div className="relative">
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        {isSearchingAddress && (
+                                            <div className="h-4 w-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                                        )}
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={newDeptLocationAddress}
+                                        onChange={(e) => {
+                                            setNewDeptLocationAddress(e.target.value);
+                                            if (newDeptLocationId) setNewDeptLocationId('');
+                                        }}
+                                        className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${newDeptLocationId ? 'opacity-70 bg-slate-50 dark:bg-slate-800' : ''}`}
+                                        placeholder={t('location_address_placeholder', 'Via Roma 1, Milano')}
+                                    />
+                                    {newAddressSuggestions.length > 0 && (
+                                        <div className="absolute z-[110] left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-y-auto max-h-48 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            {newAddressSuggestions.map((suggestion) => (
+                                                <button
+                                                    key={suggestion}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        skipNewAddressSearch.current = true;
+                                                        setNewDeptLocationAddress(suggestion);
+                                                        setNewAddressSuggestions([]);
+                                                    }}
+                                                    className="w-full px-4 py-3 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-700/50"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="material-icons text-blue-500 text-lg">place</span>
+                                                        <span className="truncate">{suggestion}</span>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+                            {/* Extra space for absolute dropdown overflow if modal is scrollable */}
+                            {newAddressSuggestions.length > 0 && <div className="h-40"></div>}
                             <div className="flex justify-end gap-3">
                                 <button
                                     type="button"
@@ -592,7 +699,8 @@ const Departments: React.FC = () => {
                         </form>
                     </div>
                 </div>
-            )}
+            </div>
+        )}
 
             {/* Assign Users Modal */}
             {isAssignModalOpen && selectedDepartment && (
@@ -674,8 +782,8 @@ const Departments: React.FC = () => {
             {/* Rename Department Modal */}
             {renameDept && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80 rounded-t-3xl">
                             <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                 <span className="material-icons text-blue-600">edit</span>
                                 {t('rename_department', 'Rinomina Dipartimento')}
@@ -684,7 +792,8 @@ const Departments: React.FC = () => {
                                 <span className="material-icons">close</span>
                             </button>
                         </div>
-                        <form onSubmit={handleRenameDepartment} className="p-6">
+                        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+                            <form onSubmit={handleRenameDepartment} className="p-6">
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                     {t('new_name', 'Nuovo nome')}
@@ -733,10 +842,11 @@ const Departments: React.FC = () => {
                                      <span className="flex-1 h-[1px] bg-slate-200 dark:bg-slate-700"></span>
                                  </p>
                                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                     {t('location_name', 'Nome Sede (opzionale)')}
+                                     {t('location_name', 'Nome Sede')}
                                  </label>
                                  <input
                                      type="text"
+                                     required
                                      value={renameLocationName}
                                      onChange={(e) => {
                                          setRenameLocationName(e.target.value);
@@ -752,17 +862,47 @@ const Departments: React.FC = () => {
                                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                      {t('location_address', 'Indirizzo Sede (opzionale)')}
                                  </label>
-                                 <input
-                                     type="text"
-                                     value={renameLocationAddress}
-                                     onChange={(e) => {
-                                         setRenameLocationAddress(e.target.value);
-                                         if (renameLocationId) setRenameLocationId('');
-                                     }}
-                                     className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${renameLocationId ? 'opacity-70 bg-slate-50 dark:bg-slate-800' : ''}`}
-                                     placeholder={t('location_address_placeholder', 'Via Roma 1, Milano')}
-                                 />
+                                 <div className="relative">
+                                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                         {isSearchingAddress && (
+                                             <div className="h-4 w-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                                         )}
+                                     </div>
+                                     <input
+                                         type="text"
+                                         value={renameLocationAddress}
+                                         onChange={(e) => {
+                                             setRenameLocationAddress(e.target.value);
+                                             if (renameLocationId) setRenameLocationId('');
+                                         }}
+                                         className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all dark:text-white ${renameLocationId ? 'opacity-70 bg-slate-50 dark:bg-slate-800' : ''}`}
+                                         placeholder={t('location_address_placeholder', 'Via Roma 1, Milano')}
+                                     />
+                                     {renameAddressSuggestions.length > 0 && (
+                                         <div className="absolute z-[110] left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-y-auto max-h-48 animate-in fade-in slide-in-from-top-2 duration-200">
+                                             {renameAddressSuggestions.map((suggestion) => (
+                                                 <button
+                                                     key={suggestion}
+                                                     type="button"
+                                                     onClick={() => {
+                                                         skipRenameAddressSearch.current = true;
+                                                         setRenameLocationAddress(suggestion);
+                                                         setRenameAddressSuggestions([]);
+                                                     }}
+                                                     className="w-full px-4 py-3 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-700/50"
+                                                 >
+                                                     <div className="flex items-center gap-2">
+                                                         <span className="material-icons text-blue-500 text-lg">place</span>
+                                                         <span className="truncate">{suggestion}</span>
+                                                     </div>
+                                                 </button>
+                                             ))}
+                                         </div>
+                                     )}
+                                 </div>
                              </div>
+                             {/* Extra space for absolute dropdown overflow if modal is scrollable */}
+                             {renameAddressSuggestions.length > 0 && <div className="h-40"></div>}
                             <div className="flex justify-end gap-3">
                                 <button
                                     type="button"
@@ -786,7 +926,8 @@ const Departments: React.FC = () => {
                         </form>
                     </div>
                 </div>
-            )}
+            </div>
+        )}
 
             {/* Delete Department Confirmation Modal */}
             {deleteDept && (

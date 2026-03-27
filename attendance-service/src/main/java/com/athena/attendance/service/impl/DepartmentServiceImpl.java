@@ -21,8 +21,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final com.athena.attendance.repository.AttendanceRepository attendanceRepository;
     
     private static final String UNKNOWN_TENANT = "Unknown Tenant";
-    private static final String ADMIN_NOT_FOUND = "Admin profile not found";
-    private static final String DEPT_NOT_FOUND = "Department not found";
 
     @Override
     public List<DepartmentDTO> getAllDepartments() {
