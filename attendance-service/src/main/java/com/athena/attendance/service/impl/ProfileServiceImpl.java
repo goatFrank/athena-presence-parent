@@ -53,7 +53,8 @@ public class ProfileServiceImpl implements ProfileService {
         if (adminProfile.getRole() == null
                 || (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)
                         && !adminProfile.getRole().getId().equals(RoleConstants.ADMIN_TENANT)
-                        && !adminProfile.getRole().getId().equals(RoleConstants.MANAGER))) {
+                        && !adminProfile.getRole().getId().equals(RoleConstants.MANAGER)
+                        && !adminProfile.getRole().getId().equals(RoleConstants.MANAGER_DEMO))) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Solo gli amministratori possono vedere i profili del tenant");
@@ -62,6 +63,16 @@ public class ProfileServiceImpl implements ProfileService {
         if (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && !java.util.Objects.equals(adminProfile.getTenantId(), tenantId)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "Non puoi vedere i profili di un altro tenant");
+        }
+
+        // MANAGER_DEMO can only see employees of their own department
+        if (adminProfile.getRole().getId().equals(RoleConstants.MANAGER_DEMO)) {
+            Long deptId = adminProfile.getDepartmentId();
+            if (deptId == null) {
+                return Page.empty(pageable);
+            }
+            Page<Profile> deptProfiles = profileRepository.findByTenantIdAndDepartmentId(tenantId, deptId, pageable);
+            return mapPageToDTO(deptProfiles);
         }
 
         Page<Profile> profiles = profileRepository.findByTenantId(tenantId, pageable);
@@ -119,7 +130,7 @@ public class ProfileServiceImpl implements ProfileService {
     public void updateProfileRole(UUID profileId, Long roleId, UUID adminUserId) {
         Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Admin profile not found"));
+                        HttpStatus.NOT_FOUND, ERR_ADMIN_PROFILE_NOT_FOUND));
 
         if (adminProfile.getRole() == null || 
             (!adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN) && 

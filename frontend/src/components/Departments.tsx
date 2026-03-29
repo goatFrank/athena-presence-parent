@@ -116,6 +116,7 @@ const Departments: React.FC = () => {
         try {
             const res = await attendanceApi.put(`/api/v1/departments/${renameDept.id}`, { 
                 name: renameValue.trim(),
+                tenantId: isSuperadmin ? tenantId : renameDept.tenantId, // Ensure tenantId is preserved or updated
                 locationId: renameLocationId ? Number.parseInt(renameLocationId) : null,
                 locationName: renameLocationName.trim() || null,
                 locationAddress: renameLocationAddress.trim() || null
@@ -167,7 +168,18 @@ const Departments: React.FC = () => {
                 const res = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(newDeptLocationAddress)}&limit=5`);
                 const suggestions = res.data.features.map((f: any) => {
                     const p = f.properties;
-                    return [p.name, p.street, p.housenumber, p.postcode, p.city, p.country].filter(Boolean).join(', ');
+                    const parts: string[] = [];
+                    if (p.name && p.name !== p.street) parts.push(p.name);
+                    
+                    let streetInfo = p.street;
+                    if (p.housenumber) streetInfo = `${streetInfo} ${p.housenumber}`;
+                    if (streetInfo) parts.push(streetInfo);
+                    
+                    if (p.postcode) parts.push(p.postcode);
+                    if (p.city) parts.push(p.city);
+                    if (p.country) parts.push(p.country);
+                    
+                    return parts.filter(Boolean).join(', ');
                 });
                 setNewAddressSuggestions(suggestions);
             } catch (err) {
@@ -201,7 +213,18 @@ const Departments: React.FC = () => {
                 const res = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(renameLocationAddress)}&limit=5`);
                 const suggestions = res.data.features.map((f: any) => {
                     const p = f.properties;
-                    return [p.name, p.street, p.housenumber, p.postcode, p.city, p.country].filter(Boolean).join(', ');
+                    const parts: string[] = [];
+                    if (p.name && p.name !== p.street) parts.push(p.name);
+                    
+                    let streetInfo = p.street;
+                    if (p.housenumber) streetInfo = `${streetInfo} ${p.housenumber}`;
+                    if (streetInfo) parts.push(streetInfo);
+                    
+                    if (p.postcode) parts.push(p.postcode);
+                    if (p.city) parts.push(p.city);
+                    if (p.country) parts.push(p.country);
+
+                    return parts.filter(Boolean).join(', ');
                 });
                 setRenameAddressSuggestions(suggestions);
             } catch (err) {
@@ -259,14 +282,14 @@ const Departments: React.FC = () => {
                 // 4. Fetch profiles — independently of departments
                 try {
                     if (isSA) {
-                        // Superadmin: get ALL profiles from ALL tenants
-                        const profilesResponse = await attendanceApi.get('/api/v1/profiles/all');
+                        // Superadmin: get ALL profiles from ALL tenants (increase size to see more members)
+                        const profilesResponse = await attendanceApi.get('/api/v1/profiles/all?size=1000');
                         if (profilesResponse.status === 200 && profilesResponse.data.payload) {
                             setProfiles(profilesResponse.data.payload.content || []);
                         }
                     } else if (currentTenantId) {
-                        // Tenant admin: get profiles from own tenant
-                        const profilesResponse = await attendanceApi.get(`/api/v1/profiles/tenant/${currentTenantId}`);
+                        // Tenant admin: get profiles from own tenant (increase size to see more members)
+                        const profilesResponse = await attendanceApi.get(`/api/v1/profiles/tenant/${currentTenantId}?size=1000`);
                         if (profilesResponse.status === 200 && profilesResponse.data.payload) {
                             setProfiles(profilesResponse.data.payload.content || []);
                         }
@@ -294,6 +317,7 @@ const Departments: React.FC = () => {
         try {
             const response = await attendanceApi.post('/api/v1/departments', { 
                 name: newDeptName.trim(),
+                tenantId: isSuperadmin ? tenantId : null, // Pass tenantId if Superadmin to ensure it goes to the right tenant
                 locationId: newDeptLocationId ? Number.parseInt(newDeptLocationId) : null,
                 locationName: newDeptLocationName.trim() || null,
                 locationAddress: newDeptLocationAddress.trim() || null

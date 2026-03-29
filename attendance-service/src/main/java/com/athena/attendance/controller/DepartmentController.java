@@ -47,7 +47,7 @@ public class DepartmentController {
             @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.DepartmentDTO request) {
         
         java.util.UUID adminUserId = java.util.UUID.fromString(jwt.getSubject());
-        DepartmentDTO created = departmentService.createDepartment(request.getName(), request.getLocationId(), request.getLocationName(), request.getLocationAddress(), adminUserId);
+        DepartmentDTO created = departmentService.createDepartment(request.getName(), request.getTenantId(), request.getLocationId(), request.getLocationName(), request.getLocationAddress(), adminUserId);
         
         return ResponseEntity.ok(ResponseDTO.<DepartmentDTO>builder()
                 .status(ResponseStatus.SUCCESS)
@@ -80,7 +80,7 @@ public class DepartmentController {
             @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.DepartmentDTO request) {
         
         java.util.UUID adminUserId = java.util.UUID.fromString(jwt.getSubject());
-        DepartmentDTO updated = departmentService.updateDepartment(departmentId, request.getName(), request.getLocationId(), request.getLocationName(), request.getLocationAddress(), adminUserId);
+        DepartmentDTO updated = departmentService.updateDepartment(departmentId, request.getName(), request.getTenantId(), request.getLocationId(), request.getLocationName(), request.getLocationAddress(), adminUserId);
         
         return ResponseEntity.ok(ResponseDTO.<DepartmentDTO>builder()
                 .status(ResponseStatus.SUCCESS)

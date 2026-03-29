@@ -49,6 +49,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         if (userProfile.getRole() != null && userProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
             if (tenantId != null) {
+                // If a tenantId is provided, we filter by it even for Superadmin
                 String tenantName = tenantRepository.findById(tenantId)
                         .map(com.athena.attendance.entity.Tenant::getName)
                         .orElse(UNKNOWN_TENANT);
@@ -56,6 +57,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                         .map(dept -> mapToDTO(dept, tenantName))
                         .toList();
             }
+            // If no tenantId provided, Superadmin sees everything
             return getAllDepartments();
         }
 
@@ -63,6 +65,18 @@ public class DepartmentServiceImpl implements DepartmentService {
         String tenantName = tenantRepository.findById(effectiveTenantId)
                 .map(com.athena.attendance.entity.Tenant::getName)
                 .orElse(UNKNOWN_TENANT);
+
+        // MANAGER_DEMO can only see their own department
+        if (userProfile.getRole() != null && userProfile.getRole().getId().equals(RoleConstants.MANAGER_DEMO)) {
+            Long deptId = userProfile.getDepartmentId();
+            if (deptId == null) {
+                return java.util.Collections.emptyList();
+            }
+            return departmentRepository.findById(deptId)
+                    .map(dept -> List.of(mapToDTO(dept, tenantName)))
+                    .orElse(java.util.Collections.emptyList());
+        }
+
         return departmentRepository.findByTenantId(effectiveTenantId).stream()
                 .map(dept -> mapToDTO(dept, tenantName))
                 .toList();
@@ -70,7 +84,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public DepartmentDTO createDepartment(String name, Long locationId, String locationName, String locationAddress, java.util.UUID adminUserId) {
+    public DepartmentDTO createDepartment(String name, Long tenantId, Long locationId, String locationName, String locationAddress, java.util.UUID adminUserId) {
         com.athena.attendance.entity.Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
@@ -82,18 +96,26 @@ public class DepartmentServiceImpl implements DepartmentService {
                     org.springframework.http.HttpStatus.FORBIDDEN, "Solo gli amministratori possono creare dipartimenti");
         }
 
+        // Use provided tenantId if Superadmin, otherwise force admin's tenantId
+        Long tenantIdToUse = tenantId;
+        if (tenantIdToUse == null || !adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
+            tenantIdToUse = adminProfile.getTenantId();
+        }
+        final Long finalTenantId = tenantIdToUse;
+
         Long finalLocationId = locationId;
         if (finalLocationId == null && locationName != null && !locationName.trim().isEmpty()) {
-            finalLocationId = locationRepository.findByTenantIdAndName(adminProfile.getTenantId(), locationName.trim())
+            finalLocationId = locationRepository.findByTenantIdAndName(finalTenantId, locationName.trim())
                     .map(com.athena.attendance.entity.Location::getId)
                     .orElseGet(() -> {
                         com.athena.attendance.entity.Location newLoc = new com.athena.attendance.entity.Location();
-                        newLoc.setTenantId(adminProfile.getTenantId());
+                        newLoc.setTenantId(finalTenantId);
                         newLoc.setName(locationName.trim());
                         newLoc.setAddress(locationAddress);
                         return locationRepository.save(newLoc).getId();
                     });
-        } else if (finalLocationId != null && (locationName != null || locationAddress != null)) {
+        }
+ else if (finalLocationId != null && (locationName != null || locationAddress != null)) {
             locationRepository.findById(finalLocationId).ifPresent(loc -> {
                 if (locationName != null && !locationName.trim().isEmpty()) loc.setName(locationName.trim());
                 if (locationAddress != null) loc.setAddress(locationAddress);
@@ -103,7 +125,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         Department dept = new Department();
         dept.setName(name);
-        dept.setTenantId(adminProfile.getTenantId());
+        dept.setTenantId(finalTenantId);
         dept.setLocationId(finalLocationId);
         
         Department saved = departmentRepository.save(dept);
@@ -123,7 +145,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public DepartmentDTO updateDepartment(Long departmentId, String name, Long locationId, String locationName, String locationAddress, java.util.UUID adminUserId) {
+    public DepartmentDTO updateDepartment(Long departmentId, String name, Long tenantId, Long locationId, String locationName, String locationAddress, java.util.UUID adminUserId) {
         com.athena.attendance.entity.Profile adminProfile = profileRepository.findById(adminUserId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Admin profile not found"));
@@ -139,26 +161,34 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Department not found"));
 
-        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN)) {
+        boolean isSA = adminProfile.getRole().getId().equals(RoleConstants.SUPERADMIN);
+        if (!dept.getTenantId().equals(adminProfile.getTenantId()) && !isSA) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN, "Il dipartimento non appartiene al tuo tenant");
         }
 
         if (name != null) dept.setName(name);
         
+        // Allow Superadmin to change tenantId
+        if (isSA && tenantId != null) {
+            dept.setTenantId(tenantId);
+        }
+        
+        final Long finalTenantId = dept.getTenantId();
         Long finalLocationId = locationId;
         if (finalLocationId == null && locationName != null && !locationName.trim().isEmpty()) {
-            finalLocationId = locationRepository.findByTenantIdAndName(adminProfile.getTenantId(), locationName.trim())
+            finalLocationId = locationRepository.findByTenantIdAndName(finalTenantId, locationName.trim())
                     .map(com.athena.attendance.entity.Location::getId)
                     .orElseGet(() -> {
                         com.athena.attendance.entity.Location newLoc = new com.athena.attendance.entity.Location();
-                        newLoc.setTenantId(adminProfile.getTenantId());
+                        newLoc.setTenantId(finalTenantId);
                         newLoc.setName(locationName.trim());
                         newLoc.setAddress(locationAddress);
                         newLoc.setDepartmentId(departmentId);
                         return locationRepository.save(newLoc).getId();
                     });
-        } else if (finalLocationId != null) {
+        }
+ else if (finalLocationId != null) {
             final Long locId = finalLocationId;
             locationRepository.findById(locId).ifPresent(loc -> {
                 if (locationName != null && !locationName.trim().isEmpty()) loc.setName(locationName.trim());
