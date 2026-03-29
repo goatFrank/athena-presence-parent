@@ -307,25 +307,30 @@ const Profile: React.FC = () => {
 
                                 <div className="space-y-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{t('email_address', 'Email Address')}</label>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{t('email_address', 'Email Address')} {isDemo && <span className="material-icons text-[14px] text-slate-400 align-middle ml-1">lock</span>}</label>
                                         <input
-                                            className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-800 font-medium"
+                                            className={`w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 outline-none transition-all font-medium ${isDemo ? 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-800'}`}
                                             type="email"
                                             defaultValue={profile?.email}
+                                            disabled={isDemo}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{t('phone_number', 'Phone Number')}</label>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{t('phone_number', 'Phone Number')} {isDemo && <span className="material-icons text-[14px] text-slate-400 align-middle ml-1">lock</span>}</label>
                                         <input
-                                            className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-800 font-medium"
+                                            className={`w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 outline-none transition-all font-medium ${isDemo ? 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-800'}`}
                                             type="tel"
                                             value={editPhone}
                                             onChange={(e) => setEditPhone(e.target.value)}
                                             placeholder="+39 000 000 0000"
+                                            disabled={isDemo}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{t('department', 'Department')}</label>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+                                            {t('department', 'Department')}
+                                            <span className="material-icons text-[14px] text-slate-400 align-middle ml-1" title="Gestito dall'amministratore">lock</span>
+                                        </label>
                                         <input
                                             className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 outline-none transition-all text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 cursor-not-allowed font-medium"
                                             type="text"
@@ -334,7 +339,10 @@ const Profile: React.FC = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{t('office_location', 'Office Location')}</label>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+                                            {t('office_location', 'Office Location')}
+                                            <span className="material-icons text-[14px] text-slate-400 align-middle ml-1" title="Gestito dall'amministratore">lock</span>
+                                        </label>
                                         <input
                                             className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 outline-none transition-all text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 cursor-not-allowed font-medium"
                                             type="text"

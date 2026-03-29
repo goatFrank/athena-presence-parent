@@ -115,14 +115,22 @@ public class ProfileServiceImpl implements ProfileService {
                 departmentRepository.findAllById(deptIds).stream()
                         .collect(java.util.stream.Collectors.toMap(Department::getId, java.util.function.Function.identity()));
 
+        for (Department d : deptMap.values()) {
+            if (d.getLocationId() != null) locIds.add(d.getLocationId());
+        }
+
         java.util.Map<Long, Location> locMap = locIds.isEmpty() ? java.util.Collections.emptyMap() :
                 locationRepository.findAllById(locIds).stream()
                         .collect(java.util.stream.Collectors.toMap(Location::getId, java.util.function.Function.identity()));
 
-        return profiles.map(p -> mapToDTO(p, 
+        return profiles.map(p -> {
+            Department dept = deptMap.get(p.getDepartmentId());
+            Long targetLocId = p.getLocationId() != null ? p.getLocationId() : (dept != null ? dept.getLocationId() : null);
+            return mapToDTO(p, 
                 tenantMap.get(p.getTenantId()), 
-                deptMap.get(p.getDepartmentId()), 
-                locMap.get(p.getLocationId())));
+                dept, 
+                locMap.get(targetLocId));
+        });
     }
 
     @Override
@@ -226,8 +234,11 @@ public class ProfileServiceImpl implements ProfileService {
 
         String locationName = null;
         Location loc = preFetchedLoc;
-        if (loc == null && profile.getLocationId() != null) {
-            loc = locationRepository.findById(profile.getLocationId()).orElse(null);
+        if (loc == null) {
+            Long targetLocId = profile.getLocationId() != null ? profile.getLocationId() : (dept != null ? dept.getLocationId() : null);
+            if (targetLocId != null) {
+                loc = locationRepository.findById(targetLocId).orElse(null);
+            }
         }
         
         if (loc != null) {
