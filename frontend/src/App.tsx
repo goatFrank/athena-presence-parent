@@ -6,6 +6,7 @@ import Team from './components/Team';
 import Profile from './components/Profile';
 import OfficeMap from './components/OfficeMap';
 import LandingPage from './components/LandingPage';
+import DemoAccess from './components/DemoAccess';
 import Register from './components/Register';
 import ResetPassword from './components/ResetPassword';
 import SuperadminTenants from './components/SuperadminTenants';
@@ -80,6 +81,8 @@ function App() {
             <SuperadminManageTenants />
           </ProtectedRoute>
         } />
+        {/* Demo Access */}
+        <Route path="/demo" element={<DemoAccess />} />
         {/* Landing Page */}
         <Route path="/" element={<LandingPage />} />
 

@@ -6,12 +6,17 @@ import { attendanceApi } from '../api/clients';
 import startingWorkIllustration from '../assets/illustrations/startingWork.svg';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import { useToast } from './Toast';
+import { isHoliday } from '../utils/holidayUtils';
 
 const Dashboard: React.FC = () => {
     const { t, i18n } = useTranslation();
+    const { addToast } = useToast();
     const [userName, setUserName] = useState<string>('');
     const [colleagues, setColleagues] = useState<any[]>([]);
     const [colleagueFilter, setColleagueFilter] = useState<'all' | 'office' | 'remote' | 'leave' | 'unmarked'>('all');
+    const [myRoleId, setMyRoleId] = useState<number | null>(null);
+    const [allowOvertime, setAllowOvertime] = useState<boolean>(false);
     const [teamPage, setTeamPage] = useState(0);
     const teamPageSize = 10;
 
@@ -51,7 +56,7 @@ const Dashboard: React.FC = () => {
                 // ... existing profile and colleagues code ...
                 const { data: meData, error: meError } = await supabase
                     .from('profiles')
-                    .select('full_name, id, tenant_id, department_id')
+                    .select('full_name, id, tenant_id, department_id, role_id, allow_overtime')
                     .eq('id', user.id);
 
                 if (meError) {
@@ -70,6 +75,8 @@ const Dashboard: React.FC = () => {
                     myTenantId = myProfile.tenant_id;
                     myDeptId = myProfile.department_id;
 
+                    setMyRoleId(myProfile.role_id);
+                    setAllowOvertime(!!myProfile.allow_overtime);
                     setCurrentUserId(user.id);
                     setUserTenantId(myTenantId);
                     setUserDeptId(myDeptId);
@@ -143,7 +150,7 @@ const Dashboard: React.FC = () => {
                     const todayIso = new Date().toISOString().split('T')[0];
                     const att = myWeeklyAttendances?.find((a: any) => a.workDate === dateIso || a.work_date === dateIso);
 
-                    const rawStatus = att?.status || 'OFFICE';
+                    const rawStatus = att?.status || 'UNMARKED';
                     const isPast = dateIso < todayIso;
 
                     const dayNamesMap = ['mon', 'tue', 'wed', 'thu', 'fri'];
@@ -161,6 +168,9 @@ const Dashboard: React.FC = () => {
                 setWeeklyDates(newWeeklyDates);
 
                 // 2. Fetch colleagues from profiles table including department
+                const myRoleId = (meData && meData.length > 0) ? meData[0].role_id : null;
+                const isAdmin = myRoleId === 1 || myRoleId === 2;
+
                 let profilesQuery = supabase
                     .from('profiles')
                     .select(`
@@ -176,8 +186,12 @@ const Dashboard: React.FC = () => {
                 if (myTenantId !== null && myTenantId !== undefined) {
                     profilesQuery = profilesQuery.eq('tenant_id', myTenantId);
                 }
+                
                 if (myDeptId !== null && myDeptId !== undefined) {
                     profilesQuery = profilesQuery.eq('department_id', myDeptId);
+                } else if (!isAdmin) {
+                    // Employees or Managers without a department see NO ONE
+                    profilesQuery = profilesQuery.eq('id', '00000000-0000-0000-0000-000000000000');
                 }
 
                 const { data: profiles, error: profilesError } = await profilesQuery;
@@ -191,7 +205,7 @@ const Dashboard: React.FC = () => {
                     if (myTenantId !== null && myDeptId !== null) {
                         endpoint = `/api/v1/attendance/team/${myTenantId}/${myDeptId}?date=${today}`;
                     } else if (myTenantId !== null) {
-                        endpoint = `/api/v1/attendance/tenant/${myTenantId}?date=${today}`;
+                        endpoint = `/api/v1/attendance/team-overview?date=${today}&size=200`;
                     }
 
                     const res = await attendanceApi.get(endpoint);
@@ -255,6 +269,25 @@ const Dashboard: React.FC = () => {
     const handleConfirmTodayStatus = async () => {
         if (!currentUserId || !pendingStatus || pendingStatus === todayStatus) return;
 
+        // 1. Check for Demo Role (Manager Demo = 5, Employee Demo = 6)
+        if (myRoleId === 5 || myRoleId === 6) {
+            addToast(t('demo_mode_attendance_block', 'Questo è un account demo, l\'inserimento delle presenze è disabilitato'), 'info');
+            return;
+        }
+
+        // 2. Check for Weekend/Holiday restriction if overtime not allowed
+        const today = new Date();
+        const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+        const isTodayHoliday = isHoliday(today);
+        
+        if ((isWeekend || isTodayHoliday) && !allowOvertime) {
+            const msg = isTodayHoliday 
+                ? t('holiday_attendance_block', 'Oggi è un giorno festivo, l\'inserimento delle presenze è disabilitato senza straordinari')
+                : t('overtime_not_allowed_msg', 'Non hai l\'abilitazione per inserire presenze nel fine settimana');
+            addToast(msg, 'warning');
+            return;
+        }
+
         setIsUpdatingStatus(true);
 
         // Optimistic update
@@ -287,7 +320,7 @@ const Dashboard: React.FC = () => {
     const greetingKey = isFeminineDay ? 'beautiful_day_f' : 'beautiful_day_m';
 
     const getStatusDetails = (status: string) => {
-        const s = status.toUpperCase();
+        const s = (status || '').toUpperCase();
         if (s.includes('SICK') || s.includes('MALATTIA')) {
             return { icon: 'sick', label: t('sick'), textColor: 'text-red-500', bgColor: 'bg-red-50 dark:bg-red-900/20', gradient: 'from-red-400 to-red-500', groupHoverBg: 'group-hover:bg-red-500', shadowColor: 'shadow-red-200 dark:shadow-red-900/30' };
         }
@@ -297,7 +330,10 @@ const Dashboard: React.FC = () => {
         if (s.includes('REMOTE') || s.includes('SMART')) {
             return { icon: 'home', label: t('remote'), textColor: 'text-cyan-600', bgColor: 'bg-cyan-50 dark:bg-slate-700', gradient: 'from-cyan-400 to-blue-400', groupHoverBg: 'group-hover:bg-cyan-500', shadowColor: 'shadow-cyan-200 dark:shadow-cyan-900/30' };
         }
-        return { icon: 'business', label: t('at_office'), textColor: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-slate-700', gradient: 'from-blue-500 to-blue-600', groupHoverBg: 'group-hover:bg-blue-500', shadowColor: 'shadow-blue-200 dark:shadow-blue-900/30' };
+        if (s.includes('OFFICE') || s.includes('SEDE')) {
+            return { icon: 'business', label: t('at_office'), textColor: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-slate-700', gradient: 'from-blue-500 to-blue-600', groupHoverBg: 'group-hover:bg-blue-500', shadowColor: 'shadow-blue-200 dark:shadow-blue-900/30' };
+        }
+        return { icon: 'calendar_today', label: t('not_marked', 'Non inserita'), textColor: 'text-slate-400', bgColor: 'bg-slate-100 dark:bg-slate-800', gradient: 'from-slate-300 to-slate-400', groupHoverBg: 'group-hover:bg-slate-400', shadowColor: 'shadow-slate-100 dark:shadow-slate-900/10' };
     };
 
     if (isLoading) {

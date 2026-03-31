@@ -83,6 +83,16 @@ public class AttendanceServiceImpl implements AttendanceService {
                 attendance.setDepartmentId(profile.getDepartmentId());
 
                 attendance.setWorkDate(dto.getWorkDate());
+                
+                // Holiday restriction check
+                if (isItalianHoliday(dto.getWorkDate()) && !Boolean.TRUE.equals(profile.getAllowOvertime())) {
+                    return ResponseDTO.<Attendance>builder()
+                            .message("Non puoi inserire presenze nei giorni festivi senza abilitazione agli straordinari")
+                            .payload(null)
+                            .status(ResponseStatus.BAD_REQUEST)
+                            .build();
+                }
+
                 attendance.setStatus(dto.getStatus());
                 attendance.setNote(dto.getNote());
 
@@ -349,18 +359,20 @@ public class AttendanceServiceImpl implements AttendanceService {
                 String searchTerm = (search == null) ? "" : search;
                 boolean isSuperAdmin = me.getRole() != null && me.getRole().getId().equals(RoleConstants.SUPERADMIN);
 
+                boolean isTenantAdmin = me.getRole() != null && me.getRole().getId().equals(RoleConstants.ADMIN_TENANT);
+
                 if (me.getTenantId() != null && me.getDepartmentId() != null) {
                         profilePage = profileRepository.findByTenantIdAndDepartmentIdAndIdNotAndFullNameContainingIgnoreCase(
                                         me.getTenantId(), me.getDepartmentId(), userId, searchTerm, pageable);
-                } else if (me.getTenantId() != null) {
-                        profilePage = profileRepository.findByTenantIdAndIdNotAndFullNameContainingIgnoreCase(
-                                        me.getTenantId(), userId, searchTerm, pageable);
                 } else if (isSuperAdmin) {
                         profilePage = profileRepository.findByIdNotAndFullNameContainingIgnoreCase(
                                         userId, searchTerm, pageable);
+                } else if (isTenantAdmin && me.getTenantId() != null) {
+                        profilePage = profileRepository.findByTenantIdAndIdNotAndFullNameContainingIgnoreCase(
+                                        me.getTenantId(), userId, searchTerm, pageable);
                 } else {
                         return ResponseDTO.<org.springframework.data.domain.Page<com.athena.common.dto.TeamColleagueDTO>>builder()
-                                        .message("Team overview retrieved successfully")
+                                        .message("Team overview retrieved successfully (Empty for non-department users)")
                                         .payload(org.springframework.data.domain.Page.empty(pageable))
                                         .status(ResponseStatus.SUCCESS)
                                         .build();
@@ -409,6 +421,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                                         .id(p.getId())
                                         .fullName(p.getFullName() != null ? p.getFullName() : "Utente")
                                         .avatarUrl(p.getAvatarUrl() != null ? p.getAvatarUrl() : "")
+                                        .role(p.getRole() != null ? p.getRole().getName() : null)
                                         .roleDescription(p.getRoleDescription() != null ? p.getRoleDescription() : "")
                                         .workStatus(workStatus)
                                         .locationDetails(locationDetails)
@@ -461,5 +474,48 @@ public class AttendanceServiceImpl implements AttendanceService {
                 if (STATUS_LEAVE.equals(workStatus)) return MSG_NOT_AVAILABLE;
                 if (STATUS_UNMARKED.equals(workStatus)) return MSG_NOT_INSERTED;
                 return "Smart Working";
+        }
+
+        private boolean isItalianHoliday(LocalDate date) {
+                int year = date.getYear();
+                int month = date.getMonthValue();
+                int day = date.getDayOfMonth();
+
+                // Fixed holidays
+                if (month == 1 && day == 1) return true;   // Capodanno
+                if (month == 1 && day == 6) return true;   // Epifania
+                if (month == 4 && day == 25) return true;  // Liberazione
+                if (month == 5 && day == 1) return true;   // Lavoro
+                if (month == 6 && day == 2) return true;   // Repubblica
+                if (month == 8 && day == 15) return true;  // Ferragosto
+                if (month == 11 && day == 1) return true;  // Ognissanti
+                if (month == 12 && day == 8) return true;  // Immacolata
+                if (month == 12 && day == 25) return true; // Natale
+                if (month == 12 && day == 26) return true; // S. Stefano
+
+                // Variable holidays
+                LocalDate easter = getEaster(year);
+                if (date.equals(easter)) return true;      // Pasqua
+                if (date.equals(easter.plusDays(1))) return true; // Pasquetta
+
+                return false;
+        }
+
+        private LocalDate getEaster(int year) {
+                int a = year % 19;
+                int b = year / 100;
+                int c = year % 100;
+                int d = b / 4;
+                int e = b % 4;
+                int f = (b + 8) / 25;
+                int g = (b - f + 1) / 3;
+                int h = (19 * a + b - d - g + 15) % 30;
+                int i = c / 4;
+                int k = c % 4;
+                int l = (32 + 2 * e + 2 * i - h - k) % 7;
+                int m = (a + 11 * h + 22 * l) / 451;
+                int month = (h + l - 7 * m + 114) / 31;
+                int day = ((h + l - 7 * m + 114) % 31) + 1;
+                return LocalDate.of(year, month, day);
         }
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { attendanceApi } from '../api/clients';
+import i18n from '../i18n';
 
 // ── Types ──
 export type ToastType = 'error' | 'success' | 'warning' | 'info';
@@ -90,8 +91,12 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
     const addToast = useCallback((message: string, type: ToastType = 'error') => {
-        const id = ++toastCounter;
-        setToasts(prev => [...prev, { id, message, type }]);
+        // Prevent duplicate toasts with the same message
+        setToasts(prev => {
+            if (prev.some(t => t.message === message)) return prev;
+            const id = ++toastCounter;
+            return [...prev, { id, message, type }];
+        });
     }, []);
 
     const dismissToast = useCallback((id: number) => {
@@ -103,10 +108,15 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const interceptorId = attendanceApi.interceptors.response.use(
             response => response,
             error => {
-                const msg =
-                    error.response?.data?.message ||
-                    error.message ||
-                    'Si è verificato un errore imprevisto.';
+                let msg = error.response?.data?.message || error.message;
+
+                if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+                    msg = i18n.t('error_network');
+                } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                    msg = i18n.t('error_timeout');
+                } else if (!msg) {
+                    msg = i18n.t('error_unknown');
+                }
 
                 // Don't toast on 401 (handled by auth flow)
                 if (error.response?.status !== 401) {

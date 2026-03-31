@@ -9,6 +9,7 @@ const Sidebar: React.FC = () => {
     const location = useLocation();
     const [userName, setUserName] = useState<string>('');
     const [userRole, setUserRole] = useState<string>('');
+    const [technicalRole, setTechnicalRole] = useState<string>('');
     const [isSuperadmin, setIsSuperadmin] = useState<boolean>(false);
     const [isTenantAdmin, setIsTenantAdmin] = useState<boolean>(false);
     const [userAvatar, setUserAvatar] = useState<string>('');
@@ -53,12 +54,13 @@ const Sidebar: React.FC = () => {
                     // Check if superadmin
                     const roles = profile.roles as any;
                     const roleName = Array.isArray(roles) ? roles[0]?.name : roles?.name;
+                    setTechnicalRole(roleName || '');
 
                     if (roleName === 'SUPERADMIN') {
                         setIsSuperadmin(true);
                     }
                     
-                    if (profile.role_id === 3 || profile.role_id === 5 || roleName === 'AMMINISTRATORE_TENANT') {
+                    if (profile.role_id === 3 || profile.role_id === 5 || roleName === 'AMMINISTRATORE_TENANT' || roleName === 'ADMIN_TENANT') {
                         setIsTenantAdmin(true);
                     }
                     
@@ -304,7 +306,9 @@ const Sidebar: React.FC = () => {
                                 />
                                 <div className="flex flex-col min-w-0">
                                     <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{userName}</span>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{userRole || 'Team Member'}</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                        {t('role_' + (technicalRole?.toLowerCase().replace(/\s+/g, '_') || 'employee'), userRole || 'Team Member')}
+                                    </span>
                                 </div>
                             </div>
                             <span className={`material-icons text-slate-400 group-hover:text-blue-500 transition-all ${showProfileMenu ? 'rotate-180' : ''}`}>

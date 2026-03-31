@@ -12,6 +12,7 @@ interface Colleague {
     avatar_url: string;
     work_status: 'office' | 'remote' | 'leave' | 'unmarked';
     location_details: string;
+    role: string;
     role_description: string;
 }
 
@@ -95,6 +96,7 @@ const Team: React.FC = () => {
                             avatar_url: c.avatarUrl || '',
                             work_status: c.workStatus || 'unmarked',
                             location_details: (c.locationDetails && c.locationDetails !== 'Unknown Location') ? c.locationDetails : (i18n.language === 'it' ? 'Sede non specificata' : 'Location not specified'),
+                            role: c.role || 'EMPLOYEE',
                             role_description: c.roleDescription || ''
                         })).sort((a: any, b: any) => {
                             const statusWeight = (status: string) => {
@@ -405,7 +407,7 @@ const Team: React.FC = () => {
 
                                         {colleague.role_description && (
                                             <p className="text-xs md:text-sm font-medium text-[#4e6797] dark:text-slate-400 mt-1 line-clamp-1">
-                                                {colleague.role_description}
+                                                {t('role_' + (colleague.role?.toLowerCase().replace(/\s+/g, '_') || 'employee'), colleague.role_description)}
                                             </p>
                                         )}
 

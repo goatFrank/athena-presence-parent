@@ -6,6 +6,7 @@ import { attendanceApi } from '../api/clients';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 import { useToast } from './Toast';
+import { isHoliday } from '../utils/holidayUtils';
 
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ interface DayInfo {
     isToday: boolean;
     isPast: boolean;
     isWeekend: boolean;
+    isHoliday: boolean;
     status: StatusType | null;
     attendanceId?: number;
 }
@@ -170,6 +172,7 @@ const Planning: React.FC = () => {
                 isToday: false,
                 isPast: iso < todayIso,
                 isWeekend: false,
+                isHoliday: isHoliday(new Date(py, pm, d)),
                 status: null
             });
         }
@@ -185,9 +188,10 @@ const Planning: React.FC = () => {
                 isToday: iso === todayIso,
                 isPast: iso < todayIso,
                 isWeekend: dow === 0 || dow === 6,
+                isHoliday: isHoliday(new Date(currentYear, currentMonth, d)),
                 status: null
             });
-        }
+}
 
         // Next month overflow (fill to 42 cells = 6 rows)
         const remaining = 42 - grid.length;
@@ -202,6 +206,7 @@ const Planning: React.FC = () => {
                 isToday: false,
                 isPast: iso < todayIso,
                 isWeekend: false,
+                isHoliday: isHoliday(new Date(ny, nm, d)),
                 status: null
             });
         }
@@ -272,10 +277,21 @@ const Planning: React.FC = () => {
     // ── Save attendance ──
     const handleSelectStatus = async (dateIso: string, status: StatusType) => {
         setSelectedDay(null);
+        
+        // 1. Check for Demo Role
         if (isDemo) {
             addToast(t('demo_mode_planning_save', 'Questo è un account demo, salvataggio pianificazione disabilitato'), 'info');
             return;
         }
+
+        // 2. Check for Weekend restriction if overtime not allowed
+        // Find the day info from the state to check if it's weekend
+        const dayInfo = days.find(d => d.dateIso === dateIso);
+        if (dayInfo?.isWeekend && !allowOvertime) {
+            addToast(t('overtime_not_allowed_msg', 'Non hai l\'abilitazione per inserire presenze nel fine settimana'), 'warning');
+            return;
+        }
+
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
@@ -301,10 +317,12 @@ const Planning: React.FC = () => {
     // ── Delete attendance ──
     const handleDeleteAttendance = async (dateIso: string) => {
         setSelectedDay(null);
+        
         if (isDemo) {
             addToast(t('demo_mode_planning_delete', 'Questo è un account demo, rimozione pianificazione disabilitata'), 'info');
             return;
         }
+
         try {
             await attendanceApi.delete('/api/v1/attendance', { params: { date: dateIso } });
             buildCalendar();
@@ -325,20 +343,23 @@ const Planning: React.FC = () => {
             );
         }
 
-        // If weekend and overtime not allowed, render grey disabled cell
-        if (d.isWeekend && !allowOvertime) {
+        const cfg = d.status ? statusConfig[d.status] : null;
+        const isSelected = selectedDay === d.dateIso;
+
+        // If weekend/holiday and overtime not allowed, render grey disabled cell BUT show attendance if present
+        if ((d.isWeekend || d.isHoliday) && !allowOvertime) {
             return (
                 <div key={idx}
                     className="aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl bg-slate-50/50 text-slate-300 relative overflow-hidden cursor-not-allowed"
-                    title={t('weekend_disabled')}
+                    title={d.isHoliday ? (isIt ? 'Giorno festivo (estensione straordinari necessaria)' : 'Public Holiday (overtime required)') : t('weekend_disabled')}
                 >
-                    <span className="font-bold text-sm">{d.day}</span>
+                    <span className="font-bold text-sm text-red-300/60">{d.day}</span>
+                    {cfg && (
+                        <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${cfg.dotColor} opacity-70`}></div>
+                    )}
                 </div>
             );
         }
-
-        const cfg = d.status ? statusConfig[d.status] : null;
-        const isSelected = selectedDay === d.dateIso;
 
         // Past days: show status dot but NOT clickable
         if (d.isPast) {
@@ -362,7 +383,7 @@ const Planning: React.FC = () => {
                     className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer bg-gradient-to-b from-white to-indigo-50 ring-4 ring-indigo-200 shadow-lg shadow-indigo-300/40 transition-all duration-300 ${isSelected ? 'z-50 scale-105' : 'z-20 scale-105 hover:z-30'}`}
                     onClick={() => setSelectedDay(isSelected ? null : d.dateIso)}
                 >
-                    <span className={`font-extrabold text-base drop-shadow-sm ${d.isWeekend ? 'text-red-400' : 'text-indigo-600'}`}>{d.day}</span>
+                    <span className={`font-extrabold text-base drop-shadow-sm ${d.isWeekend || d.isHoliday ? 'text-red-400' : 'text-indigo-600'}`}>{d.day}</span>
                     <div className="absolute inset-0 bg-indigo-600/5 pointer-events-none rounded-2xl"></div>
                     {cfg && (
                         <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${cfg.dotColor}`}></div>
@@ -377,7 +398,7 @@ const Planning: React.FC = () => {
                 className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl relative overflow-visible cursor-pointer group border-2 border-transparent transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isSelected ? 'z-50 shadow-xl border-indigo-200' : `hover:z-30 ${cfg ? cfg.cellBg : (d.isWeekend ? 'bg-slate-50/50' : 'bg-white')}`} ${cfg ? cfg.hoverBorder : 'hover:border-indigo-100'}`}
                 onClick={() => setSelectedDay(isSelected ? null : d.dateIso)}
             >
-                <span className={`text-sm font-bold ${cfg ? cfg.textHover : (d.isWeekend ? 'text-red-300 group-hover:text-red-400' : 'text-slate-600 group-hover:text-indigo-600')}`}>{d.day}</span>
+                <span className={`text-sm font-bold ${cfg ? cfg.textHover : (d.isWeekend || d.isHoliday ? 'text-red-300 group-hover:text-red-400' : 'text-slate-600 group-hover:text-indigo-600')}`}>{d.day}</span>
                 {cfg && (
                     <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${cfg.dotColor}`}></div>
                 )}

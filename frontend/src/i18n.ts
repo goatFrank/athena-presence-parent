@@ -128,6 +128,9 @@ const resources = {
             "error_unauthorized": "Sessione scaduta o non sei autorizzato. Prova ad effettuare nuovamente il login.",
             "error_server": "Si è verificato un errore sul server. Riprova più tardi.",
             "error_connection": "Errore di connessione. Verifica di essere connesso a internet e riprova.",
+            "error_network": "Il server non risponde. Potrebbe essere in fase di avvio (cold start) dopo un periodo di inattività. Riprova tra 30-60 secondi.",
+            "error_timeout": "La richiesta ha impiegato troppo tempo. Riprova più tardi.",
+            "error_unknown": "Si è verificato un errore imprevisto.",
             "upload_failed_generic": "Caricamento fallito. Impossibile aggiornare l'avatar.",
 
             // ── Planning Page ──
@@ -237,8 +240,11 @@ const resources = {
             // ── Roles ──
             "role_superadmin": "Superadmin",
             "role_amministratore_tenant": "Amministratore",
+            "role_admin_tenant": "Amministratore",
             "role_manager": "Manager",
             "role_employee": "Dipendente",
+            "role_manager_demo": "Manager (Demo)",
+            "role_employee_demo": "Dipendente (Demo)",
 
             // ── Downloads Page ──
             "download_title": "Scarica Athena per Desktop",
@@ -379,6 +385,9 @@ const resources = {
             "error_unauthorized": "Session expired or you are not authorized. Please log in again.",
             "error_server": "A server error occurred. Please try again later.",
             "error_connection": "Connection error. Check your internet and try again.",
+            "error_network": "The server is not responding. It might be starting up (cold start) after a period of inactivity. Please try again in 30-60 seconds.",
+            "error_timeout": "The request took too long. Please try again later.",
+            "error_unknown": "An unexpected error occurred.",
             "upload_failed_generic": "Upload failed. Unable to update avatar.",
 
             // ── Planning Page ──
@@ -488,8 +497,11 @@ const resources = {
             // ── Roles ──
             "role_superadmin": "Superadmin",
             "role_amministratore_tenant": "Admin",
+            "role_admin_tenant": "Admin",
             "role_manager": "Manager",
             "role_employee": "Employee",
+            "role_manager_demo": "Manager (Demo)",
+            "role_employee_demo": "Employee (Demo)",
 
             // ── Downloads Page ──
             "download_title": "Download Athena for Desktop",

@@ -13,6 +13,7 @@ interface UserProfile {
     avatarUrl: string;
     department: string;
     officeLocation: string;
+    role: string;
     roleDescription: string;
     phone: string;
     allowOvertime?: boolean;
@@ -177,6 +178,7 @@ const Profile: React.FC = () => {
                         avatarUrl: finalAvatarUrl,
                         department: (profileData.departmentName && profileData.departmentName !== 'Unknown Department') ? profileData.departmentName : t('no_department_assigned'),
                         officeLocation: (profileData.locationName && profileData.locationName !== 'Unknown Location') ? profileData.locationName : t('no_location_assigned'),
+                        role: profileData.role || 'EMPLOYEE',
                         roleDescription: profileData.roleDescription || 'Team Member',
                         phone: profileData.profileCellphone || '',
                         allowOvertime: !!profileData.allowOvertime
@@ -274,7 +276,7 @@ const Profile: React.FC = () => {
                             <div className="text-center px-4">
                                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1">{profile?.fullName}</h1>
                                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                                    {profile?.roleDescription}
+                                    {t('role_' + (profile?.role?.toLowerCase().replace(/\s+/g, '_') || 'employee'), profile?.roleDescription || 'Team Member')}
                                 </span>
                             </div>
                         </div>

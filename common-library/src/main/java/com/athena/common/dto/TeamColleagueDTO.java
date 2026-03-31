@@ -17,5 +17,6 @@ public class TeamColleagueDTO {
     private String avatarUrl;
     private String workStatus; // 'office', 'remote', or 'leave'
     private String locationDetails;
+    private String role;
     private String roleDescription;
 }

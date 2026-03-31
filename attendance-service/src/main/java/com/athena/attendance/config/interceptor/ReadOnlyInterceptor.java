@@ -61,7 +61,9 @@ public class ReadOnlyInterceptor implements HandlerInterceptor {
 
         // 5. If Demo role, block non-GET methods
         if (roleId.equals(RoleConstants.MANAGER_DEMO) || roleId.equals(RoleConstants.EMPLOYEE_DEMO)) {
-            log.warn("Blocked {} request to {} from Demo User: {}", method, request.getRequestURI(), userId);
+            String uri = request.getRequestURI();
+            
+            log.warn("Blocked {} request to {} from Demo User: {}", method, uri, userId);
             
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.setContentType("application/json;charset=UTF-8");

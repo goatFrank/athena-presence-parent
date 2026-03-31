@@ -106,6 +106,10 @@ const Login: React.FC = () => {
                         }
                     } catch (e: any) {
                         console.error('Error fetching profile during login:', e);
+                        // If profile fetch fails (e.g. server down / cold start), don't navigate
+                        setError(t('error_network', 'Il server non risponde. Potrebbe essere in fase di avvio (cold start). Riprova tra 30-60 secondi.'));
+                        setLoading(false);
+                        return; // Stop here, don't navigate to dashboard
                     }
                 }
                 navigate('/dashboard');
