@@ -124,9 +124,10 @@ const SplitText: React.FC<SplitTextProps> = ({
           }
 
           if (isHeroH1 && self.chars) {
-            // Find "ovunque" in the text
-            const charTexts = self.chars.map((c: HTMLElement) => (c.textContent || '').trim());
-            const startIndex = charTexts.indexOf('o'); // Simple find for 'ovunque'
+            // Find "ovunque" correctly by looking at the full text
+            const charTexts = self.chars.map((c: HTMLElement) => c.textContent || '');
+            const fullText = charTexts.join('');
+            const startIndex = fullText.indexOf('ovunque');
             
             if (startIndex !== -1) {
               const phraseChars = self.chars.slice(startIndex);
