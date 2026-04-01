@@ -184,10 +184,11 @@ export default function LandingPage() {
                 <SplitText
                   text="Sincronizza il tuo team, ovunque si trovi."
                   className="block"
-                  delay={40}
-                  duration={1}
-                  ease="power4.out"
+                  delay={100}
+                  duration={1.2}
+                  ease="expo.out"
                   textAlign="left"
+                  splitType="words"
                 />
               </h1>
 
