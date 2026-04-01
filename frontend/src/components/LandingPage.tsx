@@ -14,7 +14,10 @@ import {
   TrendingUp,
   ArrowRight,
   Menu,
-  X
+  X,
+  Monitor,
+  Smartphone,
+  Download
 } from 'lucide-react';
 
 import dashboardImg from '../assets/illustrations/dashboard.svg';
@@ -95,7 +98,7 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Come funziona</a>
               <a href="#features" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Features</a>
-              <a href="#pricing" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Prezzi</a>
+              <Link to="/demo" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Demo</Link>
             </div>
 
             {/* CTAs */}
@@ -149,7 +152,7 @@ export default function LandingPage() {
             <nav className="flex flex-col space-y-6">
               <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors">Come funziona</a>
               <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors">Features</a>
-              <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors">Prezzi</a>
+              <Link to="/demo" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors">Demo</Link>
             </nav>
             <div className="pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-4">
               <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="w-full py-4 text-center font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-colors border border-slate-200 dark:border-slate-700 rounded-2xl">Accedi</Link>
@@ -177,12 +180,12 @@ export default function LandingPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                 </span>
-                Il Futuro dell'Hybrid Work
+                Gestione Presenze Intelligente
               </div>
 
               <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 leading-[1.2] relative text-left">
                 <SplitText
-                  text="Sincronizza il tuo team, ovunque si trovi."
+                  text="Gestisci le presenze del tuo team, ovunque."
                   className="block"
                   delay={40}
                   duration={1}
@@ -192,7 +195,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-xl">
-                La piattaforma B2B per gestire in modo intelligente presenze in ufficio e smart working. Dai più potere ai manager, flessibilità ai dipendenti e controllo all'azienda.
+                La piattaforma per organizzare la settimana lavorativa del tuo team. Pianifica i giorni in ufficio e da remoto, visualizza chi è presente e gestisci le presenze con semplicità.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -226,9 +229,9 @@ export default function LandingPage() {
                       <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 transition-colors group-hover:bg-indigo-600">
                         <CalendarDays className="w-7 h-7 text-indigo-600 transition-colors group-hover:text-white" />
                       </div>
-                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Pianifica in libertà</h3>
+                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Pianifica la Settimana</h3>
                       <p className="text-slate-600 leading-relaxed">
-                        Organizza i tuoi giorni in sede e in remoto con un click. Il team saprà sempre dove trovarti, migliorando la collaborazione.
+                        Ogni dipendente indica i giorni in cui sarà in ufficio o da remoto. Il manager ha la visione completa del team.
                       </p>
                     </div>
                   </Card>
@@ -238,9 +241,9 @@ export default function LandingPage() {
                       <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 transition-colors group-hover:bg-emerald-600">
                         <UserCheck className="w-7 h-7 text-emerald-600 transition-colors group-hover:text-white" />
                       </div>
-                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Approvazioni Fast</h3>
+                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Visibilità del Team</h3>
                       <p className="text-slate-600 leading-relaxed">
-                        I manager approvano le richieste di smart working direttamente dalla dashboard. Zero email, massima efficienza.
+                        Sai sempre chi è in ufficio oggi, domani e per tutta la settimana. Ottieni una dashboard chiara sulle presenze.
                       </p>
                     </div>
                   </Card>
@@ -251,9 +254,9 @@ export default function LandingPage() {
                       <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6 transition-colors group-hover:bg-slate-800">
                         <MapPin className="w-7 h-7 text-slate-700 transition-colors group-hover:text-white" />
                       </div>
-                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Mappa Sede Integrata</h3>
+                      <h3 className="text-2xl font-bold mb-3 tracking-tight">Mappa dell'Ufficio</h3>
                       <p className="text-slate-600 leading-relaxed relative z-10">
-                        Trova subito la tua postazione o verifica chi è fisicamente presente in ufficio con la mappa interattiva 3D.
+                        Visualizza la planimetria del tuo ufficio e scopri dove si trovano i colleghi presenti in sede.
                       </p>
                     </div>
                   </Card>
@@ -267,10 +270,10 @@ export default function LandingPage() {
       {/* --- LOW-OPACITY LOGOs / TRUST SECTION --- */}
       <section className="border-y border-slate-200/60 bg-white py-10 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium text-slate-500 mb-2 uppercase tracking-widest">Scelto dai team più innovativi</p>
+          <p className="text-sm font-medium text-slate-500 mb-2 uppercase tracking-widest">Progettato per team moderni</p>
         </div>
         <CurvedLoop
-          marqueeText="Acme Corp ✦ Globex ✦ Soylent ✦ Initech ✦ Umbrella Corp ✦ Wayne Enterprises ✦"
+          marqueeText="Pianificazione Settimanale ✦ Dashboard Presenze ✦ Mappa Ufficio ✦ Gestione Team ✦ App Desktop ✦ App Mobile ✦ Multi-Dipartimento ✦"
           speed={1.5}
           curveAmount={150}
           direction="left"
@@ -298,8 +301,7 @@ export default function LandingPage() {
               />
             </h3>
             <p className="text-lg text-slate-600 leading-relaxed">
-              Abbiamo progettato un sistema gerarchico che rispetta la struttura reale della tua azienda,
-              delegando la complessità e semplificando le decisioni.
+              Athena rispecchia la struttura organizzativa della tua azienda: ogni ruolo ha strumenti e visibilità dedicati.
             </p>
           </div>
 
@@ -328,9 +330,8 @@ export default function LandingPage() {
                 </div>
                 <h4 className="text-2xl font-bold text-slate-900 mb-4">1. Amministratore</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  L'amministratore (colui che acquista il servizio per la propria azienda) configura le policy per lo smart working,
-                  imposta la capienza delle sedi e invita i dipendenti.
-                  Ha la visione macro su tutta l'organizzazione.
+                  Registra l'azienda, crea i dipartimenti, invita i dipendenti e i manager.
+                  Ha la visione completa su presenze, team e organizzazione.
                 </p>
               </div>
               <div className="order-1 lg:order-2 lg:pl-16 flex justify-start">
@@ -353,9 +354,8 @@ export default function LandingPage() {
                 </div>
                 <h4 className="text-2xl font-bold text-slate-900 mb-3">2. Manager</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  Il manager (capo reparto) riceve la delega dall'amministratore per gestire team specifici.
-                  Approva le richieste di smart working, monitora la presenza
-                  del proprio gruppo e garantisce la copertura in ufficio.
+                  Il manager supervisiona il proprio dipartimento: visualizza la pianificazione del team,
+                  verifica chi è in ufficio e monitora le presenze settimanali dei propri collaboratori.
                 </p>
               </div>
               <div className="order-1 lg:order-1 flex justify-end lg:pr-16">
@@ -378,8 +378,8 @@ export default function LandingPage() {
                 </div>
                 <h4 className="text-2xl font-bold text-slate-900 mb-3">3. Dipendente</h4>
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  I dipendenti della propria azienda pianificano la propria settimana in due clic, segnalando i giorni
-                  da casa o prenotando la scrivania in ufficio. Interfaccia pulita e mobile-first.
+                  I dipendenti pianificano la propria settimana indicando i giorni in ufficio e da remoto.
+                  Possono consultare la mappa dell'ufficio e vedere chi è presente, tutto da web o dall'app.
                 </p>
               </div>
               <div className="order-1 lg:order-2 lg:pl-16 flex justify-start">
@@ -405,11 +405,11 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
             <div className="max-w-2xl">
               <h2 className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-4">Vantaggi Principali</h2>
-              <h3 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">Ottimizza gli spazi, <br />massimizza la produttività</h3>
+              <h3 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">Tutto ciò che serve, <br />niente di superfluo</h3>
             </div>
             <div>
-              <Link to="/features" className="inline-flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 bg-indigo-50 px-5 py-2.5 rounded-full hover:bg-indigo-100 transition-colors">
-                Scopri tutte le features <ArrowRight className="w-4 h-4" />
+              <Link to="/register" className="inline-flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 bg-indigo-50 px-5 py-2.5 rounded-full hover:bg-indigo-100 transition-colors">
+                Prova gratuitamente <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -424,9 +424,9 @@ export default function LandingPage() {
                 al passaggio del cursore (effetto tipico di Vercel/Linear).
               */}
             {[
-              { icon: CalendarDays, title: "Pianificazione Agile", desc: "Dipendenti e manager definiscono la struttura settimanale in blocco con pochi tap da smartphone." },
-              { icon: MapPin, title: "Mappa Interattiva 2D", desc: "Visualizza i planimetri degli uffici reali per sapere non solo chi è in sede, ma a quale scrivania lavora." },
-              { icon: TrendingUp, title: "Analytics Real-Time", desc: "Dati ed esportazioni custom per HR per misurare trend di occupazione e abbattere costi inutili sulle location." },
+              { icon: CalendarDays, title: "Pianificazione Settimanale", desc: "Ogni membro del team indica se sarà in ufficio o da remoto, giorno per giorno. Il manager ha sempre il quadro completo." },
+              { icon: MapPin, title: "Mappa dell'Ufficio", desc: "Visualizza la planimetria della sede per vedere chi è presente e dove si trova, in modo semplice e intuitivo." },
+              { icon: TrendingUp, title: "Dashboard Presenze", desc: "Una panoramica chiara e in tempo reale su chi è in ufficio, chi lavora da remoto e le presenze del giorno." },
             ].map((feature) => (
               <ElectricBorder
                 key={feature.title}
@@ -453,31 +453,87 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* --- DOWNLOAD APPS SECTION --- */}
+      <section className="py-24 bg-white border-t border-slate-200/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-4">Disponibile Ovunque</h2>
+            <h3 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">Usa Athena da qualsiasi dispositivo</h3>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              Accedi da browser, scarica l'app desktop per Windows e macOS, oppure installa l'app mobile direttamente dal tuo smartphone.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Desktop App Card */}
+            <div className="relative group p-8 md:p-10 rounded-[2rem] bg-slate-50 border border-slate-200 hover:border-indigo-300 transition-all duration-500 hover:shadow-xl">
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="w-20 h-20 rounded-3xl bg-indigo-50 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600 transition-all duration-500">
+                  <Monitor className="w-10 h-10 text-indigo-600 group-hover:text-white transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-2xl font-bold text-slate-900">App Desktop</h4>
+                  <p className="text-sm text-slate-500">Windows & macOS</p>
+                </div>
+                <p className="text-slate-600 text-sm leading-relaxed">
+                  Scarica l'applicazione nativa per il tuo computer. Disponibile per Windows 10/11 e macOS (Intel & Apple Silicon).
+                </p>
+                <Link
+                  to="/downloads"
+                  className="w-full py-3.5 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 hover:shadow-lg transition-all flex items-center justify-center gap-2 group/btn"
+                >
+                  <Download className="w-5 h-5" />
+                  Scarica per Desktop
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Mobile App Card */}
+            <div className="relative group p-8 md:p-10 rounded-[2rem] bg-slate-50 border border-slate-200 hover:border-indigo-300 transition-all duration-500 hover:shadow-xl">
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-600 transition-all duration-500">
+                  <Smartphone className="w-10 h-10 text-emerald-600 group-hover:text-white transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-2xl font-bold text-slate-900">App Mobile</h4>
+                  <p className="text-sm text-slate-500">iPhone, iPad & Android</p>
+                </div>
+                <p className="text-slate-600 text-sm leading-relaxed">
+                  Installa Athena sulla schermata Home del tuo smartphone. Nessun App Store richiesto, basta un tap dal browser.
+                </p>
+                <Link
+                  to="/install-app"
+                  className="w-full py-3.5 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 hover:shadow-lg transition-all flex items-center justify-center gap-2 group/btn"
+                >
+                  <Smartphone className="w-5 h-5" />
+                  Installa su Mobile
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* --- BOTTOM CTA --- */}
       <section className="py-32 relative overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950"></div>
-        {/*
-           ========================================
-           REACT BITS: BACKGROUND PARTICLES
-           ========================================
-           Inserisci qui un background mozzafiato come <StarrySky> 
-           o <Particles> (React Bits) per dare profondità spaziale e un effetto WoW al CTA finale.
-        */}
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat mix-blend-overlay"></div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-5xl md:text-7xl font-extrabold text-white mb-8 tracking-tight">
-            Pronto a trasformare la tua organizzazione?
+            Pronto a organizzare il tuo team?
           </h2>
           <p className="text-xl text-indigo-200/80 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
-            Unisciti alle aziende all'avanguardia che hanno già semplificato la gestione dei loro team ibridi. Provalo gratis senza carta di credito.
+            Registra la tua azienda e inizia subito a gestire le presenze in modo semplice e trasparente. Gratuito, senza carta di credito.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link to="/register" className="bg-indigo-500 text-white px-10 py-5 rounded-full text-lg font-bold hover:bg-indigo-400 transition-all shadow-xl hover:shadow-2xl hover:shadow-indigo-500/30 hover:-translate-y-1">
               Registra la tua Azienda
             </Link>
-            <Link to="/contact" className="bg-transparent text-white border border-white/20 px-10 py-5 rounded-full text-lg font-bold hover:bg-white/10 transition-all">
-              Contatta le Vendite
+            <Link to="/demo" className="bg-transparent text-white border border-white/20 px-10 py-5 rounded-full text-lg font-bold hover:bg-white/10 transition-all">
+              Prova la Demo
             </Link>
           </div>
         </div>
@@ -495,8 +551,8 @@ export default function LandingPage() {
                 <span className="font-bold text-2xl tracking-tight text-white">Athena</span>
               </div>
               <p className="text-slate-400 max-w-sm mb-8 leading-relaxed text-sm">
-                Software B2B premium per gestire presenze e workweek ibride. Massima trasparenza per l'azienda,
-                fluidità e benessere per chi lavora.
+                La piattaforma per organizzare le presenze in ufficio e da remoto. Pianificazione settimanale,
+                visibilità del team e mappa dell'ufficio in un unico strumento.
               </p>
 
               {/* Form Newsletter veloce */}
@@ -511,19 +567,18 @@ export default function LandingPage() {
             <div className="md:col-span-1">
               <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-xs">Prodotto</h4>
               <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                <li><Link to="/features" className="hover:text-indigo-400 transition-colors">Features</Link></li>
-                <li><Link to="/pricing" className="hover:text-indigo-400 transition-colors">Prezzi</Link></li>
-                <li><Link to="/integrations" className="hover:text-indigo-400 transition-colors">Integrazioni</Link></li>
-                <li><Link to="/changelog" className="hover:text-indigo-400 transition-colors">Changelog</Link></li>
+                <li><Link to="/register" className="hover:text-indigo-400 transition-colors">Registrati</Link></li>
+                <li><Link to="/demo" className="hover:text-indigo-400 transition-colors">Demo</Link></li>
+                <li><Link to="/downloads" className="hover:text-indigo-400 transition-colors">App Desktop</Link></li>
+                <li><Link to="/install-app" className="hover:text-indigo-400 transition-colors">App Mobile</Link></li>
               </ul>
             </div>
             <div className="md:col-span-1">
-              <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-xs">Risorse</h4>
+              <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-xs">Funzionalità</h4>
               <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                <li><Link to="/blog" className="hover:text-indigo-400 transition-colors">Blog</Link></li>
-                <li><Link to="/docs" className="hover:text-indigo-400 transition-colors">Documentazione API</Link></li>
-                <li><Link to="/community" className="hover:text-indigo-400 transition-colors">Community</Link></li>
-                <li><Link to="/help" className="hover:text-indigo-400 transition-colors">Help Center</Link></li>
+                <li><a href="#how-it-works" className="hover:text-indigo-400 transition-colors">Come Funziona</a></li>
+                <li><a href="#features" className="hover:text-indigo-400 transition-colors">Funzionalità</a></li>
+                <li><Link to="/login" className="hover:text-indigo-400 transition-colors">Accedi</Link></li>
               </ul>
             </div>
             <div className="md:col-span-1">
@@ -536,7 +591,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500 pt-8 gap-4 font-medium">
-            <p>&copy; {new Date().getFullYear()} Athena Inc. Made with ❤️ per team ibridi.</p>
+            <p>&copy; {new Date().getFullYear()} Athena Presence. Gestione presenze per team moderni.</p>
             <div className="flex gap-6">
               <Link to="/twitter" className="hover:text-white transition-colors">Twitter</Link>
               <Link to="/linkedin" className="hover:text-white transition-colors">LinkedIn</Link>
