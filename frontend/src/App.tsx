@@ -14,6 +14,7 @@ import SuperadminManageTenants from './components/SuperadminManageTenants';
 import Departments from './components/Departments';
 import Employees from './components/Employees';
 import Downloads from './components/Downloads';
+import InstallApp from './components/InstallApp';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ToastProvider } from './components/Toast';
 
@@ -63,6 +64,11 @@ function App() {
         <Route path="/downloads" element={
           <ProtectedRoute>
             <Downloads />
+          </ProtectedRoute>
+        } />
+        <Route path="/install-app" element={
+          <ProtectedRoute>
+            <InstallApp />
           </ProtectedRoute>
         } />
         <Route path="/superadmin/tenants" element={
