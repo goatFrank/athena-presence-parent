@@ -29,7 +29,7 @@ const Sidebar: React.FC = () => {
             if (navRef.current) {
                 const path = location.pathname;
                 const activeLink = navRef.current.querySelector(`a[href="${path}"]`) as HTMLElement;
-                
+
                 if (activeLink) {
                     activeLink.scrollIntoView({ block: 'nearest', behavior: 'instant' as any });
                 }
@@ -38,7 +38,7 @@ const Sidebar: React.FC = () => {
 
         // Run immediately
         scrollToActive();
-        
+
         // Also run after a short delay to handle cases where layout might still be settling
         const timer = setTimeout(scrollToActive, 100);
         return () => clearTimeout(timer);
@@ -61,7 +61,7 @@ const Sidebar: React.FC = () => {
                         setCompanyName(profile.tenants.name);
                         setNewCompanyName(profile.tenants.name);
                     }
-                    
+
                     // Check if superadmin
                     const roles = profile.roles as any;
                     const roleName = Array.isArray(roles) ? roles[0]?.name : roles?.name;
@@ -70,11 +70,11 @@ const Sidebar: React.FC = () => {
                     if (roleName === 'SUPERADMIN') {
                         setIsSuperadmin(true);
                     }
-                    
+
                     if (profile.role_id === 3 || profile.role_id === 5 || roleName === 'AMMINISTRATORE_TENANT' || roleName === 'ADMIN_TENANT') {
                         setIsTenantAdmin(true);
                     }
-                    
+
                     if (profile.avatar_url) {
                         const avatar = profile.avatar_url;
                         setUserAvatar(avatar.startsWith('http') ? avatar : `${import.meta.env.VITE_ATTENDANCE_API_URL}${avatar}`);
@@ -159,7 +159,7 @@ const Sidebar: React.FC = () => {
 
             {/* Backdrop for Mobile */}
             {isMobileMenuOpen && (
-                <div 
+                <div
                     className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[70] transition-opacity"
                     onClick={closeMobileMenu}
                 />
@@ -192,7 +192,7 @@ const Sidebar: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        {/* Language Switcher */}
+                        {/* Language Switch */}
                         <button
                             onClick={toggleLanguage}
                             className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 transition-colors"
@@ -200,8 +200,8 @@ const Sidebar: React.FC = () => {
                             {i18n.language.toUpperCase()}
                         </button>
                         {/* Close button for mobile */}
-                        <button 
-                            onClick={closeMobileMenu} 
+                        <button
+                            onClick={closeMobileMenu}
                             className="lg:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                             aria-label="Close Menu"
                         >
@@ -292,8 +292,8 @@ const Sidebar: React.FC = () => {
                                                 to="/superadmin/tenants"
                                                 onClick={() => { setShowProfileMenu(false); closeMobileMenu(); }}
                                                 className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all ${location.pathname === '/superadmin/tenants'
-                                                        ? 'bg-blue-50 text-blue-600'
-                                                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 group'
+                                                    ? 'bg-blue-50 text-blue-600'
+                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 group'
                                                     }`}
                                             >
                                                 <span className={`material-icons text-[20px] transition-colors ${location.pathname === '/superadmin/tenants' ? 'text-blue-500' : 'text-slate-400 group-hover:text-slate-600'}`}>
@@ -305,8 +305,8 @@ const Sidebar: React.FC = () => {
                                                 to="/superadmin/manage-tenants"
                                                 onClick={() => { setShowProfileMenu(false); closeMobileMenu(); }}
                                                 className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all ${location.pathname === '/superadmin/manage-tenants'
-                                                        ? 'bg-blue-50 text-blue-600'
-                                                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 group'
+                                                    ? 'bg-blue-50 text-blue-600'
+                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 group'
                                                     }`}
                                             >
                                                 <span className={`material-icons text-[20px] transition-colors ${location.pathname === '/superadmin/manage-tenants' ? 'text-blue-500' : 'text-slate-400 group-hover:text-slate-600'}`}>
