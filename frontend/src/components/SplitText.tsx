@@ -29,7 +29,7 @@ const SplitText: React.FC<SplitTextProps> = ({
   delay = 50,
   duration = 1.25,
   ease = 'power3.out',
-  splitType = 'words',
+  splitType = 'chars',
   from = { opacity: 0, y: 40 },
   to = { opacity: 1, y: 0 },
   threshold = 0.1,
@@ -106,22 +106,36 @@ const SplitText: React.FC<SplitTextProps> = ({
           
           const isHeroH1 = text.includes('Sincronizza il tuo team');
           
-          if (isHeroH1) {
-            // Find target elements (chars or words)
-            const elements = (splitType.includes('chars') ? self.chars : self.words) || [];
-            const elementTexts = elements.map((c: HTMLElement) => (c.textContent || '').trim());
-            
-            // Find where the phrase starts in our element list
-            const startIndex = elementTexts.findIndex((t: string) => t.includes('ovunque'));
+          // Initial styles for all elements to reduce layout thrashing
+          const allElements = [
+            ...(self.chars || []),
+            ...(self.words || []),
+            ...(self.lines || [])
+          ];
+
+          if (allElements.length > 0) {
+            gsap.set(allElements, {
+              display: 'inline-block',
+              backfaceVisibility: 'hidden',
+              perspective: '1000px',
+              transformStyle: 'preserve-3d',
+              willChange: 'transform, opacity'
+            });
+          }
+
+          if (isHeroH1 && self.chars) {
+            // Find "ovunque" in the text
+            const charTexts = self.chars.map((c: HTMLElement) => (c.textContent || '').trim());
+            const startIndex = charTexts.indexOf('o'); // Simple find for 'ovunque'
             
             if (startIndex !== -1) {
-              const phraseElements = elements.slice(startIndex);
-              const phraseLength = phraseElements.length;
+              const phraseChars = self.chars.slice(startIndex);
+              const phraseLength = phraseChars.length;
               
-              const startColor = { r: 79, g: 70, b: 229 };  // #4f46e5 (indigo-600)
-              const endColor   = { r: 139, g: 92, b: 246 };  // #8b5cf6 (violet-500)
+              const startColor = { r: 79, g: 70, b: 229 }; // indigo-600
+              const endColor   = { r: 139, g: 92, b: 246 }; // violet-500
               
-              phraseElements.forEach((el: HTMLElement, i: number) => {
+              phraseChars.forEach((el: HTMLElement, i: number) => {
                 const t = phraseLength > 1 ? i / (phraseLength - 1) : 0;
                 const r = Math.round(startColor.r + (endColor.r - startColor.r) * t);
                 const g = Math.round(startColor.g + (endColor.g - startColor.g) * t);
@@ -129,7 +143,6 @@ const SplitText: React.FC<SplitTextProps> = ({
                 
                 gsap.set(el, {
                   color: `rgb(${r}, ${g}, ${b})`,
-                  display: 'inline-block',
                   fontWeight: '800'
                 });
               });
