@@ -104,7 +104,7 @@ const SplitText: React.FC<SplitTextProps> = ({
         onSplit: (self: any) => {
           assignTargets(self);
           
-          const isHeroH1 = text.includes('Sincronizza il tuo team');
+          const isHeroH1 = text.includes('Gestisci le presenze del tuo team');
           
           // Initial styles for all elements to reduce layout thrashing
           const allElements = [
@@ -124,7 +124,7 @@ const SplitText: React.FC<SplitTextProps> = ({
           }
 
           if (isHeroH1 && self.chars) {
-            // Find "ovunque" correctly by looking at the full text
+            // Find "ovunque." correctly by looking at the full text
             const charTexts = self.chars.map((c: HTMLElement) => c.textContent || '');
             const fullText = charTexts.join('');
             const startIndex = fullText.indexOf('ovunque');
@@ -133,14 +133,24 @@ const SplitText: React.FC<SplitTextProps> = ({
               const phraseChars = self.chars.slice(startIndex);
               const phraseLength = phraseChars.length;
               
-              const startColor = { r: 79, g: 70, b: 229 }; // indigo-600
-              const endColor   = { r: 139, g: 92, b: 246 }; // violet-500
+              const startColor = { r: 37, g: 99, b: 235 };  // blue-600
+              const midColor   = { r: 79, g: 70, b: 229 };   // indigo-600
+              const endColor   = { r: 147, g: 51, b: 234 };   // purple-600
               
               phraseChars.forEach((el: HTMLElement, i: number) => {
                 const t = phraseLength > 1 ? i / (phraseLength - 1) : 0;
-                const r = Math.round(startColor.r + (endColor.r - startColor.r) * t);
-                const g = Math.round(startColor.g + (endColor.g - startColor.g) * t);
-                const b = Math.round(startColor.b + (endColor.b - startColor.b) * t);
+                let r, g, b;
+                if (t < 0.5) {
+                  const t2 = t * 2;
+                  r = Math.round(startColor.r + (midColor.r - startColor.r) * t2);
+                  g = Math.round(startColor.g + (midColor.g - startColor.g) * t2);
+                  b = Math.round(startColor.b + (midColor.b - startColor.b) * t2);
+                } else {
+                  const t2 = (t - 0.5) * 2;
+                  r = Math.round(midColor.r + (endColor.r - midColor.r) * t2);
+                  g = Math.round(midColor.g + (endColor.g - midColor.g) * t2);
+                  b = Math.round(midColor.b + (endColor.b - midColor.b) * t2);
+                }
                 
                 gsap.set(el, {
                   color: `rgb(${r}, ${g}, ${b})`,
