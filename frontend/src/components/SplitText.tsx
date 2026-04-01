@@ -29,7 +29,7 @@ const SplitText: React.FC<SplitTextProps> = ({
   delay = 50,
   duration = 1.25,
   ease = 'power3.out',
-  splitType = 'chars',
+  splitType = 'words',
   from = { opacity: 0, y: 40 },
   to = { opacity: 1, y: 0 },
   threshold = 0.1,
@@ -106,33 +106,31 @@ const SplitText: React.FC<SplitTextProps> = ({
           
           const isHeroH1 = text.includes('Sincronizza il tuo team');
           
-          if (isHeroH1 && self.chars) {
-            // Build a string from the actual char elements to find correct indices
-            const charTexts = self.chars.map((c: HTMLElement) => c.textContent || '');
-            const reconstructed = charTexts.join('');
+          if (isHeroH1) {
+            // Find target elements (chars or words)
+            const elements = (splitType.includes('chars') ? self.chars : self.words) || [];
+            const elementTexts = elements.map((c: HTMLElement) => (c.textContent || '').trim());
             
-            // Find "ovunque" in the reconstructed char list
-            const targetStart = reconstructed.indexOf('ovunque');
+            // Find where the phrase starts in our element list
+            const startIndex = elementTexts.findIndex((t: string) => t.includes('ovunque'));
             
-            if (targetStart !== -1) {
-              const targetEnd = reconstructed.lastIndexOf('i') + 1;
-              const phraseChars = self.chars.slice(targetStart, targetEnd);
-              const phraseLength = phraseChars.length;
+            if (startIndex !== -1) {
+              const phraseElements = elements.slice(startIndex);
+              const phraseLength = phraseElements.length;
               
-              // Interpolate smoothly between two colors across the phrase
-              // Using the page's indigo → violet palette for cohesion
               const startColor = { r: 79, g: 70, b: 229 };  // #4f46e5 (indigo-600)
               const endColor   = { r: 139, g: 92, b: 246 };  // #8b5cf6 (violet-500)
               
-              phraseChars.forEach((char: HTMLElement, i: number) => {
+              phraseElements.forEach((el: HTMLElement, i: number) => {
                 const t = phraseLength > 1 ? i / (phraseLength - 1) : 0;
                 const r = Math.round(startColor.r + (endColor.r - startColor.r) * t);
                 const g = Math.round(startColor.g + (endColor.g - startColor.g) * t);
                 const b = Math.round(startColor.b + (endColor.b - startColor.b) * t);
                 
-                gsap.set(char, {
+                gsap.set(el, {
                   color: `rgb(${r}, ${g}, ${b})`,
-                  display: 'inline-block'
+                  display: 'inline-block',
+                  fontWeight: '800'
                 });
               });
             }
