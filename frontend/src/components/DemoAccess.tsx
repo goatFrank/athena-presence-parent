@@ -5,7 +5,7 @@ import { attendanceApi } from '../api/clients';
 import athenaLogo from '../assets/icons/athena-logo-transparent.png';
 import dashboardImg from '../assets/illustrations/dashboard.svg';
 import businessDecisionImg from '../assets/illustrations/businessDecision.svg';
-import { ArrowRight, ArrowLeft, Shield, Eye, Users, Briefcase, Lock, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Eye, Users, Briefcase, Lock, Sparkles } from 'lucide-react';
 
 const DEMO_ACCOUNTS = {
     manager: {
