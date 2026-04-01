@@ -20,7 +20,7 @@ import {
 import dashboardImg from '../assets/illustrations/dashboard.svg';
 import businessDecisionImg from '../assets/illustrations/businessDecision.svg';
 import workingRemotelyImg from '../assets/illustrations/workingRemotely.svg';
-import athenaLogo from '../assets/icons/athena.ico';
+import athenaLogo from '../assets/icons/athena-logo-transparent.png';
 
 export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -84,8 +84,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             {/* Logo */}
-            <div className="flex items-center gap-2">
-              <img src={athenaLogo} alt="Athena" className="w-8 h-8" />
+            <div className="flex items-center gap-2 group">
+              <div className="relative">
+                <img src={athenaLogo} alt="Athena" className="w-9 h-9 object-contain" />
+              </div>
               <span className="font-bold text-xl tracking-tight text-slate-900">Athena</span>
             </div>
 
@@ -134,7 +136,9 @@ export default function LandingPage() {
         <div className={`absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-500 ease-out border-l border-slate-200 dark:border-slate-800 flex flex-col ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <img src={athenaLogo} alt="Athena" className="w-8 h-8" />
+              <div className="relative">
+                <img src={athenaLogo} alt="Athena" className="w-8 h-8 object-contain" />
+              </div>
               <span className="font-bold text-xl text-slate-900 dark:text-white">Athena</span>
             </div>
             <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-slate-500 hover:text-slate-900 transition-colors">
@@ -484,8 +488,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-2 mb-6 opacity-90">
-                <img src={athenaLogo} alt="Athena" className="w-8 h-8" />
+              <div className="flex items-center gap-2 mb-6 opacity-90 group">
+                <div className="relative">
+                  <img src={athenaLogo} alt="Athena" className="w-9 h-9 object-contain" />
+                </div>
                 <span className="font-bold text-2xl tracking-tight text-white">Athena</span>
               </div>
               <p className="text-slate-400 max-w-sm mb-8 leading-relaxed text-sm">

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase, setRememberMe } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
-import athenaLogo from '../assets/icons/athena.ico';
+import athenaLogo from '../assets/icons/athena-logo-transparent.png';
 import dashboardImg from '../assets/illustrations/dashboard.svg';
 import businessDecisionImg from '../assets/illustrations/businessDecision.svg';
 import { ArrowRight, ArrowLeft, Shield, Eye, Users, Briefcase, Lock, Sparkles } from 'lucide-react';
@@ -140,8 +140,8 @@ const DemoAccess: React.FC = () => {
 
                         {/* Role badge */}
                         <div className="absolute top-5 left-5 z-10">
-                            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30">
-                                <Shield className="w-4 h-4 text-white" />
+                            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md rounded-full pl-2 pr-4 py-1.5 border border-white/30">
+                                <img src={athenaLogo} alt="" className="w-5 h-5 object-contain invert brightness-0" />
                                 <span className="text-xs font-bold text-white uppercase tracking-wider">{account.roleTag}</span>
                             </div>
                         </div>
@@ -243,7 +243,9 @@ const DemoAccess: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center">
                         <Link to="/" className="flex items-center gap-2 group">
-                            <img src={athenaLogo} alt="Athena" className="w-8 h-8 transition-transform group-hover:scale-110" />
+                            <div className="relative">
+                                <img src={athenaLogo} alt="Athena" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
+                            </div>
                             <span className="font-bold text-xl tracking-tight text-slate-900">Athena</span>
                         </Link>
                         <Link
@@ -306,7 +308,9 @@ const DemoAccess: React.FC = () => {
                         </div>
                         <div className="hidden sm:block w-px h-5 bg-slate-200" />
                         <div className="flex items-center gap-2 text-sm text-slate-500">
-                            <Shield className="w-4 h-4 text-slate-400" />
+                            <div className="relative opacity-60">
+                                <img src={athenaLogo} alt="" className="w-4 h-4 object-contain" />
+                            </div>
                             <span className="font-medium">Account reset automatico</span>
                         </div>
                         <div className="hidden sm:block w-px h-5 bg-slate-200" />
@@ -334,7 +338,7 @@ const DemoAccess: React.FC = () => {
             <footer className="relative z-10 border-t border-slate-200/50 py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
                     <div className="flex items-center gap-2">
-                        <img src={athenaLogo} alt="Athena" className="w-5 h-5 opacity-60" />
+                        <img src={athenaLogo} alt="Athena" className="w-6 h-6 opacity-60 grayscale" />
                         <span>© {new Date().getFullYear()} Athena Inc.</span>
                     </div>
                     <div className="flex gap-6">

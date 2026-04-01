@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import athenaLogo from '../assets/icons/athena-logo-transparent.png';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../api/supabase';
@@ -212,14 +213,11 @@ const Register: React.FC = () => {
                 {/* Right Side (Form) */}
                 <div className="w-full md:w-1/2 bg-white p-8 md:p-12 flex flex-col justify-center relative">
                     <div className="w-full max-w-sm mx-auto">
-                        <div className="mb-8 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white flex-shrink-0">
-                                <div className="relative w-6 h-6">
-                                    <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-[20px] text-white">shield</span>
-                                    <span className="material-symbols-outlined absolute -top-1 left-0 w-full flex justify-center text-[12px] text-white">person_add</span>
-                                </div>
+                        <div className="mb-8 flex items-center gap-4">
+                            <div className="relative">
+                                <img src={athenaLogo} alt="Athena" className="w-12 h-12 object-contain" />
                             </div>
-                            <span className="text-2xl font-brand font-bold text-slate-800 tracking-tight">Athena</span>
+                            <span className="text-3xl font-brand font-bold text-slate-800 tracking-tight">Athena</span>
                         </div>
 
                         <h1 className="text-2xl font-bold text-slate-900 mb-2">{t('create_account')}</h1>

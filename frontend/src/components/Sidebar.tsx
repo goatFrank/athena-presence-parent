@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../api/supabase';
 import { attendanceApi } from '../api/clients';
 import { useToast } from './Toast';
-import athenaLogo from '../assets/icons/athena.ico';
+import athenaLogo from '../assets/icons/athena-logo-transparent.png';
 
 const Sidebar: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -183,8 +183,13 @@ const Sidebar: React.FC = () => {
                 </div>
                 <div className="p-8 pb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <img src={athenaLogo} alt="Athena" className="w-10 h-10 rounded-2xl shadow-lg" />
-                        <span className="font-bold text-2xl tracking-tight text-slate-800 dark:text-white">Athena</span>
+                        <div className="relative">
+                            <img src={athenaLogo} alt="Athena" className="w-12 h-12 object-contain" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-2xl tracking-tight text-slate-800 dark:text-white leading-none">Athena</span>
+                            <span className="text-[10px] uppercase tracking-widest font-bold text-blue-500 mt-1 opacity-80">Presence</span>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         {/* Language Switcher */}

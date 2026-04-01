@@ -3,10 +3,15 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/x-icon" href="/athena.ico" />
-  <link rel="shortcut icon" href="/athena.ico" type="image/x-icon" />
-  <link rel="apple-touch-icon" href="/athena-32x32.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/pwa-icon-512.png" />
+  <link rel="shortcut icon" type="image/png" href="/pwa-icon-512.png" />
+  <link rel="apple-touch-icon" href="/pwa-icon-512.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Athena" />
+  <meta name="theme-color" content="#3B82F6" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
   <title>Athena</title>
   <!-- Tailwind CSS (via CDN as requested by the user's template) -->
   <script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
@@ -145,6 +150,15 @@
 <body
   class="bg-mesh font-display text-athena-text min-h-screen flex flex-col antialiased selection:bg-blue-100 selection:text-blue-900">
   <div id="root" class="flex-grow flex flex-col h-full w-full"></div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Athena Service Worker registered', reg))
+          .catch(err => console.error('Athena Service Worker registration failed', err));
+      });
+    }
+  </script>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
