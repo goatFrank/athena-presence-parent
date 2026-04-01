@@ -138,5 +138,37 @@ public class ProfileController {
                 .status(ResponseStatus.SUCCESS)
                 .build());
     }
+
+    @org.springframework.web.bind.annotation.PutMapping("/{profileId}/description")
+    @Operation(summary = "Aggiorna la descrizione del ruolo (es. 'Sviluppatore')")
+    public ResponseEntity<ResponseDTO<Void>> updateProfileDescription(
+            @AuthenticationPrincipal Jwt jwt,
+            @org.springframework.web.bind.annotation.PathVariable UUID profileId,
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.RoleDescriptionUpdateRequest request) {
+        
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        profileService.updateProfileDescription(profileId, request.getRoleDescription(), adminUserId);
+        
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("Role description updated successfully")
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/{profileId}")
+    @Operation(summary = "Aggiorna i dati completi di un profilo (solo per ADMIN_TENANT o MANAGER o SUPERADMIN)")
+    public ResponseEntity<ResponseDTO<Void>> updateProfile(
+            @AuthenticationPrincipal Jwt jwt,
+            @org.springframework.web.bind.annotation.PathVariable UUID profileId,
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.athena.common.dto.ProfileUpdateRequest request) {
+        
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        profileService.updateProfile(profileId, request, adminUserId);
+        
+        return ResponseEntity.ok(ResponseDTO.<Void>builder()
+                .message("Profile updated successfully")
+                .status(ResponseStatus.SUCCESS)
+                .build());
+    }
 }
 

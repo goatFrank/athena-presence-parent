@@ -40,10 +40,12 @@ const Profile: React.FC = () => {
     const [emailNotifications, setEmailNotifications] = useState(true);
 
 
-    // Phone editing state
+    // Profile editing state
     const [editPhone, setEditPhone] = useState('');
+    const [editRoleDescription, setEditRoleDescription] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
 
     // Avatar Upload State
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -184,7 +186,9 @@ const Profile: React.FC = () => {
                         allowOvertime: !!profileData.allowOvertime
                     });
                     setEditPhone(profileData.profileCellphone || '');
+                    setEditRoleDescription(profileData.roleDescription || '');
                     setIsDemo(profileData.roleId === 5 || profileData.roleId === 6);
+                    setIsManagerOrAdmin(profileData.roleId === 1 || profileData.roleId === 2 || profileData.roleId === 3 || profileData.roleId === 5);
                 }
 
                 // Fetch Work Statistics from backend
@@ -215,7 +219,12 @@ const Profile: React.FC = () => {
         setSaveSuccess(false);
         try {
             await attendanceApi.put('/api/v1/profiles/me/phone', { phone: editPhone });
-            setProfile(prev => prev ? { ...prev, phone: editPhone } : null);
+            
+            if (isManagerOrAdmin) {
+                await attendanceApi.put(`/api/v1/profiles/${profile.id}/description`, { roleDescription: editRoleDescription });
+            }
+
+            setProfile(prev => prev ? { ...prev, phone: editPhone, roleDescription: editRoleDescription } : null);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 2000);
         } catch (e) {
@@ -275,9 +284,16 @@ const Profile: React.FC = () => {
                             </div>
                             <div className="text-center px-4">
                                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1">{profile?.fullName}</h1>
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                                    {t('role_' + (profile?.role?.toLowerCase().replace(/\s+/g, '_') || 'employee'), profile?.roleDescription || 'Team Member')}
-                                </span>
+                                <div className="flex flex-wrap justify-center gap-2">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-bold bg-blue-600 text-white shadow-sm">
+                                        {t('role_' + (profile?.role?.toLowerCase().replaceAll(/\s+/g, '_') || 'employee'))}
+                                    </span>
+                                    {profile?.roleDescription && profile.roleDescription !== 'Team Member' && (
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
+                                            {profile.roleDescription}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -318,6 +334,16 @@ const Profile: React.FC = () => {
                                         />
                                     </div>
                                     <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+                                            {t('system_role', 'Ruolo di Sistema')}
+                                            <span className="material-icons text-[14px] text-slate-400 align-middle ml-1" title={t('managed_by_admin', 'Gestito dall\'amministratore')}>lock</span>
+                                        </label>
+                                        <div className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 font-bold transition-all flex items-center justify-between">
+                                            <span>{t('role_' + (profile?.role?.toLowerCase().replaceAll(/\s+/g, '_') || 'employee'))}</span>
+                                            <span className="material-icons text-blue-500 text-sm">verified_user</span>
+                                        </div>
+                                    </div>
+                                    <div>
                                         <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{t('phone_number', 'Phone Number')} {isDemo && <span className="material-icons text-[14px] text-slate-400 align-middle ml-1">lock</span>}</label>
                                         <input
                                             className={`w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 outline-none transition-all font-medium ${isDemo ? 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-800'}`}
@@ -328,6 +354,22 @@ const Profile: React.FC = () => {
                                             disabled={isDemo}
                                         />
                                     </div>
+                                    {isManagerOrAdmin && (
+                                        <div className="md:col-span-1">
+                                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+                                                {t('role_description_label', 'Ruolo Aziendale')}
+                                                {isDemo && <span className="material-icons text-[14px] text-slate-400 align-middle ml-1">lock</span>}
+                                            </label>
+                                            <input
+                                                className={`w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-600 outline-none transition-all font-medium ${isDemo ? 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-800'}`}
+                                                type="text"
+                                                value={editRoleDescription}
+                                                onChange={(e) => setEditRoleDescription(e.target.value)}
+                                                placeholder={t('role_description_placeholder', "Es. Sviluppatore, Designer...")}
+                                                disabled={isDemo}
+                                            />
+                                        </div>
+                                    )}
                                     <div>
                                         <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
                                             {t('department', 'Department')}

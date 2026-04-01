@@ -12,6 +12,7 @@ const resources = {
             "analytics": "Statistiche",
             "profile": "Profilo",
             "logout": "Esci",
+            "company": "Azienda",
             "download_desktop": "App Desktop",
 
             // ── Office Map Page ──
@@ -213,6 +214,9 @@ const resources = {
             "approve": "Approva",
             "reject": "Rifiuta",
             "company_name_label": "Nome Azienda",
+            "edit_company": "Gestione Azienda",
+            "update_company_name": "Aggiorna Nome Azienda",
+            "company_name_updated_success": "Nome azienda aggiornato con successo!",
             "status_label": "Stato",
             "no_department_assigned": "Dipartimento non assegnato",
             "no_location_assigned": "Sede non specificata",
@@ -269,6 +273,7 @@ const resources = {
             "analytics": "Analytics",
             "profile": "Profile",
             "logout": "Logout",
+            "company": "Company",
             "download_desktop": "Desktop App",
 
             // ── Office Map Page ──
@@ -470,6 +475,9 @@ const resources = {
             "approve": "Approve",
             "reject": "Reject",
             "company_name_label": "Company Name",
+            "edit_company": "Company Management",
+            "update_company_name": "Update Company Name",
+            "company_name_updated_success": "Company name updated successfully!",
             "status_label": "Status",
             "no_department_assigned": "Unassigned Department",
             "no_location_assigned": "Location not specified",

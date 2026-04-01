@@ -31,6 +31,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     private static final String ERR_PROFILE_NOT_FOUND = "Profile not found for user: ";
     private static final String ERR_ADMIN_PROFILE_NOT_FOUND = "Admin profile not found";
+    private static final String ERR_TARGET_PROFILE_NOT_FOUND = "Target profile not found";
 
     @org.springframework.beans.factory.annotation.Value("${supabase.url}")
     private String supabaseUrl;
@@ -162,6 +163,139 @@ public class ProfileServiceImpl implements ProfileService {
                         HttpStatus.NOT_FOUND, "Role not found"));
 
         targetProfile.setRole(newRole);
+        profileRepository.save(targetProfile);
+    }
+
+    @Override
+    @Transactional
+    public void updateProfileDescription(UUID profileId, String roleDescription, UUID adminUserId) {
+        Profile callerProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Caller profile not found"));
+
+        Profile targetProfile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Target profile not found"));
+
+        Long callerRoleId = callerProfile.getRole() != null ? callerProfile.getRole().getId() : null;
+        Long targetRoleId = targetProfile.getRole() != null ? targetProfile.getRole().getId() : null;
+
+        boolean isSelf = adminUserId.equals(profileId);
+        boolean sameTenant = java.util.Objects.equals(callerProfile.getTenantId(), targetProfile.getTenantId());
+
+        if (callerRoleId == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+
+        // Permission Logic
+        if (callerRoleId.equals(RoleConstants.SUPERADMIN)) {
+            // Superadmin can edit anyone
+        } else if (callerRoleId.equals(RoleConstants.ADMIN_TENANT)) {
+            if (!sameTenant) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not belong to your tenant");
+            }
+            // Admin can edit self or any non-admin in the tenant
+            if (!isSelf && RoleConstants.ADMIN_TENANT.equals(targetRoleId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot edit another Admin's description");
+            }
+        } else if (callerRoleId.equals(RoleConstants.MANAGER) || callerRoleId.equals(RoleConstants.MANAGER_DEMO)) {
+            if (!sameTenant) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not belong to your tenant");
+            }
+            // Manager can edit self or employees in the tenant
+            if (!isSelf && !RoleConstants.EMPLOYEE.equals(targetRoleId) && !RoleConstants.EMPLOYEE_DEMO.equals(targetRoleId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Managers can only edit employees or themselves");
+            }
+        } else {
+            // Employee or others
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied to edit descriptions");
+        }
+
+        targetProfile.setRoleDescription(roleDescription != null ? roleDescription.trim() : null);
+        profileRepository.save(targetProfile);
+    }
+
+    @Override
+    @Transactional
+    public void updateProfile(UUID profileId, com.athena.common.dto.ProfileUpdateRequest request, UUID adminUserId) {
+        Profile callerProfile = profileRepository.findById(adminUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caller profile not found"));
+
+        Profile targetProfile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_TARGET_PROFILE_NOT_FOUND));
+
+        Long callerRoleId = (callerProfile.getRole() != null) ? callerProfile.getRole().getId() : null;
+        boolean isSuperadmin = RoleConstants.SUPERADMIN.equals(callerRoleId);
+        boolean isSameTenant = java.util.Objects.equals(callerProfile.getTenantId(), targetProfile.getTenantId());
+
+        // Basic permission check
+        if (!isSuperadmin && !isSameTenant) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not belong to your tenant");
+        }
+
+        if (!isSuperadmin && 
+            !RoleConstants.ADMIN_TENANT.equals(callerRoleId) && 
+            !RoleConstants.MANAGER.equals(callerRoleId) && 
+            !RoleConstants.MANAGER_DEMO.equals(callerRoleId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins or managers can edit profiles");
+        }
+
+        // 1. Update Full Name
+        if (request.getFullName() != null && !request.getFullName().isBlank()) {
+            targetProfile.setFullName(request.getFullName().trim());
+        }
+
+        // 2. Update Phone
+        targetProfile.setProfileCellphone(request.getProfileCellphone() != null ? request.getProfileCellphone().trim() : null);
+
+        // 3. Update Role Description
+        targetProfile.setRoleDescription(request.getRoleDescription() != null ? request.getRoleDescription().trim() : null);
+
+        // 4. Update Role
+        if (request.getRoleId() != null) {
+            // Security check: cannot assign a role more powerful than caller's role
+            // Lower numerical ID = more power. So request.roleId >= callerRoleId
+            if (!isSuperadmin && callerRoleId != null && request.getRoleId() < callerRoleId) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot assign a role more powerful than your own");
+            }
+
+            // Prevent admins from downgrading their own role
+            boolean isSelfUpdate = java.util.Objects.equals(callerProfile.getId(), targetProfile.getId());
+            if (isSelfUpdate && RoleConstants.ADMIN_TENANT.equals(callerRoleId) && request.getRoleId() > callerRoleId) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Administrators cannot downgrade their own role privileges");
+            }
+
+            Role newRole = roleRepository.findById(request.getRoleId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found"));
+            targetProfile.setRole(newRole);
+        }
+
+        // 5. Update Department
+        if (request.getDepartmentId() != null) {
+            Department dept = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found"));
+            
+            if (!isSuperadmin && !java.util.Objects.equals(dept.getTenantId(), callerProfile.getTenantId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Department does not belong to your tenant");
+            }
+            targetProfile.setDepartmentId(dept.getId());
+            
+            // Per user request, selecting a department might update the location
+            if (dept.getLocationId() != null) {
+                targetProfile.setLocationId(dept.getLocationId());
+            }
+        }
+
+        // 6. Update Location (explicitly, if provided)
+        if (request.getLocationId() != null) {
+            Location loc = locationRepository.findById(request.getLocationId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found"));
+            if (!isSuperadmin && !java.util.Objects.equals(loc.getTenantId(), callerProfile.getTenantId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Location does not belong to your tenant");
+            }
+            targetProfile.setLocationId(loc.getId());
+        }
+
         profileRepository.save(targetProfile);
     }
 

@@ -15,6 +15,9 @@ interface Profile {
     tenantName: string | null;
     departmentId: number | null;
     departmentName: string | null;
+    profileCellphone?: string | null;
+    locationId?: number | null;
+    roleDescription?: string | null;
 }
 
 interface Department {
@@ -27,12 +30,16 @@ const Employees: React.FC = () => {
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [myProfileId, setMyProfileId] = useState<string | null>(null);
     const [isSuperadmin, setIsSuperadmin] = useState(false);
     const [isDemo, setIsDemo] = useState(false);
     const { addToast } = useToast();
     const [searchQuery, setSearchQuery] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [editTarget, setEditTarget] = useState<Profile | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [myRoleId, setMyRoleId] = useState<number | null>(null);
 
     // Pagination
     const [page, setPage] = useState(0);
@@ -77,7 +84,10 @@ const Employees: React.FC = () => {
                 const meResponse = await attendanceApi.get('/api/v1/profiles/me');
                 if (meResponse.status !== 200 || !meResponse.data.payload) return;
 
-                const currentTenantId = meResponse.data.payload.tenantId;
+                const myProfile = meResponse.data.payload;
+                setMyRoleId(myProfile.roleId);
+                setMyProfileId(myProfile.id);
+                const currentTenantId = myProfile.tenantId;
 
                 if (isSA) {
                     const res = await attendanceApi.get('/api/v1/profiles/all');
@@ -119,6 +129,32 @@ const Employees: React.FC = () => {
             console.error("Error deleting profile:", err);
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        if (!editTarget) return;
+        setIsEditing(true);
+        try {
+            const res = await attendanceApi.put(`/api/v1/profiles/${editTarget.id}`, {
+                fullName: editTarget.fullName,
+                profileCellphone: editTarget.profileCellphone,
+                roleId: editTarget.roleId,
+                departmentId: editTarget.departmentId,
+                locationId: editTarget.locationId || null,
+                roleDescription: editTarget.roleDescription
+            });
+            if (res.status === 200) {
+                addToast(t('profile_updated_success', 'Profilo aggiornato con successo'), 'success');
+                // Aggiorniamo lo stato locale
+                setProfiles(prev => prev.map(p => p.id === editTarget.id ? { ...p, ...editTarget } : p));
+                setEditTarget(null);
+            }
+        } catch (err) {
+            console.error("Error updating profile:", err);
+            addToast(t('profile_updated_error', 'Errore durante l\'aggiornamento del profilo'), 'error');
+        } finally {
+            setIsEditing(false);
         }
     };
 
@@ -270,7 +306,14 @@ const Employees: React.FC = () => {
                                         </span>
 
                                         {/* Actions */}
-                                        <div className="flex justify-end">
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                onClick={() => setEditTarget(p)}
+                                                className="p-2 rounded-xl text-blue-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                                title={t('edit_employee', 'Modifica dipendente')}
+                                            >
+                                                <span className="material-icons text-xl">edit</span>
+                                            </button>
                                             <button
                                                 onClick={() => setDeleteTarget(p)}
                                                 className="p-2 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -464,6 +507,158 @@ const Employees: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {editTarget && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden border border-slate-100 dark:border-slate-700 max-h-[90vh] flex flex-col scale-in-center">
+                        <div className="p-8 pb-4 shrink-0 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                                    <span className="material-icons text-blue-600 dark:text-blue-400">edit</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-white">
+                                    {t('edit_profile', 'Modifica Profilo')}
+                                </h3>
+                            </div>
+                            <button
+                                onClick={() => setEditTarget(null)}
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                            >
+                                <span className="material-icons text-slate-400">close</span>
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-8 py-4 space-y-6 custom-scrollbar">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Full Name */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        {t('full_name', 'Nome Completo')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editTarget.fullName || ''}
+                                        onChange={(e) => setEditTarget({ ...editTarget, fullName: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium transition-all"
+                                    />
+                                </div>
+
+                                {/* Phone */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        {t('phone', 'Cellulare')}
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={editTarget.profileCellphone || ''}
+                                        onChange={(e) => setEditTarget({ ...editTarget, profileCellphone: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium transition-all"
+                                    />
+                                </div>
+
+                                {/* Technical Role */}
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        {t('technical_role', 'Ruolo Tecnico')}
+                                    </label>
+                                    {editTarget.id === myProfileId ? (
+                                        <div className="flex items-center justify-between px-4 py-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-2xl group transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                                                    <span className="material-icons text-xl">verified_user</span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                                        {t('role_' + (editTarget?.role?.toLowerCase().replaceAll(/\s+/g, '_') || 'employee'))}
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                                        {t('account_protected_desc', 'Questo ruolo è protetto per il tuo account')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
+                                                <span className="material-icons text-slate-400 text-[18px]" title={t('cannot_edit_self_role', 'Non puoi modificare il tuo ruolo')}>lock</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={editTarget.roleId || ''}
+                                            onChange={(e) => setEditTarget({ ...editTarget, roleId: Number.parseInt(e.target.value), role: e.target.options[e.target.selectedIndex].text })}
+                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium transition-all"
+                                        >
+                                            <option value={2} disabled={myRoleId !== 1 && myRoleId !== 2}>{t('role_amministratore_tenant', 'Amministratore')}</option>
+                                            <option value={3} disabled={myRoleId !== 1 && myRoleId !== 2 && myRoleId !== 3}>{t('role_manager', 'Manager')}</option>
+                                            <option value={4}>{t('role_employee', 'Dipendente')}</option>
+                                        </select>
+                                    )}
+                                </div>
+
+                                {/* Company Role (Description) */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        {t('company_role', 'Ruolo Aziendale')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editTarget.roleDescription || ''}
+                                        onChange={(e) => setEditTarget({ ...editTarget, roleDescription: e.target.value })}
+                                        placeholder={t('example_developer', 'es. Sviluppatore')}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium transition-all"
+                                    />
+                                </div>
+
+                                {/* Department */}
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        {t('department', 'Dipartimento')}
+                                    </label>
+                                    <select
+                                        value={editTarget.departmentId || ''}
+                                        onChange={(e) => {
+                                            const deptId = Number.parseInt(e.target.value);
+                                            setEditTarget({ 
+                                                ...editTarget, 
+                                                departmentId: deptId, 
+                                                departmentName: e.target.options[e.target.selectedIndex].text 
+                                            });
+                                        }}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium transition-all"
+                                    >
+                                        <option value="">{t('no_department', 'Nessun dipartimento')}</option>
+                                        {departments.map(d => (
+                                            <option key={d.id} value={d.id}>{d.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 pt-4 shrink-0 flex flex-col sm:flex-row gap-3 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/20">
+                            <button
+                                onClick={() => setEditTarget(null)}
+                                className="flex-1 py-3 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-semibold transition-colors order-2 sm:order-1"
+                            >
+                                {t('cancel', 'Annulla')}
+                            </button>
+                            <button
+                                onClick={handleSaveProfile}
+                                disabled={isEditing || !editTarget.fullName}
+                                className="flex-[2] py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-70 transition-all order-1 sm:order-2"
+                            >
+                                {isEditing ? (
+                                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                ) : (
+                                    <>
+                                        <span className="material-icons text-lg">save</span>
+                                        {t('save_changes', 'Salva Modifiche')}
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>

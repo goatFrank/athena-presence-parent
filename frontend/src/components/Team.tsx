@@ -24,6 +24,10 @@ const Team: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [page, setPage] = useState(0);
+    const [currentUser, setCurrentUser] = useState<{ id: string, role: string } | null>(null);
+    const [editingColleague, setEditingColleague] = useState<string | null>(null);
+    const [editValue, setEditValue] = useState<string>('');
+    const [isUpdating, setIsUpdating] = useState(false);
     const pageSize = 10;
 
     // Reset page to 0 when filters change
@@ -82,6 +86,20 @@ const Team: React.FC = () => {
                 const isoDate = `${year}-${month}-${day}`;
                 params.date = isoDate;
 
+                // Fetch current user role
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data: meData } = await supabase
+                        .from('profiles')
+                        .select('role_id, roles:role_id ( name )')
+                        .eq('id', user.id);
+                    if (meData && meData.length > 0) {
+                        const roles = meData[0].roles as any;
+                        const roleName = Array.isArray(roles) ? roles[0]?.name : roles?.name;
+                        setCurrentUser({ id: user.id, role: roleName || 'EMPLOYEE' });
+                    }
+                }
+
                 const response = await attendanceApi.get('/api/v1/attendance/team-overview', { params });
 
                 if (response.status === 200) {
@@ -127,6 +145,54 @@ const Team: React.FC = () => {
 
         return () => clearTimeout(timeoutId);
     }, [filter, searchQuery, selectedDate]);
+
+    const canEditDescription = (colleague: Colleague) => {
+        if (!currentUser) return false;
+        
+        // Superadmin can edit anyone
+        if (currentUser.role === 'SUPERADMIN') return true;
+        
+        const isSelf = currentUser.id === colleague.id;
+        
+        // Admin can edit self or any non-admin (Manager/Employee)
+        if (currentUser.role === 'ADMIN_TENANT') {
+            if (isSelf) return true;
+            return colleague.role !== 'SUPERADMIN' && colleague.role !== 'ADMIN_TENANT';
+        }
+
+        // Manager can edit self or Employees
+        if (currentUser.role === 'MANAGER' || currentUser.role === 'MANAGER_DEMO') {
+            if (isSelf) return true;
+            return colleague.role === 'EMPLOYEE' || colleague.role === 'EMPLOYEE_DEMO';
+        }
+
+        return false;
+    };
+
+    const handleStartEdit = (colleague: Colleague) => {
+        setEditingColleague(colleague.id);
+        setEditValue(colleague.role_description || '');
+    };
+
+    const handleSaveDescription = async (colleagueId: string) => {
+        setIsUpdating(true);
+        try {
+            await attendanceApi.put(`/api/v1/profiles/${colleagueId}/description`, { 
+                roleDescription: editValue 
+            });
+            
+            // Update local state
+            setColleagues(prev => prev.map(c => 
+                c.id === colleagueId ? { ...c, role_description: editValue } : c
+            ));
+            
+            setEditingColleague(null);
+        } catch (error) {
+            console.error('Error updating description:', error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
     // Calculate counts for the UI buttons (we still need this, so we compute it from the fetched colleagues)
     // NOTE: Ideally counts come from a separate endpoint to be accurate regardless of active filters,
@@ -405,11 +471,51 @@ const Team: React.FC = () => {
                                         </div>
                                         <h3 className="text-base md:text-lg font-bold text-[#0e121b] dark:text-white line-clamp-1 w-full" title={colleague.full_name}>{colleague.full_name}</h3>
 
-                                        {colleague.role_description && (
-                                            <p className="text-xs md:text-sm font-medium text-[#4e6797] dark:text-slate-400 mt-1 line-clamp-1">
-                                                {t('role_' + (colleague.role?.toLowerCase().replace(/\s+/g, '_') || 'employee'), colleague.role_description)}
-                                            </p>
-                                        )}
+                                        <div className="flex items-center gap-1.5 min-w-0 group/description mt-1 justify-center max-w-full">
+                                            {editingColleague === colleague.id ? (
+                                                <div className="flex items-center gap-1 w-full" onClick={(e) => e.stopPropagation()}>
+                                                    <input
+                                                        type="text"
+                                                        value={editValue}
+                                                        onChange={(e) => setEditValue(e.target.value)}
+                                                        autoFocus
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') handleSaveDescription(colleague.id);
+                                                            if (e.key === 'Escape') setEditingColleague(null);
+                                                        }}
+                                                        className="text-xs bg-white dark:bg-slate-800 border border-blue-400 dark:border-blue-500 rounded px-1.5 py-0.5 w-full outline-none focus:ring-1 focus:ring-blue-400"
+                                                    />
+                                                    <button 
+                                                        disabled={isUpdating}
+                                                        onClick={(e) => { e.stopPropagation(); handleSaveDescription(colleague.id); }}
+                                                        className="text-emerald-500 hover:text-emerald-600 p-0.5 disabled:opacity-50"
+                                                    >
+                                                        <span className="material-icons text-sm">check</span>
+                                                    </button>
+                                                    <button 
+                                                        disabled={isUpdating}
+                                                        onClick={(e) => { e.stopPropagation(); setEditingColleague(null); }}
+                                                        className="text-rose-500 hover:text-rose-600 p-0.5 disabled:opacity-50"
+                                                    >
+                                                        <span className="material-icons text-sm">close</span>
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className="text-xs md:text-sm font-medium text-[#4e6797] dark:text-slate-400 line-clamp-1 truncate">
+                                                        {colleague.role_description || t('role_' + (colleague.role?.toLowerCase().replace(/\s+/g, '_') || 'employee'))}
+                                                    </p>
+                                                    {canEditDescription(colleague) && (
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); handleStartEdit(colleague); }}
+                                                            className="opacity-0 group-hover/description:opacity-100 transition-opacity p-0.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded flex items-center shrink-0"
+                                                        >
+                                                            <span className="material-icons text-[14px] text-slate-400 hover:text-blue-500">edit</span>
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
 
                                         <div className="mt-3">
                                             {colleague.work_status === 'office' && (

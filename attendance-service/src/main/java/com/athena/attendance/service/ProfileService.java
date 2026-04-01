@@ -16,5 +16,7 @@ public interface ProfileService {
     void updatePhone(UUID userId, String phone);
 
     void updateProfileRole(UUID profileId, Long roleId, UUID adminUserId);
+    void updateProfileDescription(UUID profileId, String roleDescription, UUID adminUserId);
+    void updateProfile(UUID profileId, com.athena.common.dto.ProfileUpdateRequest request, UUID adminUserId);
     void createProfile(UUID userId, com.athena.common.dto.ProfileSetupRequest request);
 }

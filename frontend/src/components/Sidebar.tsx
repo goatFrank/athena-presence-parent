@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../api/supabase';
+import { attendanceApi } from '../api/clients';
+import { useToast } from './Toast';
 import athenaLogo from '../assets/icons/athena.ico';
 
 const Sidebar: React.FC = () => {
@@ -15,6 +17,11 @@ const Sidebar: React.FC = () => {
     const [userAvatar, setUserAvatar] = useState<string>('');
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+    const [companyName, setCompanyName] = useState('');
+    const [newCompanyName, setNewCompanyName] = useState('');
+    const [isUpdatingCompany, setIsUpdatingCompany] = useState(false);
+    const { addToast } = useToast();
     const navRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
@@ -43,13 +50,17 @@ const Sidebar: React.FC = () => {
             if (user) {
                 const { data: meData, error: meError } = await supabase
                     .from('profiles')
-                    .select('full_name, role_description, avatar_url, role_id, roles:role_id ( name )')
+                    .select('full_name, role_description, avatar_url, role_id, roles:role_id ( name ), tenants:tenant_id ( name )')
                     .eq('id', user.id);
 
                 if (!meError && meData && meData.length > 0) {
-                    const profile = meData[0];
+                    const profile = meData[0] as any;
                     if (profile.full_name) setUserName(profile.full_name);
                     if (profile.role_description) setUserRole(profile.role_description);
+                    if (profile.tenants?.name) {
+                        setCompanyName(profile.tenants.name);
+                        setNewCompanyName(profile.tenants.name);
+                    }
                     
                     // Check if superadmin
                     const roles = profile.roles as any;
@@ -100,8 +111,29 @@ const Sidebar: React.FC = () => {
         if (path === '/downloads') return t('download_desktop');
         if (path === '/superadmin/tenants') return t('tenant_approvals');
         if (path === '/superadmin/manage-tenants') return t('manage_tenants');
-        if (path === '/settings') return t('settings', 'Impostazioni');
         return 'Athena';
+    };
+
+    const handleUpdateCompanyName = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newCompanyName.trim() || newCompanyName === companyName) return;
+
+        setIsUpdatingCompany(true);
+        try {
+            const response = await attendanceApi.put('/api/v1/tenants/me', { name: newCompanyName });
+            if (response.status === 200) {
+                setCompanyName(newCompanyName);
+                addToast(t('company_name_updated_success', 'Nome azienda aggiornato con successo!'), 'success');
+                setIsCompanyModalOpen(false);
+                // Also update the supabase session profile if needed, or just let it refresh
+                await supabase.from('profiles').update({ tenant_name: newCompanyName }).eq('id', (await supabase.auth.getUser()).data.user?.id);
+            }
+        } catch (error) {
+            console.error('Error updating company name:', error);
+            addToast(t('error_server', 'Si è verificato un errore sul server.'), 'error');
+        } finally {
+            setIsUpdatingCompany(false);
+        }
     };
 
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -202,12 +234,6 @@ const Sidebar: React.FC = () => {
                             {t('employees', 'Dipendenti')}
                         </Link>
                     )}
-                    {(isSuperadmin || isTenantAdmin) && (
-                        <Link to="/settings" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/settings' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
-                            <span className={`material-icons text-[22px] transition-colors ${location.pathname === '/settings' ? 'text-blue-600 dark:text-blue-400' : 'group-hover:text-blue-500'}`}>settings</span>
-                            {t('settings', 'Impostazioni')}
-                        </Link>
-                    )}
                     {isSuperadmin && (
                         <>
                             <Link to="/superadmin/tenants" onClick={closeMobileMenu} className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold transition-all ${location.pathname === '/superadmin/tenants' ? 'bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 group hover:shadow-soft'}`}>
@@ -243,6 +269,16 @@ const Sidebar: React.FC = () => {
                                     <span className="material-icons text-[20px] text-blue-500">person</span>
                                     {t('profile', 'Profilo')}
                                 </Link>
+                                {(isSuperadmin || isTenantAdmin) && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setIsCompanyModalOpen(true); setShowProfileMenu(false); }}
+                                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                    >
+                                        <span className="material-icons text-[20px] text-blue-500">business</span>
+                                        {t('company', 'Azienda')}
+                                    </button>
+                                )}
                                 {isSuperadmin && (
                                     <div className="pt-2">
                                         <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('superadmin', 'Superadmin')}</p>
@@ -307,7 +343,7 @@ const Sidebar: React.FC = () => {
                                 <div className="flex flex-col min-w-0">
                                     <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{userName}</span>
                                     <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                        {t('role_' + (technicalRole?.toLowerCase().replace(/\s+/g, '_') || 'employee'), userRole || 'Team Member')}
+                                        {userRole || t('role_' + (technicalRole?.toLowerCase().replace(/\s+/g, '_') || 'employee'), 'Team Member')}
                                     </span>
                                 </div>
                             </div>
@@ -318,6 +354,82 @@ const Sidebar: React.FC = () => {
                     </div>
                 </div>
             </aside>
+
+            {/* Company Settings Modal */}
+            {isCompanyModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !isUpdatingCompany && setIsCompanyModalOpen(false)} />
+                    <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-300">
+                        <div className="p-8">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                        <span className="material-icons text-2xl">business</span>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
+                                            {t('edit_company', 'Gestione Azienda')}
+                                        </h2>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                            {t('update_company_name_subtitle', 'Personalizza le informazioni della tua azienda')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setIsCompanyModalOpen(false)}
+                                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+                                    disabled={isUpdatingCompany}
+                                >
+                                    <span className="material-icons">close</span>
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleUpdateCompanyName} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">
+                                        {t('company_name_label', 'Nome Azienda')}
+                                    </label>
+                                    <div className="relative group">
+                                        <input
+                                            type="text"
+                                            value={newCompanyName}
+                                            onChange={(e) => setNewCompanyName(e.target.value)}
+                                            placeholder={t('company_name_placeholder', 'Inserisci il nome dell\'azienda')}
+                                            className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
+                                            disabled={isUpdatingCompany}
+                                            required
+                                        />
+                                        <div className="absolute inset-0 rounded-2xl bg-blue-500/5 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCompanyModalOpen(false)}
+                                        className="flex-1 px-6 py-4 rounded-2xl font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                                        disabled={isUpdatingCompany}
+                                    >
+                                        {t('cancel', 'Annulla')}
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-[2] px-6 py-4 rounded-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={isUpdatingCompany || !newCompanyName.trim() || newCompanyName === companyName}
+                                    >
+                                        {isUpdatingCompany ? (
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            <span className="material-icons text-sm">save</span>
+                                        )}
+                                        {t('update_company_name', 'Aggiorna Nome Azienda')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
