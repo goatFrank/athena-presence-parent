@@ -14,5 +14,12 @@ export default defineConfig({
     port: 5173,
     // 2. tauri expects a fixed port, fail if that port is not available
     strictPort: true,
+    proxy: {
+      '/api/attendance': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/attendance/, ''),
+      },
+    },
   }
 })
