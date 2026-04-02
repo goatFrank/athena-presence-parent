@@ -4,10 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from './Toast';
 
 const Downloads: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { addToast } = useToast();
     const [detectedOS, setDetectedOS] = useState<'windows' | 'macos' | 'linux' | 'other'>('other');
     const [isDownloading, setIsDownloading] = useState(false);
+    const [showMaintenanceModal, setShowMaintenanceModal] = useState(true);
+
+    const isIt = i18n.language === 'it' || i18n.language.startsWith('it-');
+
 
     useEffect(() => {
         const userAgent = globalThis.navigator.userAgent.toLowerCase();
@@ -174,6 +178,44 @@ const Downloads: React.FC = () => {
                         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">{t('download_started')}</h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 tracking-tight leading-relaxed">Verifica la cartella dei download del tuo computer tra pochi istanti.</p>
+                    </div>
+                </div>
+            )}
+            {/* Maintenance Modal */}
+            {showMaintenanceModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-700 w-full max-w-md p-8 md:p-10 relative overflow-hidden animate-in zoom-in-95 duration-300">
+                        {/* Decorative background elements */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                        
+                        <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+                            <div className="w-20 h-20 rounded-3xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center border border-orange-100 dark:border-orange-800/30">
+                                <span className="material-icons text-4xl text-orange-500">engineering</span>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                                    {isIt ? 'Download in manutenzione!' : 'Downloads under maintenance!'}
+                                </h3>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                                    {isIt 
+                                        ? 'Stiamo aggiornando i server di distribuzione per garantirti la migliore esperienza possibile. Il download potrebbe essere rallentato o temporaneamente non disponibile.' 
+                                        : 'We are updating our distribution servers to ensure the best possible experience. Downloads might be slow or temporarily unavailable.'}
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col w-full gap-3">
+                                <button
+                                    onClick={() => setShowMaintenanceModal(false)}
+                                    className="w-full py-4 px-6 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-[0.98]"
+                                >
+                                    {isIt ? 'Ho capito, procedi' : 'Ho capito, procedi'}
+                                </button>
+                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">
+                                    {isIt ? 'Athena v1.0.1 • Desktop App' : 'Athena v1.0.1 • Desktop App'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
