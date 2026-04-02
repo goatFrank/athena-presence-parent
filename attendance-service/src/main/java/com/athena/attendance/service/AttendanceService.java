@@ -41,9 +41,20 @@ public interface AttendanceService {
     ResponseDTO<List<Attendance>> getAttendanceForDateRange(UUID userId, LocalDate startDate, LocalDate endDate);
 
     /**
+     * Recupera le presenze di un utente specifico in un intervallo di date (solo admin/manager).
+     */
+    ResponseDTO<List<Attendance>> getAttendanceForUserDateRange(UUID targetUserId, LocalDate startDate, LocalDate endDate, UUID authenticatedUserId);
+
+    /**
      * Calcola le statistiche per la dashboard (giorni ufficio, remoto, % team).
+     * Self-access convenience method.
      */
     ResponseDTO<com.athena.common.dto.DashboardStatsDTO> getDashboardStats(UUID userId);
+
+    /**
+     * Calcola le statistiche per la dashboard per un utente specifico (solo admin/manager).
+     */
+    ResponseDTO<com.athena.common.dto.DashboardStatsDTO> getDashboardStatsForUser(UUID targetUserId, UUID authenticatedUserId);
 
     /**
      * Recupera lo stato di presenza dell'utente per oggi.

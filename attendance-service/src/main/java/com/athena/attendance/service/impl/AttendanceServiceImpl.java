@@ -214,7 +214,97 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         @Override
+        public ResponseDTO<List<Attendance>> getAttendanceForUserDateRange(UUID targetUserId, LocalDate startDate,
+                        LocalDate endDate, UUID authenticatedUserId) {
+                // Authorization: only admins and managers can view other users' data
+                com.athena.attendance.entity.Profile callerProfile = profileRepository.findById(authenticatedUserId)
+                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.NOT_FOUND,
+                                                "Caller profile not found"));
+
+                com.athena.attendance.entity.Profile targetProfile = profileRepository.findById(targetUserId)
+                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.NOT_FOUND,
+                                                "Target user profile not found"));
+
+                Long callerRoleId = callerProfile.getRole() != null ? callerProfile.getRole().getId() : null;
+                boolean isSuperAdmin = RoleConstants.SUPERADMIN.equals(callerRoleId);
+                boolean isTenantAdmin = RoleConstants.ADMIN_TENANT.equals(callerRoleId);
+                boolean isManager = RoleConstants.MANAGER.equals(callerRoleId) || RoleConstants.MANAGER_DEMO.equals(callerRoleId);
+
+                if (!isSuperAdmin && !isTenantAdmin && !isManager) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.FORBIDDEN,
+                                        "Access Denied: Only admins and managers can view other users' statistics");
+                }
+
+                // Tenant check (non-superadmins must be same tenant)
+                if (!isSuperAdmin) {
+                        if (callerProfile.getTenantId() == null || !callerProfile.getTenantId().equals(targetProfile.getTenantId())) {
+                                throw new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.FORBIDDEN,
+                                                "Access Denied: Cannot view data from another tenant");
+                        }
+                        // Managers can only view their own department
+                        if (isManager && !isTenantAdmin) {
+                                if (callerProfile.getDepartmentId() == null || !callerProfile.getDepartmentId().equals(targetProfile.getDepartmentId())) {
+                                        throw new org.springframework.web.server.ResponseStatusException(
+                                                        org.springframework.http.HttpStatus.FORBIDDEN,
+                                                        "Access Denied: Managers can only view their own department's data");
+                                }
+                        }
+                }
+
+                return getAttendanceForDateRange(targetUserId, startDate, endDate);
+        }
+
+        @Override
         public ResponseDTO<DashboardStatsDTO> getDashboardStats(UUID userId) {
+                return getDashboardStatsForUser(userId, userId);
+        }
+
+        @Override
+        public ResponseDTO<DashboardStatsDTO> getDashboardStatsForUser(UUID targetUserId, UUID authenticatedUserId) {
+                // Authorization check
+                com.athena.attendance.entity.Profile callerProfile = profileRepository.findById(authenticatedUserId)
+                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.NOT_FOUND,
+                                                "Caller profile not found"));
+
+                com.athena.attendance.entity.Profile targetProfile = profileRepository.findById(targetUserId)
+                                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.NOT_FOUND,
+                                                "Target user profile not found"));
+
+                Long callerRoleId = callerProfile.getRole() != null ? callerProfile.getRole().getId() : null;
+                boolean isSuperAdmin = RoleConstants.SUPERADMIN.equals(callerRoleId);
+                boolean isTenantAdmin = RoleConstants.ADMIN_TENANT.equals(callerRoleId);
+                boolean isManager = RoleConstants.MANAGER.equals(callerRoleId) || RoleConstants.MANAGER_DEMO.equals(callerRoleId);
+
+                // Self-access is always allowed
+                boolean isSelf = targetUserId.equals(authenticatedUserId);
+                if (!isSelf && !isSuperAdmin && !isTenantAdmin && !isManager) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.FORBIDDEN,
+                                        "Access Denied");
+                }
+
+                if (!isSelf && !isSuperAdmin) {
+                        if (callerProfile.getTenantId() == null || !callerProfile.getTenantId().equals(targetProfile.getTenantId())) {
+                                throw new org.springframework.web.server.ResponseStatusException(
+                                                org.springframework.http.HttpStatus.FORBIDDEN,
+                                                "Access Denied: Cannot view data from another tenant");
+                        }
+                        if (isManager && !isTenantAdmin) {
+                                if (callerProfile.getDepartmentId() == null || !callerProfile.getDepartmentId().equals(targetProfile.getDepartmentId())) {
+                                        throw new org.springframework.web.server.ResponseStatusException(
+                                                        org.springframework.http.HttpStatus.FORBIDDEN,
+                                                        "Access Denied: Managers can only view their own department's data");
+                                }
+                        }
+                }
+
+                // Compute stats for targetUserId
                 LocalDate today = LocalDate.now();
                 LocalDate firstDayOfMonth = today.withDayOfMonth(1);
                 LocalDate lastDayOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
@@ -227,7 +317,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 }
 
                 List<Attendance> monthlyAttendances = repository.findByUserIdAndWorkDateBetweenOrderByWorkDateAsc(
-                                userId, firstDayOfMonth, lastDayOfMonth);
+                                targetUserId, firstDayOfMonth, lastDayOfMonth);
                 int officeDays = 0;
                 int remoteDays = 0;
                 int sickDays = 0;
@@ -253,14 +343,12 @@ public class AttendanceServiceImpl implements AttendanceService {
                 }
 
                 int teamPresencePercentage = 0;
-                com.athena.attendance.entity.Profile profile = profileRepository.findById(userId).orElse(null);
-
-                if (profile != null && profile.getTenantId() != null && profile.getDepartmentId() != null) {
-                        int totalTeamMembers = profileRepository.countByTenantIdAndDepartmentId(profile.getTenantId(),
-                                        profile.getDepartmentId());
+                if (targetProfile.getTenantId() != null && targetProfile.getDepartmentId() != null) {
+                        int totalTeamMembers = profileRepository.countByTenantIdAndDepartmentId(targetProfile.getTenantId(),
+                                        targetProfile.getDepartmentId());
                         if (totalTeamMembers > 0) {
                                 List<Attendance> todayAttendances = repository.findByTenantIdAndDepartmentIdAndWorkDate(
-                                                profile.getTenantId(), profile.getDepartmentId(), today);
+                                                targetProfile.getTenantId(), targetProfile.getDepartmentId(), today);
                                 int officeTeammates = 0;
                                 for (Attendance att : todayAttendances) {
                                         if (att.getStatus() != null) {

@@ -412,32 +412,34 @@ const Analytics: React.FC = () => {
         let offset = 0;
         return (
             <div className="flex flex-col items-center gap-2">
-                <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
-                    <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-100 dark:text-slate-700" />
-                    {segments.map((seg, i) => {
-                        const dashLen = (seg.value / total) * circumference;
-                        const el = (
-                            <circle
-                                key={i}
-                                cx={size / 2}
-                                cy={size / 2}
-                                r={r}
-                                fill="none"
-                                stroke={seg.color}
-                                strokeWidth="8"
-                                strokeDasharray={`${dashLen} ${circumference - dashLen}`}
-                                strokeDashoffset={-offset}
-                                strokeLinecap="round"
-                                className="transition-all duration-1000"
-                            />
-                        );
-                        offset += dashLen;
-                        return el;
-                    })}
-                    <text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central" className="fill-slate-800 dark:fill-white text-lg font-black transform rotate-90" style={{ transformOrigin: 'center', fontSize: '18px', fontWeight: 900 }}>
-                        {total}
-                    </text>
-                </svg>
+                <div className="relative" style={{ width: size, height: size }}>
+                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-100 dark:text-slate-700" />
+                        {segments.map((seg, i) => {
+                            const dashLen = (seg.value / total) * circumference;
+                            const el = (
+                                <circle
+                                    key={i}
+                                    cx={size / 2}
+                                    cy={size / 2}
+                                    r={r}
+                                    fill="none"
+                                    stroke={seg.color}
+                                    strokeWidth="8"
+                                    strokeDasharray={`${dashLen} ${circumference - dashLen}`}
+                                    strokeDashoffset={-offset}
+                                    strokeLinecap="round"
+                                    className="transition-all duration-1000"
+                                />
+                            );
+                            offset += dashLen;
+                            return el;
+                        })}
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-lg font-black text-slate-800 dark:text-white">{total}</span>
+                    </div>
+                </div>
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</span>
             </div>
         );
@@ -457,20 +459,22 @@ const Analytics: React.FC = () => {
         };
 
         return (
-            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
-                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth="10" className="text-slate-100 dark:text-slate-700" />
-                <circle
-                    cx={size / 2} cy={size / 2} r={r} fill="none"
-                    stroke={getColor(value)}
-                    strokeWidth="10"
-                    strokeDasharray={`${dashLen} ${circumference - dashLen}`}
-                    strokeLinecap="round"
-                    className="transition-all duration-1000 ease-out"
-                />
-                <text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central" className="fill-slate-800 dark:fill-white transform rotate-90" style={{ transformOrigin: 'center', fontSize: '28px', fontWeight: 900 }}>
-                    {value}
-                </text>
-            </svg>
+            <div className="relative" style={{ width: size, height: size }}>
+                <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+                    <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth="10" className="text-slate-100 dark:text-slate-700" />
+                    <circle
+                        cx={size / 2} cy={size / 2} r={r} fill="none"
+                        stroke={getColor(value)}
+                        strokeWidth="10"
+                        strokeDasharray={`${dashLen} ${circumference - dashLen}`}
+                        strokeLinecap="round"
+                        className="transition-all duration-1000 ease-out"
+                    />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-3xl font-black text-slate-800 dark:text-white">{value}</span>
+                </div>
+            </div>
         );
     };
 
@@ -569,8 +573,8 @@ const Analytics: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="overflow-x-auto">
-                                        <div className="min-w-[460px]">
+                                    <div className="overflow-x-auto" style={{ overflow: 'visible' }}>
+                                        <div className="min-w-[460px] py-1">
                                             <div className="flex gap-1.5">
                                                 {/* Day labels column */}
                                                 <div className="flex flex-col gap-1.5 pt-0 mr-1">
@@ -585,11 +589,12 @@ const Analytics: React.FC = () => {
                                                     <div key={wi} className="flex flex-col gap-1.5 flex-1">
                                                         {week.map((day, di) => {
                                                             const isFuture = day.date > new Date();
+                                                            const isDark = document.documentElement.classList.contains('dark');
                                                             return (
                                                                 <div
                                                                     key={di}
-                                                                    className={`h-6 md:h-7 rounded-md transition-all duration-200 ${isFuture ? 'opacity-20' : 'hover:scale-110 hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-500 cursor-pointer'}`}
-                                                                    style={{ backgroundColor: getHeatmapColor(day.status, false) }}
+                                                                    className={`h-6 md:h-7 rounded-md transition-all duration-200 ${isFuture ? 'opacity-20' : 'hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-500 hover:brightness-110 cursor-default'}`}
+                                                                    style={{ backgroundColor: getHeatmapColor(day.status, isDark) }}
                                                                     title={`${day.iso} — ${getHeatmapLabel(day.status)}`}
                                                                 />
                                                             );
@@ -603,11 +608,11 @@ const Analytics: React.FC = () => {
                                     {/* Legend */}
                                     <div className="flex items-center gap-3 mt-5 flex-wrap">
                                         {[
+                                            { color: 'bg-slate-200 dark:bg-slate-600', label: isIt ? 'Non registrato' : 'Not recorded' },
                                             { color: 'bg-indigo-500', label: isIt ? 'Ufficio' : 'Office' },
                                             { color: 'bg-sky-400', label: isIt ? 'Remoto' : 'Remote' },
                                             { color: 'bg-red-500', label: isIt ? 'Malattia' : 'Sick' },
                                             { color: 'bg-amber-500', label: isIt ? 'Ferie' : 'Holiday' },
-                                            { color: 'bg-slate-200 dark:bg-slate-600', label: isIt ? 'Vuoto' : 'Empty' },
                                         ].map(l => (
                                             <div key={l.label} className="flex items-center gap-1.5">
                                                 <div className={`w-3 h-3 rounded-sm ${l.color}`}></div>
@@ -640,17 +645,20 @@ const Analytics: React.FC = () => {
                                                     : (isIt ? 'Inizia a pianificare le presenze regolarmente!' : 'Start planning your attendance regularly!')}
                                     </p>
                                     <div className="grid grid-cols-3 gap-3 mt-6 w-full">
-                                        <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-2">
+                                        <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-3 text-center" title={isIt ? 'Giorni registrati rispetto al totale lavorativo degli ultimi 3 mesi' : 'Days recorded vs total working days in the last 3 months'}>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase">{isIt ? 'Copertura' : 'Coverage'}</p>
-                                            <p className="text-sm font-black text-slate-800 dark:text-white">{Math.round((consistencyScore / 100) * 40)}/40</p>
+                                            <p className="text-sm font-black text-slate-800 dark:text-white mt-0.5">{Math.round((consistencyScore / 100) * 40)}/40</p>
+                                            <p className="text-[8px] text-slate-400 mt-0.5 leading-tight">{isIt ? 'Giorni registrati' : 'Days recorded'}</p>
                                         </div>
-                                        <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-2">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Streak</p>
-                                            <p className="text-sm font-black text-slate-800 dark:text-white">{Math.min(30, Math.round((streakData.currentStreak / 20) * 30))}/30</p>
+                                        <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-3 text-center" title={isIt ? 'Bonus per giorni consecutivi registrati' : 'Bonus for consecutive days recorded'}>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase">{isIt ? 'Continuità' : 'Streak'}</p>
+                                            <p className="text-sm font-black text-slate-800 dark:text-white mt-0.5">{Math.min(30, Math.round((streakData.currentStreak / 20) * 30))}/30</p>
+                                            <p className="text-[8px] text-slate-400 mt-0.5 leading-tight">{isIt ? 'Giorni consecutivi' : 'Consecutive days'}</p>
                                         </div>
-                                        <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-2">
+                                        <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-3 text-center" title={isIt ? 'Rapporto ufficio/remoto: più è bilanciato, più punti' : 'Office/remote ratio: the more balanced, the more points'}>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase">{isIt ? 'Equilibrio' : 'Balance'}</p>
-                                            <p className="text-sm font-black text-slate-800 dark:text-white">{consistencyScore - Math.round((consistencyScore / 100) * 40) - Math.min(30, Math.round((streakData.currentStreak / 20) * 30))}/30</p>
+                                            <p className="text-sm font-black text-slate-800 dark:text-white mt-0.5">{consistencyScore - Math.round((consistencyScore / 100) * 40) - Math.min(30, Math.round((streakData.currentStreak / 20) * 30))}/30</p>
+                                            <p className="text-[8px] text-slate-400 mt-0.5 leading-tight">{isIt ? 'Ufficio / Remoto' : 'Office / Remote'}</p>
                                         </div>
                                     </div>
                                 </div>
