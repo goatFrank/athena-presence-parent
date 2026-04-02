@@ -269,10 +269,10 @@ const Register: React.FC = () => {
                     {/* Right — Form */}
                     <div className="w-full lg:w-[55%] p-8 md:p-10 lg:p-12 flex flex-col justify-center relative overflow-y-auto">
                         <div className="w-full max-w-sm mx-auto">
-                            <div className="mb-8 flex items-center gap-3 animate-slide-up">
+                            <Link to="/" className="mb-8 flex items-center gap-3 animate-slide-up group cursor-pointer transition-transform hover:scale-[1.02] active:scale-95">
                                 <img src={athenaLogo} alt="Athena" className="w-10 h-10 object-contain" />
                                 <span className="text-2xl font-bold text-slate-900 tracking-tight">Athena</span>
-                            </div>
+                            </Link>
                             <h1 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight animate-slide-up-d1">{t('create_account')}</h1>
                             <div className="mb-6 animate-slide-up-d2">
                                 {inviteData ? (

@@ -71,11 +71,10 @@ const ResetPassword: React.FC = () => {
             <div className={`relative z-10 w-full max-w-md mx-4 transition-all duration-1000 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                 <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-slate-200/60 shadow-soft-xl p-8 md:p-12 relative overflow-hidden">
                     <div className="relative z-10">
-                        {/* Logo */}
-                        <div className="mb-10 flex items-center gap-3 animate-slide-up">
+                        <Link to="/" className="mb-10 flex items-center gap-3 animate-slide-up group cursor-pointer transition-transform hover:scale-[1.02] active:scale-95">
                             <img src={athenaLogo} alt="Athena" className="w-10 h-10 object-contain" />
                             <span className="text-2xl font-bold text-slate-900 tracking-tight">Athena</span>
-                        </div>
+                        </Link>
 
                         {/* Icon */}
                         <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-6 animate-slide-up">

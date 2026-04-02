@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import { supabase } from '../api/supabase';
@@ -26,7 +26,7 @@ interface Department {
 }
 
 const Employees: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +40,16 @@ const Employees: React.FC = () => {
     const [editTarget, setEditTarget] = useState<Profile | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [myRoleId, setMyRoleId] = useState<number | null>(null);
+
+    // Stats modal
+    const [statsTarget, setStatsTarget] = useState<Profile | null>(null);
+    const [statsLoading, setStatsLoading] = useState(false);
+    const [statsRecords, setStatsRecords] = useState<any[]>([]);
+    const [statsDash, setStatsDash] = useState<any>(null);
+    const [statsPrevMonthRecords, setStatsPrevMonthRecords] = useState<any[]>([]);
+
+    // Context (3-dot) menu
+    const [menuTarget, setMenuTarget] = useState<string | null>(null);
 
     // Pagination
     const [page, setPage] = useState(0);
@@ -197,6 +207,247 @@ const Employees: React.FC = () => {
         });
     };
 
+    // ── Stats helpers ──
+    const pad2 = (n: number) => String(n).padStart(2, '0');
+    const toIso = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
+    type NormalizedStatus = 'office' | 'remote' | 'sick' | 'holiday' | null;
+    const normalizeStatus = (raw: string): NormalizedStatus => {
+        const s = raw?.toUpperCase().trim();
+        if (s === 'IN_OFFICE' || s === 'OFFICE') return 'office';
+        if (s === 'REMOTE' || s === 'WORKING_REMOTELY') return 'remote';
+        if (s === 'SICK') return 'sick';
+        if (s === 'HOLIDAY' || s === 'VACATION') return 'holiday';
+        return null;
+    };
+
+    const isWeekend = (d: Date) => { const day = d.getDay(); return day === 0 || day === 6; };
+
+    const getMonday = (d: Date): Date => {
+        const copy = new Date(d);
+        const day = copy.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        copy.setDate(copy.getDate() + diff);
+        copy.setHours(0, 0, 0, 0);
+        return copy;
+    };
+
+    const handleOpenStats = async (profile: Profile) => {
+        setStatsTarget(profile);
+        setStatsLoading(true);
+        setStatsRecords([]);
+        setStatsDash(null);
+        setStatsPrevMonthRecords([]);
+
+        try {
+            const today = new Date();
+            const threeMonthsAgo = new Date(today);
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            threeMonthsAgo.setDate(1);
+
+            // Fetch 3-month attendance range
+            const rangeRes = await attendanceApi.get(`/api/v1/attendance/user/${profile.id}/range`, {
+                params: { startDate: toIso(threeMonthsAgo), endDate: toIso(today) }
+            });
+            if (rangeRes.status === 200) {
+                setStatsRecords((rangeRes.data.payload || []).map((r: any) => ({
+                    workDate: r.workDate, status: r.status
+                })));
+            }
+
+            // Fetch dashboard stats
+            const dashRes = await attendanceApi.get(`/api/v1/attendance/stats/dashboard/${profile.id}`);
+            if (dashRes.status === 200) {
+                setStatsDash(dashRes.data.payload);
+            }
+
+            // Previous month
+            const prevMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const prevMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+            const prevRes = await attendanceApi.get(`/api/v1/attendance/user/${profile.id}/range`, {
+                params: { startDate: toIso(prevMonthStart), endDate: toIso(prevMonthEnd) }
+            });
+            if (prevRes.status === 200) {
+                setStatsPrevMonthRecords((prevRes.data.payload || []).map((r: any) => ({
+                    workDate: r.workDate, status: r.status
+                })));
+            }
+        } catch (err) {
+            console.error('Error fetching employee stats:', err);
+            addToast(t('error_fetching_stats', 'Errore nel caricamento delle statistiche'), 'error');
+        } finally {
+            setStatsLoading(false);
+        }
+    };
+
+    // Close context menu on outside click
+    useEffect(() => {
+        const handleClick = () => setMenuTarget(null);
+        if (menuTarget) {
+            document.addEventListener('click', handleClick);
+            return () => document.removeEventListener('click', handleClick);
+        }
+    }, [menuTarget]);
+
+    // ── Computed stats data ──
+    const statsStatusMap = useMemo(() => {
+        const map = new Map<string, NormalizedStatus>();
+        statsRecords.forEach((r: any) => {
+            const ns = normalizeStatus(r.status);
+            if (ns) map.set(r.workDate, ns);
+        });
+        return map;
+    }, [statsRecords]);
+
+    const isIt = i18n.language === 'it';
+
+    // Heatmap
+    const statsHeatmap = useMemo(() => {
+        const weeks: { date: Date; iso: string; status: NormalizedStatus }[][] = [];
+        const today = new Date();
+        const currentMonday = getMonday(today);
+        for (let w = 11; w >= 0; w--) {
+            const weekStart = new Date(currentMonday);
+            weekStart.setDate(weekStart.getDate() - w * 7);
+            const week: { date: Date; iso: string; status: NormalizedStatus }[] = [];
+            for (let d = 0; d < 5; d++) {
+                const day = new Date(weekStart);
+                day.setDate(day.getDate() + d);
+                const iso = toIso(day);
+                week.push({ date: day, iso, status: statsStatusMap.get(iso) || null });
+            }
+            weeks.push(week);
+        }
+        return weeks;
+    }, [statsStatusMap]);
+
+    // Day distribution
+    const statsDayDist = useMemo(() => {
+        const days = [
+            { name: isIt ? 'Lunedì' : 'Monday', short: isIt ? 'Lun' : 'Mon', office: 0, remote: 0 },
+            { name: isIt ? 'Martedì' : 'Tuesday', short: isIt ? 'Mar' : 'Tue', office: 0, remote: 0 },
+            { name: isIt ? 'Mercoledì' : 'Wednesday', short: isIt ? 'Mer' : 'Wed', office: 0, remote: 0 },
+            { name: isIt ? 'Giovedì' : 'Thursday', short: isIt ? 'Gio' : 'Thu', office: 0, remote: 0 },
+            { name: isIt ? 'Venerdì' : 'Friday', short: isIt ? 'Ven' : 'Fri', office: 0, remote: 0 },
+        ];
+        statsRecords.forEach((r: any) => {
+            const d = new Date(r.workDate + 'T00:00:00');
+            const dow = d.getDay();
+            if (dow >= 1 && dow <= 5) {
+                const ns = normalizeStatus(r.status);
+                if (ns === 'office') days[dow - 1].office++;
+                else if (ns === 'remote') days[dow - 1].remote++;
+            }
+        });
+        const maxTotal = Math.max(...days.map(d => d.office + d.remote), 1);
+        return { days, maxTotal };
+    }, [statsRecords, isIt]);
+
+    // Month comparison
+    const statsMonthComp = useMemo(() => {
+        const prevCounts = { office: 0, remote: 0, sick: 0, holiday: 0 };
+        statsPrevMonthRecords.forEach((r: any) => {
+            const ns = normalizeStatus(r.status);
+            if (ns) prevCounts[ns]++;
+        });
+        const curr = {
+            office: statsDash?.officeDays ?? 0,
+            remote: statsDash?.remoteDays ?? 0,
+            sick: statsDash?.sickDays ?? 0,
+            holiday: statsDash?.holidayDays ?? 0,
+        };
+        return {
+            current: curr, previous: prevCounts,
+            delta: {
+                office: curr.office - prevCounts.office,
+                remote: curr.remote - prevCounts.remote,
+                sick: curr.sick - prevCounts.sick,
+                holiday: curr.holiday - prevCounts.holiday,
+            }
+        };
+    }, [statsDash, statsPrevMonthRecords]);
+
+    // Streak data
+    const statsStreak = useMemo(() => {
+        let currentStreak = 0;
+        const today = new Date();
+        const d = new Date(today);
+        while (true) {
+            if (isWeekend(d)) { d.setDate(d.getDate() - 1); continue; }
+            if (statsStatusMap.has(toIso(d))) { currentStreak++; d.setDate(d.getDate() - 1); }
+            else break;
+            if (d < new Date(today.getFullYear(), today.getMonth() - 3, 1)) break;
+        }
+
+        let maxStreak = 0;
+        const sorted = [...statsRecords].sort((a: any, b: any) => a.workDate.localeCompare(b.workDate));
+        if (sorted.length > 0) {
+            const start = new Date(sorted[0].workDate + 'T00:00:00');
+            const end = new Date(sorted[sorted.length - 1].workDate + 'T00:00:00');
+            let streak = 0;
+            const iter = new Date(start);
+            while (iter <= end) {
+                if (!isWeekend(iter)) {
+                    if (statsStatusMap.has(toIso(iter))) { streak++; maxStreak = Math.max(maxStreak, streak); }
+                    else streak = 0;
+                }
+                iter.setDate(iter.getDate() + 1);
+            }
+        }
+        return { currentStreak, maxStreak };
+    }, [statsRecords, statsStatusMap]);
+
+    // Consistency score
+    const statsConsistency = useMemo(() => {
+        const today = new Date();
+        const threeMonthsAgo = new Date(today);
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        threeMonthsAgo.setDate(1);
+        let totalWorkingDays = 0, plannedDays = 0;
+        const iter = new Date(threeMonthsAgo);
+        while (iter <= today) {
+            if (!isWeekend(iter)) {
+                totalWorkingDays++;
+                if (statsStatusMap.has(toIso(iter))) plannedDays++;
+            }
+            iter.setDate(iter.getDate() + 1);
+        }
+        const coverage = totalWorkingDays > 0 ? Math.round((plannedDays / totalWorkingDays) * 40) : 0;
+        const streakBonus = Math.min(30, Math.round((statsStreak.currentStreak / 20) * 30));
+        let office3m = 0, remote3m = 0;
+        statsRecords.forEach((r: any) => {
+            const ns = normalizeStatus(r.status);
+            if (ns === 'office') office3m++;
+            if (ns === 'remote') remote3m++;
+        });
+        const total = office3m + remote3m;
+        const balance = total > 0 ? Math.round((1 - Math.abs(office3m - remote3m) / total) * 30) : 0;
+        return Math.min(100, coverage + streakBonus + balance);
+    }, [statsStatusMap, statsRecords, statsStreak]);
+
+    const getHeatColor = (status: NormalizedStatus, isDark: boolean = false) => {
+        if (!status) return isDark ? 'rgb(51,65,85)' : 'rgb(241,245,249)';
+        if (status === 'office') return 'rgb(99,102,241)';
+        if (status === 'remote') return 'rgb(56,189,248)';
+        if (status === 'sick') return 'rgb(239,68,68)';
+        if (status === 'holiday') return 'rgb(251,146,60)';
+        return isDark ? 'rgb(51,65,85)' : 'rgb(241,245,249)';
+    };
+
+    const getStatusLabel = (status: NormalizedStatus): string => {
+        if (!status) return isIt ? 'Non registrato' : 'Not recorded';
+        if (status === 'office') return isIt ? 'Ufficio' : 'Office';
+        if (status === 'remote') return isIt ? 'Remoto' : 'Remote';
+        if (status === 'sick') return isIt ? 'Malattia' : 'Sick';
+        if (status === 'holiday') return isIt ? 'Ferie' : 'Holiday';
+        return '';
+    };
+
+    const MONTH_NAMES_IT = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+    const MONTH_NAMES_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const currentMonthName = (isIt ? MONTH_NAMES_IT : MONTH_NAMES_EN)[new Date().getMonth()];
+    const prevMonthName = (isIt ? MONTH_NAMES_IT : MONTH_NAMES_EN)[(new Date().getMonth() - 1 + 12) % 12];
+
     const filtered = profiles.filter(p =>
         (p.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.role || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -306,7 +557,7 @@ const Employees: React.FC = () => {
                                         </span>
 
                                         {/* Actions */}
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end gap-1">
                                             <button
                                                 onClick={() => setEditTarget(p)}
                                                 className="p-2 rounded-xl text-blue-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
@@ -314,6 +565,35 @@ const Employees: React.FC = () => {
                                             >
                                                 <span className="material-icons text-xl">edit</span>
                                             </button>
+                                            {/* 3-dot menu (managers & admins only) */}
+                                            {(myRoleId === 1 || myRoleId === 2 || myRoleId === 3 || myRoleId === 5) && (
+                                                <div className="relative">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setMenuTarget(menuTarget === p.id ? null : p.id);
+                                                        }}
+                                                        className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                                        title={t('more_options', 'Altre opzioni')}
+                                                    >
+                                                        <span className="material-icons text-xl">more_vert</span>
+                                                    </button>
+                                                    {menuTarget === p.id && (
+                                                        <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setMenuTarget(null);
+                                                                    handleOpenStats(p);
+                                                                }}
+                                                                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                            >
+                                                                <span className="material-icons text-lg">bar_chart</span>
+                                                                {t('analytics', 'Statistiche')}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                             <button
                                                 onClick={() => setDeleteTarget(p)}
                                                 className="p-2 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -704,6 +984,216 @@ const Employees: React.FC = () => {
                                 )}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── STATS MODAL ── */}
+            {statsTarget && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex justify-center items-start p-4 pt-8 md:pt-12 overflow-y-auto" onClick={() => setStatsTarget(null)}>
+                    <div className="bg-white dark:bg-slate-800 rounded-[32px] shadow-2xl w-full max-w-3xl border border-slate-100 dark:border-slate-700 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 px-8 py-6">
+                            <div className="absolute inset-0 opacity-10">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+                            </div>
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xl font-bold border border-white/30">
+                                        {(statsTarget.fullName || '?').charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-white">{statsTarget.fullName}</h2>
+                                        <p className="text-white/70 text-sm">{statsTarget.departmentName || t('no_department_assigned')}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setStatsTarget(null)} className="p-2 hover:bg-white/20 rounded-full transition-colors group">
+                                    <span className="material-icons text-white/80 group-hover:text-white">close</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {statsLoading ? (
+                            <div className="flex items-center justify-center py-20">
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                            </div>
+                        ) : statsRecords.length === 0 && !statsDash ? (
+                            <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+                                <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-4">query_stats</span>
+                                <p className="text-base font-bold text-slate-500 dark:text-slate-400">{isIt ? 'Nessun dato disponibile' : 'No data available'}</p>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{isIt ? 'Questo dipendente non ha ancora registrato presenze.' : 'This employee has not recorded any attendance yet.'}</p>
+                            </div>
+                        ) : (
+                            <div className="p-6 md:p-8 space-y-6 max-h-[70vh] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                                {/* Row 1: Heatmap + Score */}
+                                <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                                    {/* Heatmap */}
+                                    <div className="md:col-span-3 bg-slate-50 dark:bg-slate-700/30 rounded-2xl p-5 border border-slate-100 dark:border-slate-700">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <span className="material-symbols-outlined text-indigo-500 text-lg">grid_view</span>
+                                            <h3 className="text-sm font-bold text-slate-800 dark:text-white">{isIt ? 'Mappa Presenze' : 'Attendance Heatmap'}</h3>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <div className="min-w-[300px] flex gap-1">
+                                                <div className="flex flex-col gap-1 mr-1">
+                                                    {(isIt ? ['L', 'M', 'M', 'G', 'V'] : ['M', 'T', 'W', 'T', 'F']).map((l, i) => (
+                                                        <div key={i} className="h-5 flex items-center"><span className="text-[9px] font-bold text-slate-400 w-4">{l}</span></div>
+                                                    ))}
+                                                </div>
+                                                {statsHeatmap.map((week, wi) => (
+                                                    <div key={wi} className="flex flex-col gap-1 flex-1">
+                                                        {week.map((day, di) => {
+                                                            const isDark = document.documentElement.classList.contains('dark');
+                                                            return (
+                                                                <div
+                                                                    key={di}
+                                                                    className={`h-5 rounded-sm transition-all ${day.date > new Date() ? 'opacity-20' : 'hover:ring-1 hover:ring-slate-400 dark:hover:ring-slate-500 cursor-default'}`}
+                                                                    style={{ backgroundColor: getHeatColor(day.status, isDark) }}
+                                                                    title={`${day.iso} — ${getStatusLabel(day.status)}`}
+                                                                />
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3 mt-3 flex-wrap">
+                                            {[
+                                                { color: 'bg-slate-200 dark:bg-slate-600', label: isIt ? 'Non registrato' : 'Not recorded' },
+                                                { color: 'bg-indigo-500', label: isIt ? 'Ufficio' : 'Office' },
+                                                { color: 'bg-sky-400', label: isIt ? 'Remoto' : 'Remote' },
+                                                { color: 'bg-red-500', label: isIt ? 'Malattia' : 'Sick' },
+                                                { color: 'bg-orange-400', label: isIt ? 'Ferie' : 'Holiday' },
+                                            ].map(l => (
+                                                <div key={l.label} className="flex items-center gap-1">
+                                                    <div className={`w-2.5 h-2.5 rounded-sm ${l.color}`}></div>
+                                                    <span className="text-[9px] font-semibold text-slate-400">{l.label}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Consistency Score */}
+                                    <div className="md:col-span-2 bg-slate-50 dark:bg-slate-700/30 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center text-center">
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4">{isIt ? 'Regolarità' : 'Consistency'}</h3>
+                                        <div className="relative" style={{ width: 120, height: 120 }}>
+                                            <svg width="120" height="120" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }}>
+                                                <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-200 dark:text-slate-600" />
+                                                <circle cx="60" cy="60" r="52" fill="none"
+                                                    stroke={statsConsistency >= 80 ? '#22c55e' : statsConsistency >= 60 ? '#6366f1' : statsConsistency >= 40 ? '#f59e0b' : '#ef4444'}
+                                                    strokeWidth="8"
+                                                    strokeDasharray={`${(statsConsistency / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
+                                                    strokeLinecap="round"
+                                                />
+                                            </svg>
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <span className="text-2xl font-black text-slate-800 dark:text-white">{statsConsistency}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-3 space-y-0.5">
+                                            {statsConsistency >= 80 && <span className="text-lg">🏆</span>}
+                                            <p className="text-[10px] text-slate-500 font-medium">
+                                                {statsConsistency >= 80 ? (isIt ? 'Eccellente!' : 'Excellent!') : statsConsistency >= 60 ? (isIt ? 'Buono' : 'Good') : statsConsistency >= 40 ? (isIt ? 'Nella media' : 'Average') : (isIt ? 'Da migliorare' : 'Needs improvement')}
+                                            </p>
+                                            <p className="text-[9px] text-slate-400">{isIt ? 'su 100' : 'out of 100'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Row 2: Month comparison + Streak */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Month comparison */}
+                                    <div className="bg-slate-50 dark:bg-slate-700/30 rounded-2xl p-5 border border-slate-100 dark:border-slate-700">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <span className="material-symbols-outlined text-rose-500 text-lg">compare_arrows</span>
+                                            <h3 className="text-sm font-bold text-slate-800 dark:text-white">{currentMonthName} vs {prevMonthName}</h3>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {([
+                                                { key: 'office' as const, icon: 'business', label: isIt ? 'Ufficio' : 'Office', color: 'text-indigo-500', bg: 'bg-indigo-100/80 dark:bg-indigo-900/30' },
+                                                { key: 'remote' as const, icon: 'home', label: isIt ? 'Remoto' : 'Remote', color: 'text-sky-500', bg: 'bg-sky-100/80 dark:bg-sky-900/30' },
+                                                { key: 'sick' as const, icon: 'sick', label: isIt ? 'Malattia' : 'Sick', color: 'text-red-500', bg: 'bg-red-100/80 dark:bg-red-900/30' },
+                                                { key: 'holiday' as const, icon: 'beach_access', label: isIt ? 'Ferie' : 'Holiday', color: 'text-amber-500', bg: 'bg-amber-100/80 dark:bg-amber-900/30' },
+                                            ]).map(item => {
+                                                const delta = statsMonthComp.delta[item.key];
+                                                return (
+                                                    <div key={item.key} className={`${item.bg} rounded-xl p-3 text-center`}>
+                                                        <span className={`material-icons ${item.color} text-base`}>{item.icon}</span>
+                                                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{item.label}</p>
+                                                        <div className="flex items-center justify-center gap-1 mt-0.5">
+                                                            <span className="text-lg font-black text-slate-800 dark:text-white">{statsMonthComp.current[item.key]}</span>
+                                                            {delta !== 0 && (
+                                                                <span className={`text-[10px] font-bold ${delta > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                                    {delta > 0 ? '▲' : '▼'}{Math.abs(delta)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Streak */}
+                                    <div className="bg-slate-50 dark:bg-slate-700/30 rounded-2xl p-5 border border-slate-100 dark:border-slate-700">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <span className="material-symbols-outlined text-amber-500 text-lg">local_fire_department</span>
+                                            <h3 className="text-sm font-bold text-slate-800 dark:text-white">Streak</h3>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 rounded-xl p-3 border border-amber-100 dark:border-amber-800/30">
+                                                <p className="text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase">{isIt ? 'Streak Attuale' : 'Current Streak'}</p>
+                                                <div className="flex items-baseline gap-1.5 mt-1">
+                                                    <span className="text-2xl font-black text-slate-800 dark:text-white">{statsStreak.currentStreak}</span>
+                                                    <span className="text-xs font-bold text-slate-500">{isIt ? 'giorni' : 'days'}</span>
+                                                    {statsStreak.currentStreak >= 5 && <span>🔥</span>}
+                                                </div>
+                                            </div>
+                                            <div className="bg-white dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase">{isIt ? 'Record Personale' : 'Personal Record'}</p>
+                                                <div className="flex items-baseline gap-1.5 mt-1">
+                                                    <span className="text-xl font-black text-slate-800 dark:text-white">{statsStreak.maxStreak}</span>
+                                                    <span className="text-xs font-bold text-slate-500">{isIt ? 'giorni' : 'days'}</span>
+                                                    {statsStreak.maxStreak >= 15 && <span>🏆</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Row 3: Day distribution */}
+                                <div className="bg-slate-50 dark:bg-slate-700/30 rounded-2xl p-5 border border-slate-100 dark:border-slate-700">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <span className="material-symbols-outlined text-teal-500 text-lg">calendar_view_week</span>
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-white">{isIt ? 'Abitudini Settimanali' : 'Weekly Habits'}</h3>
+                                        <div className="flex items-center gap-3 ml-auto">
+                                            <div className="flex items-center gap-1"><div className="w-2.5 h-1 rounded-full bg-indigo-500"></div><span className="text-[9px] font-bold text-slate-400">{isIt ? 'Ufficio' : 'Office'}</span></div>
+                                            <div className="flex items-center gap-1"><div className="w-2.5 h-1 rounded-full bg-sky-400"></div><span className="text-[9px] font-bold text-slate-400">{isIt ? 'Remoto' : 'Remote'}</span></div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {statsDayDist.days.map(day => {
+                                            const officePct = (day.office / statsDayDist.maxTotal) * 100;
+                                            const remotePct = (day.remote / statsDayDist.maxTotal) * 100;
+                                            return (
+                                                <div key={day.short} className="flex items-center gap-2">
+                                                    <span className="text-xs font-bold text-slate-500 w-7 shrink-0">{day.short}</span>
+                                                    <div className="flex-1 h-6 bg-slate-200/50 dark:bg-slate-600/30 rounded-md overflow-hidden flex">
+                                                        <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${officePct}%` }} />
+                                                        <div className="h-full bg-sky-400 transition-all duration-500" style={{ width: `${remotePct}%` }} />
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 w-12 shrink-0 justify-end">
+                                                        <span className="text-[11px] font-bold text-indigo-500">{day.office}</span>
+                                                        <span className="text-slate-300 text-[9px]">/</span>
+                                                        <span className="text-[11px] font-bold text-sky-400">{day.remote}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
