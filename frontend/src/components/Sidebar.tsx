@@ -184,15 +184,15 @@ const Sidebar: React.FC = () => {
                     <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full opacity-50" />
                 </div>
                 <div className="p-8 pb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="relative">
+                    <Link to="/dashboard" className="flex items-center gap-3 group cursor-pointer hover:opacity-80 transition-all active:scale-95">
+                        <div className="relative transition-transform group-hover:scale-110">
                             <img src={athenaLogo} alt="Athena" className="w-12 h-12 object-contain" />
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-2xl tracking-tight text-slate-800 dark:text-white leading-none">Athena</span>
                             <span className="text-[10px] uppercase tracking-widest font-bold text-blue-500 mt-1 opacity-80">Presence</span>
                         </div>
-                    </div>
+                    </Link>
                     <div className="flex items-center gap-2">
                         {/* Language Switch */}
                         <button
